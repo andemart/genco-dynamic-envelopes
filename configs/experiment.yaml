@@ -1,26 +1,35 @@
-# Experiment settings for the probabilistic screening study.
-grid: pglib_opf_case500_goc
-n_regions: 4                  # buses grouped into regions for forecast mapping
-scenarios_per_hour: 1000
-horizon_hours: [1, 6, 24]     # lead times studied
+# Experiment settings for probabilistic dynamic operating envelopes.
+feeder: case33bw              # case33bw (pandapower) | synthetic
+ratings_headroom: 1.5         # thermal rating = headroom x |S| at peak load where the case has none
+voltage_limits: {vmin: 0.94, vmax: 1.10}
+
+intervals: 48                 # half-hourly envelopes for one day
+scenarios_per_interval: 1000
+lead_times_hours: [1, 6, 24]  # day-ahead vs intraday envelopes
+
+customers:                    # one flexible connection point per load bus
+  export_cap_x_load: 2.0      # inverter export rating / nominal bus load
+  import_cap_x_load: 1.0      # EV + battery import rating / nominal bus load
+passive_pv_x_load: 0.5        # uncontrolled rooftop PV capacity / nominal bus load
 
 forecast_rel_std:             # relative error std at each lead time
-  load: {1: 0.015, 6: 0.03, 24: 0.05}
-  wind: {1: 0.08, 6: 0.18, 24: 0.30}
-  pv:   {1: 0.06, 6: 0.15, 24: 0.25}
+  load: {1: 0.03, 6: 0.06, 24: 0.10}
+  pv:   {1: 0.08, 6: 0.18, 24: 0.30}
 
 correlation:
-  rho_regions: 0.6
-  rho_wind_pv: -0.1
+  rho_within: {load: 0.5, pv: 0.9}
+  rho_cross: 0.0
 
-res_share:                    # share of generators re-tagged as wind / PV
-  wind: 0.15
-  pv: 0.10
+envelope:
+  eps: 0.05                   # allowed share of scenarios with a violation
+  policies: [uniform, proportional, max_total]
+  directions: [export, import]
+  levels_per_round: 8         # k-section search: candidate levels per batched GENCO call
 
 conformal:
-  alpha: 0.05
-  per_line: false
-  calibration_scenarios: 2000
+  alpha: 0.01
+  per_element: false
+  calibration_rows: 5000
 
 model:
   variant: tiny               # tiny | small | base

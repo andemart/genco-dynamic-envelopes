@@ -3,16 +3,17 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "probredispatch"
+name = "gencodoe"
 version = "0.0.1"
-description = "Probabilistic congestion and redispatch screening with GENCO (GridFM GENCO Challenge entry)"
+description = "Probabilistic dynamic operating envelopes with GENCO (GridFM GENCO Challenge entry)"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10,<3.13"
-dependencies = ["numpy>=1.24", "pandas>=2.0", "pyyaml>=6.0"]
+dependencies = ["numpy>=1.24", "scipy>=1.10", "pandas>=2.0", "pyyaml>=6.0"]
 
 [project.optional-dependencies]
 genco = ["gridfm-datakit", "gridfm-graphkit"]
+feeders = ["pandapower>=2.13"]
 dev = ["pytest>=7"]
 
 [tool.setuptools.packages.find]

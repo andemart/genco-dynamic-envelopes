@@ -1,0 +1,44 @@
+# gridfm-datakit config: power flow (PF) training data for GENCO on a radial
+# distribution feeder (Baran & Wu 33-bus, MATPOWER case33bw).
+# Based on gridfm-datakit scripts/config/default.yaml.
+#
+# TODO (day 1): datakit ships pglib cases; check how it loads a non-pglib
+# MATPOWER file. case33bw.m is in MATPOWER's data/ folder, or export it with
+# pandapower.converter.to_mpc(pandapower.networks.case33bw(), ...).
+network:
+  name: "case33bw"
+  source: "file"              # verify option name against the datakit README
+  network_dir: "./grids"
+
+load:
+  generator: "agg_load_profile"
+  agg_profile: "default"
+  scenarios: 50000
+  sigma: 0.3                  # wide: rows must span net export (negative load) too
+  change_reactive_power: true
+  global_range: 0.6
+  max_scaling_factor: 2.0
+  step_size: 0.1
+  start_scaling_factor: 1.0
+
+topology_perturbation:
+  type: "none"                # radial feeder; reconfiguration is out of scope
+
+generation_perturbation:
+  type: "none"
+
+admittance_perturbation:
+  type: "none"
+
+settings:
+  num_processes: 16
+  data_dir: "./data_out"
+  large_chunk_size: 1000
+  overwrite: true
+  mode: "pf"
+  include_dc_res: false
+  enable_solver_logs: false
+  pf_fast: true
+  dcpf_fast: true
+  max_iter: 200
+  seed: 42

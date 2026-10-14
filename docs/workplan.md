@@ -2,24 +2,34 @@
 
 | Day(s) | Task | Output |
 |---|---|---|
-| 14–15 Oct | Install datakit + graphkit on a GPU box; generate GOC 500 OPF data with `configs/datakit_opf_case500.yaml` | ~100k OPF samples |
-| 15–16 Oct | Train GENCO Tiny/Small; check against the paper's OPFData numbers | trained checkpoint |
-| 16–17 Oct | Tag generators as wind/PV, define regions; implement `scenarios_to_datakit_format` | scenarios as parquet |
-| 17–18 Oct | Run AC-OPF (PowerModels) on a held-out scenario set as ground truth | reference set |
-| 18–19 Oct | Batched GENCO inference; implement `line_loading_from_predictions` | predicted loadings, costs |
-| 19–20 Oct | Conformal calibration, screening, metrics, runtime benchmark | results tables |
-| 21–22 Oct | Figures: P(congestion) map, cost fan chart, screening confusion matrix, speed–accuracy plot | figures |
+| 14–15 Oct | Install datakit + graphkit on a GPU box; get case33bw into datakit (`configs/datakit_pf_case33bw.yaml`); make sure the training rows include net export (negative load) | ~50k PF samples |
+| 15–16 Oct | Train GENCO Tiny/Small in PF mode; check voltage MAE against the AC sweep, especially near V<sub>max</sub> | trained checkpoint |
+| 16–17 Oct | Implement `injections_to_datakit_format` and `read_predictions` in `genco.py`; test `GencoOracle` against `sweep_pf` | working oracle |
+| 17–18 Oct | Conformal calibration on held-out envelope rows; per-bus coverage; choose α | q_v, q_l, coverage table |
+| 18–19 Oct | Full day of half-hourly envelopes (both directions, three policies, three lead times) with AC, LinDistFlow, GENCO+conformal | results tables |
+| 19–20 Oct | Runtime benchmark: k-section batch size vs GPU throughput; compare with pandapower NR | speed–accuracy plot |
+| 21–22 Oct | Figures: envelope profile over the day per customer, hosting vs fairness per policy, violation probability vs ε, AC calls saved | figures |
 | 23–24 Oct | Write-up, clean repo, publish data/model to Hugging Face | submission draft |
 | 25 Oct | Post in the Community tab | submission |
 
 ## Open questions
 
-- Which grid: GOC 500 (native, fast) or a Benelux-scale model converted from PyPSA-Eur (more relevant, more work)?
-- Real forecast error statistics: use Elia's published wind/solar forecast data to set `forecast_rel_std`?
-- Redispatch cost definition: grid-constrained OPF minus copper-plate dispatch, or explicit up/down redispatch prices?
-- GPU access for training.
+- Does GENCO (trained on transmission-style pglib grids in the paper) reach usable voltage accuracy on a
+  radial, high-R/X feeder? Train from scratch on feeder data. Fallback: a larger feeder (case141, or an
+  LV network from SimBench) where the speed gain over AC is bigger.
+- Balanced single-phase equivalent vs. unbalanced LV: real DOEs are per phase. State the limitation and
+  keep the balanced model.
+- Out-of-sample violation probability sits around 1 − ε ± 0.02 with 500 scenarios. Should the search use a
+  scenario-approach margin, or tighten ε on a held-out set?
+- Forecast error statistics: take load/PV error std from a public smart-meter + PV dataset (e.g. Ausgrid
+  solar homes) instead of the placeholders in `configs/experiment.yaml`.
+- Max-total LP: iterate the linearisation (re-solve around the AC point) so it keeps the 1 − ε target.
 
 ## Risks
 
-- GENCO OPF accuracy on RES-heavy, curtailment-prone scenarios outside the datakit training distribution → train on data that includes the re-tagged RES Pmax variation.
-- Conformal coverage is marginal, not per-line → report per-line coverage too.
+- GENCO error is largest exactly at the binding constraint (voltage near V<sub>max</sub> with high reverse flow),
+  outside the bulk of the datakit training distribution. Mitigations: oversample high-export rows, and
+  per-element conformal quantiles.
+- Conformal coverage is marginal, not per bus. Report per-bus coverage too.
+- On a 33-bus feeder the AC sweep is already fast (~ms for 10k rows on CPU), so the speed case needs a
+  bigger feeder or many feeders batched together.
