@@ -8,6 +8,8 @@ forecasts. GENCO's power flow mode evaluates thousands of (scenario × candidate
 one batch, and a conformal-prediction safety layer sends only the borderline cases to an exact AC
 power flow.
 
+**Update:** The goal is to train GENCO with the fluvius meter data, so we can optimise load voltage forecast towards setting optimal dynamic operating envelopes. These envelopes need to be settled within 3 minutes so the whole community can provide grid flexibility/congestio nservices under a hypothetical non-firm contracts.
+
 ## Dynamic operating envelopes in brief
 
 A distribution network operator publishes, for each interval (say 30 minutes), a limit per connection
