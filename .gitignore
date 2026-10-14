@@ -7,3 +7,4 @@ mlruns/
 *.egg-info/
 .pytest_cache/
 data/load_profiles/P6269_*/
+grids/*_corrected.m
