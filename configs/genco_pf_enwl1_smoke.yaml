@@ -1,0 +1,61 @@
+# Fast CPU diagnostic for the ENWL1 PF model. This deliberately omits the
+# physics loss: the full run's large initial admittance residual otherwise
+# dominates the voltage target and admits the trivial near-zero-voltage
+# solution. Keep this config small enough to validate loss changes locally.
+version: 1
+callbacks:
+  patience: 10
+  tol: 0
+  early_stopping_monitor: Validation loss
+  checkpoint_monitor: Validation loss
+  lr_scheduler_monitor: Validation loss
+task:
+  task_name: PowerFlow
+data:
+  baseMVA: 1
+  mask_value: 0.0
+  normalization: HeteroDataMVANormalizer
+  networks:
+  - enwl1_fluvius
+  scenarios:
+  - 50
+  test_ratio: 0.1
+  val_ratio: 0.1
+  workers: 0
+  split_by_load_scenario_idx: true
+  stream_partitions: auto
+model:
+  attention_head: 8
+  edge_dim: 10
+  hidden_size: 12
+  input_bus_dim: 15
+  input_gen_dim: 6
+  output_bus_dim: 2
+  output_gen_dim: 1
+  num_layers: 12
+  type: GNS_heterogeneous
+optimizer:
+  type: AdamW
+  learning_rate: 0.0005
+  optimizer_params:
+    betas: [0.9, 0.999]
+  scheduler_type: ReduceLROnPlateau
+  scheduler_params:
+    mode: min
+    factor: 0.7
+    patience: 5
+seed: 0
+training:
+  batch_size: 10
+  epochs: 8
+  losses:
+  - MaskedBusMSE
+  loss_weights:
+  - 1.0
+  loss_args:
+  - {}
+  physics_warmup_epochs: 0
+  accelerator: cpu
+  devices: 1
+  strategy: auto
+verbose: true

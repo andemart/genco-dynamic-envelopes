@@ -3,12 +3,19 @@
 # Adapted from gridfm-graphkit examples/config/HGNS_PF_datakit_case118.yaml.
 # Changes: Tiny width (hidden_size 12), baseMVA 1 (the ENWL1 case base),
 # fewer workers/epochs for a laptop (Apple M4, MPS).
+#
+# The first ENWL1 run used 0.1 LayeredWeightedPhysics + 0.9 MaskedBusMSE.
+# Its initial physics residual (~1,555) overwhelmed the voltage target (~0.4)
+# and drove the model to the trivial near-zero-voltage solution. Train the
+# voltage surrogate with supervised Vm/Va loss first. A physics term may be
+# introduced only in a later, low-weight fine-tuning stage after checking the
+# actual p.u. voltage error and power-balance residual of this checkpoint.
 version: 1
 callbacks:
   patience: 20
   tol: 0
   early_stopping_monitor: Validation loss
-  checkpoint_monitor: Validation layer_11_residual
+  checkpoint_monitor: Validation loss
   lr_scheduler_monitor: Validation loss
 task:
   task_name: PowerFlow
@@ -50,13 +57,10 @@ training:
   batch_size: 64
   epochs: 60
   losses:
-  - LayeredWeightedPhysics
   - MaskedBusMSE
   loss_weights:
-  - 0.1
-  - 0.9
+  - 1.0
   loss_args:
-  - base_weight: 0.5
   - {}
   physics_warmup_epochs: 0
   accelerator: auto
