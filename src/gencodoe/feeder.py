@@ -198,8 +198,29 @@ def sensitivity(feeder: Feeder) -> tuple[np.ndarray, np.ndarray]:
     return R, X
 
 
+def branch_flows_kcl(feeder: Feeder, vm: np.ndarray, va: np.ndarray, p: np.ndarray, q: np.ndarray) -> PFResult:
+    """Branch flows from predicted voltages via Kirchhoff's current law (one backward sweep).
+
+    Branch current = sum of the injection currents conj(s_i / v_i) in its subtree;
+    |S| at the sending end = |v_parent| |J|. Voltage errors enter only through
+    the current-to-power conversion, so the flow error is O(dV) relative. Use this
+    for surrogate voltages on short LV segments, where the voltage-difference form
+    (branch_flows_from_voltages) multiplies a voltage error by 1/|z|.
+    """
+    v = vm * np.exp(1j * va)
+    i_inj = -np.conj((p + 1j * q) / v)
+    i_inj[:, 0] = 0.0
+    j = i_inj @ feeder.T
+    s_branch = v[:, feeder.parent] * np.conj(j)
+    s_branch[:, 0] = 0.0
+    return PFResult(vm=np.abs(v), loading=_loading(feeder, s_branch), p_branch=s_branch.real)
+
+
 def branch_flows_from_voltages(feeder: Feeder, vm: np.ndarray, va: np.ndarray) -> PFResult:
-    """Branch flows from a predicted voltage phasor field (e.g. GENCO output). va in radians."""
+    """Branch flows from a voltage phasor field, as (v_parent - v) / z. va in radians.
+
+    Exact for exact voltages, but a voltage error dV becomes a flow error dV / |z|;
+    for surrogate predictions prefer branch_flows_kcl."""
     v = vm * np.exp(1j * va)
     vp = v[:, feeder.parent]
     z = np.where(feeder.z == 0, 1.0, feeder.z)  # branch 0 is a placeholder with z = 0

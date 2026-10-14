@@ -1,0 +1,66 @@
+# Full run (Stage B/C winner candidates), Hydra A100.
+# Data: envelope-augmented v2 (python -m gencodoe.datakit_fluvius --augment 0.5),
+# leakage-free calendar-day splits in data_out/datakit_v2/splits (train days for
+# weights and normalizer, val days for early stopping and checkpointing).
+# Model: GENCO Tiny (hidden 12, 12 layers), LV variant + linear prior; supervised MaskedBusMSE only.
+version: 1
+callbacks:
+  patience: 12
+  tol: 0
+  early_stopping_monitor: Validation loss
+  checkpoint_monitor: Validation loss
+  lr_scheduler_monitor: Validation loss
+task:
+  task_name: PowerFlow
+data:
+  baseMVA: 1
+  mask_value: 0.0
+  normalization: HeteroDataMVANormalizer
+  networks:
+  - enwl1_fluvius
+  scenarios:
+  - 20000  # ignored: split_from_existing_files sets the scenarios
+  test_ratio: 0.1
+  val_ratio: 0.1
+  workers: 8
+  split_by_load_scenario_idx: false
+  stream_partitions: auto
+  split_from_existing_files: data_out/datakit_v2/splits
+model:
+  attention_head: 8
+  edge_dim: 10
+  hidden_size: 12
+  input_bus_dim: 15
+  input_gen_dim: 6
+  output_bus_dim: 2
+  output_gen_dim: 1
+  num_layers: 12
+  type: GNS_heterogeneous_lv
+  linear_prior: true
+optimizer:
+  type: AdamW
+  learning_rate: 0.0005
+  optimizer_params:
+    betas:
+    - 0.9
+    - 0.999
+  scheduler_type: ReduceLROnPlateau
+  scheduler_params:
+    mode: min
+    factor: 0.7
+    patience: 5
+seed: 0
+training:
+  batch_size: 64
+  epochs: 80
+  losses:
+  - MaskedBusMSE
+  loss_weights:
+  - 1.0
+  loss_args:
+  - {}
+  physics_warmup_epochs: 0
+  accelerator: auto
+  devices: 1
+  strategy: auto
+verbose: true
