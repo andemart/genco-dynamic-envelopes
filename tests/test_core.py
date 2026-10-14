@@ -144,3 +144,12 @@ def test_export_envelope_ignores_base_case_undervoltage():
     assert not envelopes.is_feasible(fd, feeder.sweep_pf(fd, heavy, q0)).any()
     env = envelopes.scalar_envelope(envelopes.exact(feeder.sweep_pf, fd), fd.n_bus, cust, heavy, q0, "export")
     assert env.level > 0
+
+
+def test_flows_from_injections_exact_at_true_voltages():
+    fd, p0, q0, _ = _setup(n_s=5)
+    res = feeder.sweep_pf(fd, p0, q0)
+    again = feeder.branch_flows_from_injections(fd, p0, q0, res.vm, res.va)
+    assert np.allclose(again.loading, res.loading, atol=1e-6)
+    noisy = feeder.branch_flows_from_injections(fd, p0, q0, res.vm * 1.01, res.va)
+    assert np.abs(noisy.loading - res.loading).max() < 0.02 * res.loading.max()

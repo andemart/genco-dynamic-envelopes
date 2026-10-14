@@ -145,6 +145,7 @@ class PFResult:
     loading: np.ndarray   # (n, n_bus) |S| / rate at the sending end of branch k (column 0 = 0)
     p_branch: np.ndarray  # (n, n_bus) active flow parent -> child, pu
     converged: np.ndarray | None = None  # (n,) bool, None for non-iterative oracles
+    va: np.ndarray | None = None         # (n, n_bus) voltage angle, radians (if the oracle gives it)
 
 
 def _loading(feeder: Feeder, s_branch: np.ndarray) -> np.ndarray:
@@ -154,23 +155,26 @@ def _loading(feeder: Feeder, s_branch: np.ndarray) -> np.ndarray:
     return np.nan_to_num(out, nan=0.0, posinf=0.0)
 
 
-def sweep_pf(feeder: Feeder, p: np.ndarray, q: np.ndarray, tol: float = 1e-8, max_iter: int = 50) -> PFResult:
+def sweep_pf(feeder: Feeder, p: np.ndarray, q: np.ndarray, tol: float = 1e-8, max_iter: int = 50,
+             v_slack: np.ndarray | None = None) -> PFResult:
     """Exact AC power flow on a radial feeder, vectorised over scenarios.
 
     Backward sweep: branch current J = sum of load currents in the subtree.
     Forward sweep:  V = V_slack - sum of z * J along the path from the root.
-    Both are a single matmul with the subtree matrix T.
+    Both are a single matmul with the subtree matrix T. v_slack (n,) overrides
+    feeder.v_slack per row.
     """
     p, q = np.atleast_2d(p), np.atleast_2d(q)
     s = p + 1j * q
     T, z = feeder.T, feeder.z
-    v = np.full(s.shape, feeder.v_slack, dtype=complex)
+    v0 = np.full((s.shape[0], 1), feeder.v_slack) if v_slack is None else np.asarray(v_slack, float)[:, None]
+    v = np.repeat(v0, s.shape[1], axis=1).astype(complex)
     converged = np.zeros(s.shape[0], dtype=bool)
     for _ in range(max_iter):
         i_load = -np.conj(s / v)          # current drawn by each bus
         i_load[:, 0] = 0.0
         j = i_load @ T                    # j[:, k] = current in branch parent[k] -> k
-        v_new = feeder.v_slack - (j * z[None, :]) @ T.T
+        v_new = v0 - (j * z[None, :]) @ T.T
         dv = np.abs(v_new - v).max(axis=1)
         v = v_new
         converged = dv < tol
@@ -178,7 +182,8 @@ def sweep_pf(feeder: Feeder, p: np.ndarray, q: np.ndarray, tol: float = 1e-8, ma
             break
     s_branch = v[:, feeder.parent] * np.conj(j)
     s_branch[:, 0] = 0.0
-    return PFResult(vm=np.abs(v), loading=_loading(feeder, s_branch), p_branch=s_branch.real, converged=converged)
+    return PFResult(vm=np.abs(v), loading=_loading(feeder, s_branch), p_branch=s_branch.real, converged=converged,
+                    va=np.angle(v))
 
 
 def lindistflow(feeder: Feeder, p: np.ndarray, q: np.ndarray) -> PFResult:
@@ -198,6 +203,23 @@ def sensitivity(feeder: Feeder) -> tuple[np.ndarray, np.ndarray]:
     return R, X
 
 
+def branch_flows_from_injections(feeder: Feeder, p: np.ndarray, q: np.ndarray, vm: np.ndarray,
+                                 va: np.ndarray) -> PFResult:
+    """Branch flows from injections and a predicted voltage field: one backward sweep.
+
+    Branch current = sum of load currents conj(S/V) in its subtree, so flow errors
+    scale with the relative voltage error (~1e-2), not with voltage *differences*
+    divided by a small line impedance as in branch_flows_from_voltages.
+    """
+    v = vm * np.exp(1j * va)
+    i_load = -np.conj((p + 1j * q) / v)
+    i_load[:, 0] = 0.0
+    j = i_load @ feeder.T
+    s_branch = v[:, feeder.parent] * np.conj(j)
+    s_branch[:, 0] = 0.0
+    return PFResult(vm=vm, loading=_loading(feeder, s_branch), p_branch=s_branch.real, va=va)
+
+
 def branch_flows_from_voltages(feeder: Feeder, vm: np.ndarray, va: np.ndarray) -> PFResult:
     """Branch flows from a predicted voltage phasor field (e.g. GENCO output). va in radians."""
     v = vm * np.exp(1j * va)
@@ -205,4 +227,4 @@ def branch_flows_from_voltages(feeder: Feeder, vm: np.ndarray, va: np.ndarray) -
     z = np.where(feeder.z == 0, 1.0, feeder.z)  # branch 0 is a placeholder with z = 0
     s_branch = vp * np.conj((vp - v) / z[None, :])
     s_branch[:, 0] = 0.0
-    return PFResult(vm=np.abs(v), loading=_loading(feeder, s_branch), p_branch=s_branch.real)
+    return PFResult(vm=np.abs(v), loading=_loading(feeder, s_branch), p_branch=s_branch.real, va=np.angle(v))

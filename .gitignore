@@ -6,3 +6,7 @@ mlruns/
 *.parquet
 *.egg-info/
 .pytest_cache/
+data_doe/
+data_smoke/
+mlflow.db
+grids/*_corrected.m

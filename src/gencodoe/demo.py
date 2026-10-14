@@ -52,6 +52,27 @@ def scenario_set(fd, pd, qd, hour, n, rng, pv_ratio=0.5):
     return scenarios.net_injection(scenarios.sample(spec, n, rng), tan_phi)
 
 
+def envelope_rows(fd, pd, qd, cust, n, rng, batch=500):
+    """Rows like those an envelope search evaluates: passive load/PV at a random hour plus
+    flexible customers at a random proportional level, exporting (45%), importing (35%)
+    or idle (20%); 30% of rows get per-customer jitter. Returns (p, q) in pu."""
+    C = cust.incidence(fd.n_bus)
+    P, Q = [], []
+    while sum(len(x) for x in P) < n:
+        p, q = scenario_set(fd, pd, qd, int(rng.integers(24)), batch, rng)
+        u = rng.uniform(size=batch)
+        sign = np.where(u < 0.45, 1.0, np.where(u < 0.8, -1.0, 0.0))
+        level = rng.uniform(0.0, 1.2, batch)
+        lim = np.where(sign[:, None] > 0,
+                       envelopes.allocate(cust, "proportional", level, "export"),
+                       envelopes.allocate(cust, "proportional", level, "import"))
+        jitter = rng.uniform(size=batch) < 0.3
+        lim[jitter] *= rng.uniform(0.0, 1.0, (jitter.sum(), len(cust)))
+        P.append(p + sign[:, None] * lim @ C)
+        Q.append(q)
+    return np.vstack(P)[:n], np.vstack(Q)[:n]
+
+
 def ac_prob_ok(fd, cust, limit, p, q, direction="export"):
     sign = envelopes.DIRECTIONS[direction]
     return float(envelopes.is_feasible(fd, feeder.sweep_pf(fd, p + sign * limit @ cust.incidence(fd.n_bus), q), direction).mean())

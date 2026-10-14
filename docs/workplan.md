@@ -1,35 +1,37 @@
-# Work plan (14 → 25 October 2026)
+# Work plan (to 25 October 2026)
 
-| Day(s) | Task | Output |
-|---|---|---|
-| 14–15 Oct | Install datakit + graphkit on a GPU box; get case33bw into datakit (`configs/datakit_pf_case33bw.yaml`); make sure the training rows include net export (negative load) | ~50k PF samples |
-| 15–16 Oct | Train GENCO Tiny/Small in PF mode; check voltage MAE against the AC sweep, especially near V<sub>max</sub> | trained checkpoint |
-| 16–17 Oct | Implement `injections_to_datakit_format` and `read_predictions` in `genco.py`; test `GencoOracle` against `sweep_pf` | working oracle |
-| 17–18 Oct | Conformal calibration on held-out envelope rows; per-bus coverage; choose α | q_v, q_l, coverage table |
-| 18–19 Oct | Full day of half-hourly envelopes (both directions, three policies, three lead times) with AC, LinDistFlow, GENCO+conformal | results tables |
-| 19–20 Oct | Runtime benchmark: k-section batch size vs GPU throughput; compare with pandapower NR | speed–accuracy plot |
-| 21–22 Oct | Figures: envelope profile over the day per customer, hosting vs fairness per policy, violation probability vs ε, AC calls saved | figures |
-| 23–24 Oct | Write-up, clean repo, publish data/model to Hugging Face | submission draft |
-| 25 Oct | Post in the Community tab | submission |
+## Done (14 Oct)
+
+- Envelope engine, scenarios, conformal layer, metrics, AC sweep and LinDistFlow, with tests.
+- case33bw exported for datakit (`scripts/export_case33bw.py`); AC sweep matches PowerModels to ~1e-10 pu
+  on datakit's scenarios (`scripts/check_sweep_vs_powermodels.py`).
+- 40k envelope-like training rows in datakit's schema (`scripts/make_training_data.py`).
+- GENCO (graphkit 0.9.0.3, GNS_heterogeneous, hidden 48) trained on Apple MPS. A 4-epoch ablation picked
+  lr 1e-4 and MSE-only loss; checkpointing on validation loss, not the physics residual.
+- In-process `GencoOracle`, checked against `gridfm_graphkit predict` (≤ 2e-4 pu).
+- Full study in `results/genco_case33bw.md`.
+
+## Next
+
+| Day(s) | Task |
+|---|---|
+| 15–16 Oct | Improve Vm accuracy near the limits: more rows near V<sub>max</sub>/V<sub>min</sub>, longer training, per-bus conformal quantiles (the import side sends 52% of rows to AC) |
+| 16–17 Oct | A larger or meshed feeder (case141, a SimBench LV/MV grid) where no sweep exists and GENCO's speed matters; multi-feeder batching |
+| 18–19 Oct | Max-total and uniform policies with GENCO; iterate the LP linearisation and check it with GENCO + AC |
+| 19–20 Oct | Lead-time study (1 h / 6 h / 24 h forecast errors) and comparison with a static 5 kW export limit (hosting, curtailment) |
+| 21–22 Oct | Figures: envelope profile over the day, P(ok) vs ε, AC calls saved vs α, speed-accuracy |
+| 23–24 Oct | Write-up; publish the trained checkpoint and training data on Hugging Face |
+| 25 Oct | Post in the Community tab |
 
 ## Open questions
 
-- Does GENCO (trained on transmission-style pglib grids in the paper) reach usable voltage accuracy on a
-  radial, high-R/X feeder? Train from scratch on feeder data. Fallback: a larger feeder (case141, or an
-  LV network from SimBench) where the speed gain over AC is bigger.
-- Balanced single-phase equivalent vs. unbalanced LV: real DOEs are per phase. State the limitation and
-  keep the balanced model.
-- Out-of-sample violation probability sits around 1 − ε ± 0.02 with 500 scenarios. Should the search use a
-  scenario-approach margin, or tighten ε on a held-out set?
-- Forecast error statistics: take load/PV error std from a public smart-meter + PV dataset (e.g. Ausgrid
-  solar homes) instead of the placeholders in `configs/experiment.yaml`.
-- Max-total LP: iterate the linearisation (re-solve around the AC point) so it keeps the 1 − ε target.
+- graphkit 0.9 masks the slack voltage in PF mode, so the model is trained at a fixed 1.0 pu substation voltage.
+  The GitHub main branch can unmask it (`data.mask_ref_vm: false`); use it if OLTC set-point variation matters.
+- Balanced single-phase equivalent vs. unbalanced LV: real DOEs are per phase. State the limitation.
+- With 500 scenarios the out-of-sample P(ok) sits at 1 − ε ± 0.02; add a scenario-approach margin or more scenarios.
+- Forecast error statistics: take load/PV error std from a public smart-meter + PV dataset.
 
 ## Risks
 
-- GENCO error is largest exactly at the binding constraint (voltage near V<sub>max</sub> with high reverse flow),
-  outside the bulk of the datakit training distribution. Mitigations: oversample high-export rows, and
-  per-element conformal quantiles.
-- Conformal coverage is marginal, not per bus. Report per-bus coverage too.
-- On a 33-bus feeder the AC sweep is already fast (~ms for 10k rows on CPU), so the speed case needs a
-  bigger feeder or many feeders batched together.
+- GENCO error is largest near the binding limits (Vm MAE 0.015 pu in 1.06–1.10 pu), which widens conformal margins.
+- On radial feeders a vectorised sweep is ~400× faster than GENCO, so the speed claim must rest on meshed/large grids.

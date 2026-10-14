@@ -2,19 +2,20 @@
 # distribution feeder (Baran & Wu 33-bus, MATPOWER case33bw).
 # Based on gridfm-datakit scripts/config/default.yaml.
 #
-# TODO (day 1): datakit ships pglib cases; check how it loads a non-pglib
-# MATPOWER file. case33bw.m is in MATPOWER's data/ folder, or export it with
-# pandapower.converter.to_mpc(pandapower.networks.case33bw(), ...).
+# grids/case33bw.m is written by scripts/export_case33bw.py (per unit, with
+# thermal ratings). datakit's load generator only scales loads up, so this set
+# is the graph template and a PowerModels cross-check of our AC sweep; the
+# GENCO training rows (net export and import) come from scripts/make_training_data.py.
 network:
   name: "case33bw"
-  source: "file"              # verify option name against the datakit README
+  source: "file"
   network_dir: "./grids"
 
 load:
   generator: "agg_load_profile"
   agg_profile: "default"
-  scenarios: 50000
-  sigma: 0.3                  # wide: rows must span net export (negative load) too
+  scenarios: 200
+  sigma: 0.3
   change_reactive_power: true
   global_range: 0.6
   max_scaling_factor: 2.0
@@ -31,9 +32,9 @@ admittance_perturbation:
   type: "none"
 
 settings:
-  num_processes: 16
-  data_dir: "./data_out"
-  large_chunk_size: 1000
+  num_processes: 4
+  data_dir: "./data_out"      # gitignored; move to ~/gencodoe_work if the repo sits in a synced folder
+  large_chunk_size: 100
   overwrite: true
   mode: "pf"
   include_dc_res: false

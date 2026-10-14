@@ -1,0 +1,66 @@
+# gridfm-graphkit config: GENCO (GNS_heterogeneous) in PowerFlow mode on case33bw,
+# trained on envelope-like rows from scripts/make_training_data.py.
+# Based on examples/config/HGNS_PF_datakit_case14.yaml (hidden_size 48, 12 layers), with
+# two changes found by a 4-epoch ablation on this feeder: learning rate 1e-4 (5e-4 gave
+# loss spikes) and the masked Vm/Va MSE alone. The feeder's admittances are ~100x
+# larger than its loads in normalised units, so the LayeredWeightedPhysics loss
+# dominated and slowed learning (val masked MSE 1.2e-3 after 19 epochs with it,
+# 3.6e-4 after 2 epochs without).
+#   gridfm_graphkit train --config configs/genco_pf_case33bw.yaml --data_path ~/gencodoe_work/data_doe --log_dir ~/gencodoe_work/mlruns --exp_name genco-pf-case33bw
+version: 1
+callbacks:
+  patience: 10
+  tol: 0
+  early_stopping_monitor: Validation loss
+  checkpoint_monitor: Validation loss   # keep the most accurate Vm/Va model, not the lowest physics residual
+  lr_scheduler_monitor: Validation loss
+task:
+  task_name: PowerFlow
+data:
+  baseMVA: 10                 # case33bw baseMVA (datakit admittances are in pu on it)
+  mask_value: 0.0
+  normalization: HeteroDataMVANormalizer
+  networks:
+  - case33bw
+  scenarios:
+  - 40000
+  test_ratio: 0.1
+  val_ratio: 0.1
+  workers: 4
+  split_by_load_scenario_idx: true
+  stream_partitions: auto
+model:
+  attention_head: 8
+  edge_dim: 10
+  hidden_size: 48
+  input_bus_dim: 15
+  input_gen_dim: 6
+  output_bus_dim: 2
+  output_gen_dim: 1
+  num_layers: 12
+  type: GNS_heterogeneous
+optimizer:
+  type: AdamW
+  learning_rate: 0.0001
+  optimizer_params:
+    betas: [0.9, 0.999]
+  scheduler_type: ReduceLROnPlateau
+  scheduler_params:
+    mode: min
+    factor: 0.7
+    patience: 5
+seed: 0
+training:
+  batch_size: 64
+  epochs: 40
+  loss_weights:
+  - 1.0
+  losses:
+  - MaskedBusMSE
+  loss_args:
+  - {}
+  base_weight: 0.5
+  accelerator: auto
+  devices: auto
+  strategy: auto
+verbose: true
