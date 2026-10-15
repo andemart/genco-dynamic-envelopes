@@ -10,6 +10,12 @@ with Mondrian (binned) split conformal on state-level worst cases:
   undervoltage  s = pred_vmin - fw_vmin          binned by predicted min V
   overvoltage   s = fw_vmax - pred_vmax          binned by predicted max V
   loading       s = fw_loading / pred_loading    binned by predicted loading
+  transformer   s = fw_trafo / pred_trafo        binned by predicted transformer loading
+
+Error budget: the four criteria share alpha (Bonferroni, alpha / 4 each), so
+under exchangeability of calibration and test states the probability that a
+state screened "safe" violates any four-wire limit is at most alpha per state
+(pointwise; not a statement over a whole day of intervals).
 
 A four-wire state that did not converge (voltage collapse under heavy import)
 scores +inf for undervoltage and loading -- the failure modes of a collapse --
@@ -52,6 +58,9 @@ def _bin_quantiles(pred, score, edges, alpha):
     return lo, hi
 
 
+N_CRITERIA = 4
+
+
 @dataclass
 class FourWireMargins:
     alpha: float
@@ -61,38 +70,53 @@ class FourWireMargins:
     vmax_hi: np.ndarray
     load_lo: np.ndarray
     load_hi: np.ndarray
+    trafo_lo: np.ndarray
+    trafo_hi: np.ndarray
 
     @classmethod
-    def fit(cls, pred_vmin, pred_vmax, pred_load, fw_vmin, fw_vmax, fw_load, converged, alpha: float = 0.01):
+    def fit(cls, pred_vmin, pred_vmax, pred_load, pred_trafo, fw_vmin, fw_vmax, fw_load, fw_trafo, converged,
+            alpha: float = 0.01):
+        a = alpha / N_CRITERIA
         bad = ~np.asarray(converged, bool)
         s_vmin = np.where(bad, np.inf, pred_vmin - fw_vmin)
         s_vmax = fw_vmax - pred_vmax
         s_load = np.where(bad, np.inf, fw_load / np.maximum(pred_load, 1e-9))
-        return cls(alpha, *_bin_quantiles(pred_vmin, s_vmin, V_EDGES, alpha),
-                   *_bin_quantiles(np.asarray(pred_vmax)[~bad], np.asarray(s_vmax)[~bad], V_EDGES, alpha),
-                   *_bin_quantiles(pred_load, s_load, L_EDGES, alpha))
+        s_trafo = np.where(bad, np.inf, fw_trafo / np.maximum(pred_trafo, 1e-9))
+        return cls(alpha, *_bin_quantiles(pred_vmin, s_vmin, V_EDGES, a),
+                   *_bin_quantiles(np.asarray(pred_vmax)[~bad], np.asarray(s_vmax)[~bad], V_EDGES, a),
+                   *_bin_quantiles(pred_load, s_load, L_EDGES, a),
+                   *_bin_quantiles(pred_trafo, s_trafo, L_EDGES, a))
 
-    def bounds(self, pred_vmin, pred_vmax, pred_load):
+    def bounds(self, pred_vmin, pred_vmax, pred_load, pred_trafo):
         """Pessimistic and optimistic four-wire worst cases implied by the margins."""
         bv = np.digitize(pred_vmin, V_EDGES[1:-1])
         bx = np.digitize(pred_vmax, V_EDGES[1:-1])
         bl = np.digitize(pred_load, L_EDGES[1:-1])
+        bt = np.digitize(pred_trafo, L_EDGES[1:-1])
         with np.errstate(invalid="ignore"):
-            pess = (pred_vmin - self.vmin_hi[bv], pred_vmax + self.vmax_hi[bx], pred_load * self.load_hi[bl])
-            opt = (pred_vmin - self.vmin_lo[bv], pred_vmax + self.vmax_lo[bx], pred_load * self.load_lo[bl])
+            pess = (pred_vmin - self.vmin_hi[bv], pred_vmax + self.vmax_hi[bx], pred_load * self.load_hi[bl],
+                    pred_trafo * self.trafo_hi[bt])
+            opt = (pred_vmin - self.vmin_lo[bv], pred_vmax + self.vmax_lo[bx], pred_load * self.load_lo[bl],
+                   pred_trafo * self.trafo_lo[bt])
         return pess, opt
 
-    def screen(self, pred_vmin, pred_vmax, pred_load, direction: str | None = None) -> np.ndarray:
+    def screen(self, pred_vmin, pred_vmax, pred_load, pred_trafo, direction: str | None = None) -> np.ndarray:
         """'safe' | 'violated' | 'uncertain' per row."""
-        (pv, px, pl), (ov, ox, ol) = self.bounds(pred_vmin, pred_vmax, pred_load)
+        (pv, px, pl, pt), (ov, ox, ol, ot) = self.bounds(pred_vmin, pred_vmax, pred_load, pred_trafo)
         chk_v = direction in (None, "import")      # plain bools: use `not`, never `~` (~True == -2)
         chk_x = direction in (None, "export")
-        safe = (pl <= 1.0) & ((pv >= VMIN) if chk_v else True) & ((px <= VMAX) if chk_x else True)
-        violated = (ol > 1.0) | ((ov < VMIN) if chk_v else False) | ((ox > VMAX) if chk_x else False)
+        safe = (pl <= 1.0) & (pt <= 1.0) & ((pv >= VMIN) if chk_v else True) & ((px <= VMAX) if chk_x else True)
+        violated = (ol > 1.0) | (ot > 1.0) | ((ov < VMIN) if chk_v else False) | ((ox > VMAX) if chk_x else False)
         out = np.full(len(safe), "uncertain", dtype=object)
         out[safe & ~violated] = "safe"
         out[violated] = "violated"
         return out
+
+
+def state_summary(pred) -> tuple:
+    """Balanced-model state-level worst cases used by the screen: min V, max V, max line loading
+    (branches 2.. of the reduced network) and transformer loading (branch into bus 1)."""
+    return pred.vm[:, 1:].min(1), pred.vm[:, 1:].max(1), pred.loading[:, 2:].max(1), pred.loading[:, 1]
 
 
 def four_wire_ok(res: dict, direction: str | None = None) -> bool:
@@ -127,8 +151,7 @@ class FourWireScreened:
             self.n_verified += len(p)
             return self._opendss(p, q, direction)
         pred = self.surrogate(self.feeder, p, q)
-        decision = self.margins.screen(pred.vm[:, 1:].min(1), pred.vm[:, 1:].max(1),
-                                       pred.loading[:, 1:].max(1), direction)
+        decision = self.margins.screen(*state_summary(pred), direction)
         self.n_surrogate += len(p)
         ok = decision == "safe"
         unsure = decision == "uncertain"

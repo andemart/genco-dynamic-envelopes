@@ -1,0 +1,20 @@
+{
+ "chosen_with": "numpy default_rng(20261015).choice over test days by season",
+ "days": {
+  "winter": "2024-12-15",
+  "summer": "2024-06-28"
+ },
+ "excluded": [
+  "2024-07-08"
+ ],
+ "scenario_seed": 101,
+ "verification_seed": "run_day seed (101) draws fresh verification sets per interval",
+ "resolution": "96 quarter-hours",
+ "scenarios": 200,
+ "beta": 0.05,
+ "eps": 0.05,
+ "alpha_four_wire": 0.01,
+ "verify_draws_balanced": 1000,
+ "verify_draws_four_wire": 200,
+ "model": "mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee (frozen, hidden 12)"
+}

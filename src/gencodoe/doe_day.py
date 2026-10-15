@@ -221,7 +221,7 @@ def main():
         import pandas as pd
 
         from .evaluate import load_truth
-        from .four_wire import FourWireMargins, FourWireScreened
+        from .four_wire import FourWireMargins, FourWireScreened, state_summary
         if not a.run:
             raise SystemExit("--four-wire needs --run (GENCO)")
         fw = pd.read_parquet(a.calib / "enwl1_fluvius" / "four_wire_truth.parquet")
@@ -229,11 +229,12 @@ def main():
         if not (fw.scenario.to_numpy() == tc["scenario"]).all():
             raise ValueError("four-wire truth and calibration states are not aligned")
         pr = oracle(feeder, -tc["pd"] / feeder.base_mva, -tc["qd"] / feeder.base_mva)
-        fwm = FourWireMargins.fit(pr.vm[:, 1:].min(1), pr.vm[:, 1:].max(1), pr.loading[:, 1:].max(1),
-                                  fw.v_pn_min.to_numpy(), fw.v_pn_max.to_numpy(), fw.line_loading_max.to_numpy(),
+        fwm = FourWireMargins.fit(*state_summary(pr), fw.v_pn_min.to_numpy(), fw.v_pn_max.to_numpy(),
+                                  fw.line_loading_max.to_numpy(), fw.transformer_loading.to_numpy(),
                                   fw.converged.to_numpy(), a.alpha)
         meta.update({"four_wire_alpha": a.alpha, "four_wire_vmin_hi": fwm.vmin_hi.tolist(),
-                     "four_wire_vmax_hi": fwm.vmax_hi.tolist(), "four_wire_load_hi": fwm.load_hi.tolist()})
+                     "four_wire_vmax_hi": fwm.vmax_hi.tolist(), "four_wire_load_hi": fwm.load_hi.tolist(),
+                     "four_wire_trafo_hi": fwm.trafo_hi.tolist()})
 
         def option_c():
             f = FourWireScreened(feeder, net.customer_bus, ub, oracle, fwm)

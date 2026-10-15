@@ -297,3 +297,27 @@ Reading:
 - The screen is safe-ish at α = 0.05 (false-safe 0.6-0.9% of violating states) and strict at α = 0.01.
 - Import screening is weak: balanced-model error grows with import, so most import rows need OpenDSS.
 - Next: DOE days with option C vs option B (exact OpenDSS envelopes) to measure capacity and OpenDSS calls.
+
+## Corrections and method freeze (15 Oct, after Codex audit)
+
+**False-safe claim corrected.** In the previous screen at α = 0.01, export had **3 of 1,311** violating states screened safe. Import had 0 only because no import state was screened safe. An earlier chat summary said the strict screen "never wrongly clears a state"; that was false.
+
+**Method changes before the freeze:**
+1. Transformer loading is now an explicit screen criterion (four-wire / predicted ratio). Before, it was only redundant by accident: no test state was a transformer-only violation.
+2. The α error budget is split over the four criteria (α/4 each, union bound). Per state, P(screened safe but violating) ≤ α under exchangeability. This is pointwise, not over a day.
+
+Revised screen on the exploratory v2 test set, α = 0.01:
+
+| Direction | Safe | Violated | OpenDSS | False-safe | Conservative |
+|---|---|---|---|---|---|
+| import | 0.000 | 0.199 | 0.801 | 0/1775 | 1.00 |
+| export | 0.122 | 0.199 | 0.679 | 0/1311 | 0.78 |
+
+GENCO's four-wire contribution is modest: it clears 12% of export states, and about 20% of rows are recognised as certainly violating.
+
+**Monotonicity check.** 96 checks: 4 seasons × 4 times of day × 3 states × 2 directions, levels 0–5 kW. One case is non-monotone: a winter-night passive state already overloads a cable at level 0, and a small export relieves it. The search then issues a zero export envelope, which is conservative, not unsafe. No feasibility "hole" between feasible levels was found. The issued envelope is verified independently anyway.
+
+**Runs.**
+- The hourly runs on 2024-07-08 (24 intervals) are development runs, an "hourly subsample of a day", not full days.
+- Hydra job 13330990 (old option C) was cancelled. Job 13330989 (option B, exact four-wire) continues as the development reference.
+- The final evaluation is pre-registered in `docs/preregistration.md`.

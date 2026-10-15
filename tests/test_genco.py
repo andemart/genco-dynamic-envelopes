@@ -328,9 +328,14 @@ def test_four_wire_screen_directional_logic():
     rng = np.random.default_rng(0)
     n = 4000
     pv, px, pl = rng.uniform(0.95, 1.0, n), rng.uniform(1.0, 1.05, n), rng.uniform(0.1, 0.5, n)
-    m = FourWireMargins.fit(pv, px, pl, pv - 0.005, px + 0.005, pl * 1.1, np.ones(n, bool), alpha=0.05)
+    pt = rng.uniform(0.1, 0.5, n)
+    m = FourWireMargins.fit(pv, px, pl, pt, pv - 0.005, px + 0.005, pl * 1.1, pt * 1.05, np.ones(n, bool), alpha=0.05)
+    a = np.array
     # a comfortably feasible state is safe in both directions; a deep undervoltage one is not for imports
     for d in ("import", "export", None):
-        assert m.screen(np.array([0.99]), np.array([1.01]), np.array([0.2]), d)[0] == "safe"
-    assert m.screen(np.array([0.942]), np.array([1.01]), np.array([0.2]), "import")[0] != "safe"
-    assert m.screen(np.array([0.942]), np.array([1.01]), np.array([0.2]), "export")[0] == "safe"   # export ignores Vmin
+        assert m.screen(a([0.99]), a([1.01]), a([0.2]), a([0.2]), d)[0] == "safe"
+    assert m.screen(a([0.942]), a([1.01]), a([0.2]), a([0.2]), "import")[0] != "safe"
+    assert m.screen(a([0.942]), a([1.01]), a([0.2]), a([0.2]), "export")[0] == "safe"   # export ignores Vmin
+    # transformer loading near its rating blocks "safe" in every direction, even with good voltages and lines
+    for d in ("import", "export"):
+        assert m.screen(a([0.99]), a([1.01]), a([0.2]), a([0.98]), d)[0] != "safe"
