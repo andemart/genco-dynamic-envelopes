@@ -195,3 +195,54 @@ Compared with the prior alone at α = 0.01 binned, GENCO halves the AC fallback 
 - The exact AC sweep solves about 2,500–4,000 states/s on one M4 CPU core for this feeder.
 - A full test day of hourly export+import envelopes (20 scenarios, k = 4 levels per round) took 30 s in total with AC. The single-feeder 3-minute budget is met without a surrogate.
 - LinDistFlow import envelopes on the same day were **unsafe**: P(ok) under exact AC on fresh draws went down to 0.0 in the worst hour.
+
+## Stage G (final): runtime on Hydra (job 13329021 A100-PCIE-40GB; job 13329587 EPYC 9384X)
+
+Per state, end to end. GENCO is the frozen hidden-12 LV+prior model (job 13326572):
+
+| Method | Hardware | ms/state |
+|---|---|---|
+| GENCO, TF32 (model only) | A100 | 0.32 (0.28) |
+| GENCO, FP32 (model only) | A100 | 0.44 (0.42) |
+| generic Z-bus fixed point (exact, works on meshed too) | EPYC 9384X, 8 cores | 0.49-0.56 |
+| radial sweep (exact) | EPYC 7282 / 9384X | 0.52-0.80 |
+| generic Z-bus / radial sweep | Apple M4 | 0.20 / 0.30 |
+| fixed point, 1 iteration | any | 0.04-0.05 |
+| OpenDSS four-wire (unbalanced), one core | EPYC 7282 | 32 |
+| pandapower Newton-Raphson, one core | EPYC 7282 | 103 |
+
+- Model batch 4,096 vs 1,024 makes no difference.
+- TF32 gives 1.35x. Its effect on accuracy (float32 jitter) is not yet checked.
+
+Hourly test-day DOE (both directions), from exact call counts x measured costs (`gencodoe.time_accounting`):
+
+| Exact AC engine | AC only | GENCO A100 screen + AC | Fixed-point screen + AC |
+|---|---|---|---|
+| pandapower | 5,430 s | 724 s (7.5x) | 1,150 s (4.7x) |
+| radial sweep | 27.6 s | 20.5 s (1.35x) | 8.1 s (3.4x) |
+
+**Conclusion.** On a 398-bus LV feeder, GENCO on an A100 is two orders of magnitude faster than general-purpose AC solvers and comparable to exact solvers specialised for small feeders (Z-bus, sweep). It does not beat them.
+
+- As a conformal screen, GENCO cuts exact AC calls by 87% vs AC only and by 40% vs the linear screen.
+- With pandapower as the exact fallback, 98% of the screen's time is fallback calls. At ~1,000 scenarios per interval the worst interval would take ~17 min, so a "meets the 3-minute window where general solvers fail" claim is **not** supported.
+- GENCO's speed case needs larger networks, where dense or sparse classical solvers scale poorly, or a cheaper exact fallback.
+- Hidden-48 run (job 13328751): early-stopped at epoch 67, then crashed with a bus error in graphkit's test step. Its checkpoint gives Vm MAE 2.5e-3 vs 1.0e-3 for hidden 12, so it was dropped and the model is frozen at hidden 12.
+
+## Unbalanced reality check (validated)
+
+The four-wire OpenDSS checker reproduces the balanced model when every customer is reconnected as a three-phase load:
+- passive load: identical;
+- +1.7 kW per customer: loading 1.20 vs 1.18.
+
+The checker is therefore correct. With the real single-phase connections (74/68/58 customers per phase, current returning through the neutral), the same injections give:
+- export at +1.7 kW: Vmax 1.096 vs 1.071, loading 1.37 vs 1.18;
+- import at +1.7 kW: Vmin 0.904 vs 0.945, loading 1.10 vs 0.83.
+
+With passive load alone, 2.1% of snapshots are undervoltage on the four-wire model. Balanced envelopes are genuinely unsafe on the real feeder (~3% pass rate); this is physics, not a bug. Next: a calibrated unbalance derating and OpenDSS-exact envelopes.
+
+## Finite-sample certification (test day 2024-07-08, 96 intervals)
+
+200 scenarios, eps = 0.05, beta = 0.05 (accept a level only if >= 98% of scenarios are feasible), 1,000 fresh AC draws per interval:
+- mean P(ok): 0.974 export, 0.976 import;
+- intervals below 0.95: 3 export and 4 import, none significantly below (one-sided p >= 0.087);
+- capacity cost vs the plain empirical rule: 1.3% export, 3.7% import.
