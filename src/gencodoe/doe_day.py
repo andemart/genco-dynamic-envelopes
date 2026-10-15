@@ -185,7 +185,8 @@ def main():
     lin = envelopes.exact(fdr.lindistflow, feeder)
     methods = {"ac": lambda: (ac, lambda env: env.n_evals),
                "lindistflow": lambda: (lin, lambda env: 0)}
-    meta = {"day": a.day, "scenarios": a.scenarios, "eps": a.eps, "beta": a.beta, "verify_draws": a.verify_draws,
+    from .limits import record as limits_record
+    meta = {"voltage_limits": limits_record(), "day": a.day, "scenarios": a.scenarios, "eps": a.eps, "beta": a.beta, "verify_draws": a.verify_draws,
             "acceptance_threshold": envelopes.acceptance_threshold(a.scenarios, a.eps, a.beta), "mix": MIX, "alpha": a.alpha,
             "export_cap_kw": FLEX_EXPORT_KW, "import_cap_kw": FLEX_IMPORT_KW}
     fp_bin, fp_qb, _, fp_ql, n_cal = conformal_margins(None, feeder, a.calib, a.alpha)

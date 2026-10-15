@@ -21,6 +21,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .limits import VMAX_PU, VMIN_PU
+
 
 @dataclass
 class Feeder:
@@ -30,8 +32,8 @@ class Feeder:
     rate: np.ndarray     # (n_bus,) thermal limit, pu MVA (inf = unconstrained)
     base_mva: float = 1.0
     v_slack: float = 1.0
-    vmin: float = 0.94
-    vmax: float = 1.10
+    vmin: float = VMIN_PU   # from gencodoe.limits (absolute volts on the 240.18 V base)
+    vmax: float = VMAX_PU
 
     def __post_init__(self):
         n = len(self.parent)

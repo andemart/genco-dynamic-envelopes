@@ -30,6 +30,7 @@ import pandas as pd
 from . import feeder as fdr
 from .doe_day import DayScenarios
 from .enwl import load_enwl1
+from .limits import VMIN_PU, record as limits_record
 from .unbalanced import UnbalancedENWL1, diagnose
 
 
@@ -73,7 +74,7 @@ def run(day: str, draws: int, seed: int) -> pd.DataFrame:
                 "balanced_vmin": float(bal.vm[i, 1:].min()), "balanced_loading_max": float(bal.loading[i, 1:].max()),
             })
     df = pd.DataFrame(rows)
-    df["balanced_violation"] = (df.balanced_vmin < 0.94) | (df.balanced_loading_max > 1.0)
+    df["balanced_violation"] = (df.balanced_vmin < VMIN_PU) | (df.balanced_loading_max > 1.0)
     df["any_four_wire"] = ~df.converged | df.undervoltage | df.overvoltage | df.line_overload | df.transformer_overload
     return df
 
@@ -144,7 +145,7 @@ def main():
     s = summarise(df, doe)
     s["customers_per_phase"] = {int(k): int(v) for k, v in
                                 collections.Counter(int(b.split(".")[1]) for b in UnbalancedENWL1().load_bus).items()}
-    s.update({"day": a.day, "draw_seed": a.seed, "households_seed": 0})
+    s.update({"day": a.day, "draw_seed": a.seed, "households_seed": 0, "voltage_limits": limits_record()})
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(s, indent=1, default=float))
     df.to_parquet(a.out.with_suffix(".parquet"))

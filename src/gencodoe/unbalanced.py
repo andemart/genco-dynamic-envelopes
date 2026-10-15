@@ -4,8 +4,8 @@ The balanced model lumps each single-phase customer into a three-phase bus load.
 Here every customer sits on its own phase (Loads.dss), with the neutral
 modelled as a conductor and grounded at the transformer only, and we count
 what the balanced envelopes miss:
-  * customer phase-to-neutral voltage outside [0.94, 1.10] x 240.2 V (the
-    balanced model's 1 pu);
+  * customer phase-to-neutral voltage outside the limits of gencodoe.limits
+    (absolute volts, on the balanced model's 1 pu = 240.18 V base);
   * line phase current above the linecode NormAmps;
   * transformer loading above its 800 kVA rating.
 
@@ -30,8 +30,13 @@ from .enwl import ENWL1_DIR, TR_KVA
 
 # Same per-unit base as the balanced model: 1 pu = 0.416 kV line-to-line, i.e.
 # 240.2 V phase-to-neutral (the transformer's no-load secondary voltage). The
-# 0.94 / 1.10 limits therefore mean the same volts in both models.
-V_PN = 416.0 / np.sqrt(3)
+# limits therefore mean the same volts in both models.
+from .limits import V_BASE as V_PN, VMAX_PU, VMIN_PU  # noqa: E402
+
+
+def voltage_flags(v_pn: np.ndarray) -> tuple[bool, bool]:
+    """(undervoltage, overvoltage) of customer phase-neutral voltages in pu of V_PN."""
+    return bool(np.min(v_pn) < VMIN_PU), bool(np.max(v_pn) > VMAX_PU)
 
 
 class UnbalancedENWL1:
@@ -128,7 +133,7 @@ class UnbalancedENWL1:
         tr_loading = float(np.abs(s_tr[:, 0] + 1j * s_tr[:, 1]).sum() / TR_KVA)
         return {"converged": bool(dss.Solution.Converged()), "v_pn_min": float(v_pn.min()),
                 "v_pn_max": float(v_pn.max()), "line_loading_max": worst_line, "transformer_loading": tr_loading,
-                "undervoltage": bool(v_pn.min() < 0.94), "overvoltage": bool(v_pn.max() > 1.10),
+                "undervoltage": voltage_flags(v_pn)[0], "overvoltage": voltage_flags(v_pn)[1],
                 "line_overload": worst_line > 1.0, "transformer_overload": tr_loading > 1.0}
 
 
@@ -165,7 +170,7 @@ def diagnose(u: "UnbalancedENWL1", p_kw: np.ndarray, q_kvar: np.ndarray) -> dict
     pw = np.array(dss.CktElement.Powers())
     lv_pw = pw[2 * n_cond:2 * n_cond + 6].reshape(3, 2)               # kW, kvar per LV phase (into the transformer)
     return {**r, "v_pn": v_pn, "customer_phase": phase,
-            "undervoltage_customers_by_phase": {int(ph): int(((v_pn < 0.94) & (phase == ph)).sum()) for ph in (1, 2, 3)},
+            "undervoltage_customers_by_phase": {int(ph): int(((v_pn < VMIN_PU) & (phase == ph)).sum()) for ph in (1, 2, 3)},
             "worst_line": worst[1], "worst_line_phase": worst[2], "worst_line_loading": worst[0],
             "n_overloaded_lines": len(overloaded), "neutral_over_rating_max": neutral_ratio,
             "tr_lv_phase_current_a": lv[:3].tolist(), "tr_lv_neutral_current_a": float(lv[3]) if len(lv) > 3 else float("nan"),

@@ -1,5 +1,7 @@
 # Pre-registered final evaluation
 
+> **Amended 15 Oct 2026:** the voltage criterion was corrected to absolute UK limits; see `docs/preregistration_amendment_1.md`. Days, seeds and protocol are unchanged.
+
 Written and committed **before** any run on these days. The method is frozen at this commit:
 
 - GENCO hidden 12, LV + linear prior (Hydra job 13326572);

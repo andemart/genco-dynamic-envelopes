@@ -36,7 +36,7 @@ from .enwl import load_enwl1
 from .genco import NETWORK, read_raw
 
 ROOT = Path(__file__).resolve().parents[2]
-VMIN, VMAX = 0.94, 1.10
+from .limits import VMAX_PU as VMAX, VMIN_PU as VMIN, record as limits_record  # noqa: E402
 
 
 def load_truth(data_dir: Path, scenarios=None) -> dict:
@@ -203,7 +203,7 @@ def main():
     if a.run:
         results.append(evaluate_genco(feeder, truth, a.run, a.config, a.device, a.batch_size, a.checkpoint))
     a.out.parent.mkdir(parents=True, exist_ok=True)
-    doc = {"data": str(a.data), "scenario_file": str(a.scenario_file) if a.scenario_file else None,
+    doc = {"voltage_limits": limits_record(), "data": str(a.data), "scenario_file": str(a.scenario_file) if a.scenario_file else None,
            "splits_in_data": sorted(set(truth["draws"]["split"])) if "split" in truth["draws"] else None,
            "results": results}
     a.out.write_text(json.dumps(doc, indent=1))

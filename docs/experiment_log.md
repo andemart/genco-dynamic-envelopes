@@ -370,3 +370,10 @@ Winter baseline, share of draws violating under each lower limit:
 | 207 V (EN 50160) | 3.9% | 7.2% |
 
 Methods are unaffected (surrogate, conformal error margins, search, verification); feasibility thresholds and all envelope numbers are affected. The pre-registered runs stand as a record under their stated limits.
+
+## Pre-registration amendment 1 (voltage limits): applied before any corrected run
+
+- The primary criterion is now the UK statutory range 216.2–253.0 V, i.e. 0.9002–1.0534 pu on the 240.18 V base, set in `gencodoe.limits`.
+- The EN 50160 voltage band (207–253 V) is a secondary sensitivity.
+- Old-limit outputs were moved to `superseded_wrong_voltage_base/`. The summer jobs still running under the old limits (13331014, 13331015) were cancelled.
+- The corrected B and C runs repeat 2024-12-15 and 2024-06-28 with unchanged seeds; see `docs/preregistration_amendment_1.md`.

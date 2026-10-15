@@ -120,7 +120,8 @@ def main():
                       f"| safe {s['share_safe']:.3f} AC-fallback {s['share_uncertain_ac_fallback']:.3f} "
                       f"false-safe {s['false_safe_states']}/{s['violating_states']} conservative {s['conservatism_feasible_not_safe']:.3f}")
     a.out.parent.mkdir(parents=True, exist_ok=True)
-    a.out.write_text(json.dumps({"calib": str(a.calib), "test": str(a.test), "run": str(a.run), "results": results},
+    from .limits import record as limits_record
+    a.out.write_text(json.dumps({"voltage_limits": limits_record(), "calib": str(a.calib), "test": str(a.test), "run": str(a.run), "results": results},
                                 indent=1))
 
 

@@ -327,15 +327,66 @@ def test_four_wire_screen_directional_logic():
     from gencodoe.four_wire import FourWireMargins
     rng = np.random.default_rng(0)
     n = 4000
-    pv, px, pl = rng.uniform(0.95, 1.0, n), rng.uniform(1.0, 1.05, n), rng.uniform(0.1, 0.5, n)
+    pv, px, pl = rng.uniform(0.89, 1.0, n), rng.uniform(1.0, 1.05, n), rng.uniform(0.1, 0.5, n)
     pt = rng.uniform(0.1, 0.5, n)
     m = FourWireMargins.fit(pv, px, pl, pt, pv - 0.005, px + 0.005, pl * 1.1, pt * 1.05, np.ones(n, bool), alpha=0.05)
+    from gencodoe.limits import VMIN_PU
     a = np.array
-    # a comfortably feasible state is safe in both directions; a deep undervoltage one is not for imports
+    low = VMIN_PU + 0.002          # within the 0.005 calibrated offset of the lower limit
+    # a comfortably feasible state is safe in both directions; a near-undervoltage one is not for imports
     for d in ("import", "export", None):
         assert m.screen(a([0.99]), a([1.01]), a([0.2]), a([0.2]), d)[0] == "safe"
-    assert m.screen(a([0.942]), a([1.01]), a([0.2]), a([0.2]), "import")[0] != "safe"
-    assert m.screen(a([0.942]), a([1.01]), a([0.2]), a([0.2]), "export")[0] == "safe"   # export ignores Vmin
+    assert m.screen(a([low]), a([1.01]), a([0.2]), a([0.2]), "import")[0] != "safe"
+    assert m.screen(a([low]), a([1.01]), a([0.2]), a([0.2]), "export")[0] == "safe"   # export ignores Vmin
     # transformer loading near its rating blocks "safe" in every direction, even with good voltages and lines
     for d in ("import", "export"):
         assert m.screen(a([0.99]), a([1.01]), a([0.2]), a([0.98]), d)[0] != "safe"
+
+
+
+def test_voltage_limits_are_absolute_uk_values_on_the_416v_base():
+    from gencodoe import limits
+    assert abs(limits.V_BASE - 240.177) < 1e-3
+    if limits.JURISDICTION == "uk_esqcr":
+        assert (limits.VMIN_V, limits.VMAX_V) == (216.2, 253.0)
+        assert abs(limits.VMIN_PU - 0.9002) < 1e-4 and abs(limits.VMAX_PU - 1.0534) < 1e-4
+
+
+def test_every_check_uses_the_same_voltage_limits():
+    from gencodoe import conformal_eval, diagnose_baseline, envelopes, evaluate, four_wire, limits, unbalanced
+    assert evaluate.VMIN == four_wire.VMIN == unbalanced.VMIN_PU == diagnose_baseline.VMIN_PU == limits.VMIN_PU
+    assert evaluate.VMAX == four_wire.VMAX == unbalanced.VMAX_PU == limits.VMAX_PU
+    assert conformal_eval.VMIN == limits.VMIN_PU and conformal_eval.VMAX == limits.VMAX_PU
+    assert unbalanced.V_PN == limits.V_BASE
+    fd = load_enwl1().to_feeder()
+    assert fd.vmin == limits.VMIN_PU and fd.vmax == limits.VMAX_PU
+    assert envelopes.is_feasible.__module__ == "gencodoe.envelopes"
+
+
+def test_balanced_checks_at_the_voltage_limits():
+    from gencodoe import envelopes, feeder, limits
+    fd = load_enwl1().to_feeder()
+    zero = np.zeros((1, fd.n_bus))
+    for v, ok in ((limits.VMIN_PU + 1e-6, True), (limits.VMIN_PU - 1e-6, False),
+                  (limits.VMAX_PU - 1e-6, True), (limits.VMAX_PU + 1e-6, False)):
+        vm = np.ones((1, fd.n_bus))
+        vm[0, 5] = v
+        res = feeder.PFResult(vm=vm, loading=zero.copy(), p_branch=zero.copy())
+        assert bool(envelopes.is_feasible(fd, res)[0]) is ok
+        assert bool(evaluate.violations(vm, zero)[0]) is (not ok)
+
+
+def test_four_wire_flags_at_the_voltage_limits():
+    from gencodoe import limits
+    from gencodoe.four_wire import four_wire_ok
+    from gencodoe.unbalanced import voltage_flags
+    base = np.ones(200)
+    for v, uv, ov in ((limits.VMIN_PU + 1e-6, False, False), (limits.VMIN_PU - 1e-6, True, False),
+                      (limits.VMAX_PU - 1e-6, False, False), (limits.VMAX_PU + 1e-6, False, True)):
+        x = base.copy()
+        x[7] = v
+        assert voltage_flags(x) == (uv, ov)
+        res = {"converged": True, "undervoltage": uv, "overvoltage": ov, "line_overload": False,
+               "transformer_overload": False}
+        assert four_wire_ok(res, "import") is (not uv)
+        assert four_wire_ok(res, "export") is (not ov)

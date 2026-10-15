@@ -39,7 +39,7 @@ VM_BIN_EDGES = (-np.inf, 0.90, 0.93, 0.95, 0.98, 1.02, 1.05, 1.08, 1.11, 1.15, n
 
 def calibrate_binned(pred: np.ndarray, true: np.ndarray, alpha: float, edges=VM_BIN_EDGES) -> np.ndarray:
     """Mondrian (group-conditional) split conformal: one quantile of |pred - true| per bin of
-    the *predicted* value, so coverage holds within each bin (e.g. near 0.94 / 1.10 pu), not
+    the *predicted* value, so coverage holds within each bin (e.g. near the voltage limits), not
     only on average. Bins with too few samples for the level fall back to the largest score."""
     p, t = np.ravel(pred), np.ravel(true)
     scores = np.abs(p - t)

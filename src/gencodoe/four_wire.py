@@ -36,7 +36,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-VMIN, VMAX = 0.94, 1.10
+from .limits import VMAX_PU as VMAX, VMIN_PU as VMIN  # noqa: E402
 V_EDGES = (-np.inf, 0.85, 0.90, 0.93, 0.95, 0.97, 0.99, 1.01, 1.03, 1.05, 1.07, 1.09, 1.12, np.inf)
 L_EDGES = (-np.inf, 0.2, 0.4, 0.6, 0.8, 1.0, 1.3, 2.0, np.inf)
 

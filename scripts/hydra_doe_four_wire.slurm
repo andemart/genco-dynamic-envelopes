@@ -15,4 +15,4 @@ lscpu | grep -E "Model name"
 .venv/bin/python -m gencodoe.doe_day --day "$2" --steps-per-hour "${3:-1}" --scenarios 200 --beta 0.05 --seed "${4:-0}" \
   --verify-draws 1000 --unbalanced 200 --four-wire --methods ac "$1" \
   --run mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee --config configs/genco_pf_enwl1_lv_prior_v2.yaml \
-  --calib data_out/datakit_v2_calib --out "data_out/doe/${2}_certified_4w_$1_sph${3:-1}_seed${4:-0}.json"
+  --calib data_out/datakit_v2_calib --out "data_out/doe/${2}_certified_4w_$1_sph${3:-1}_seed${4:-0}_${GENCODOE_VOLTAGE_LIMITS:-uk_esqcr}.json"

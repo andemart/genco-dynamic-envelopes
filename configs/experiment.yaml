@@ -1,7 +1,7 @@
 # Experiment settings for probabilistic dynamic operating envelopes.
 feeder: case33bw              # case33bw (pandapower) | synthetic
 ratings_headroom: 1.5         # thermal rating = headroom x |S| at peak load where the case has none
-voltage_limits: {vmin: 0.94, vmax: 1.10}
+voltage_limits: see src/gencodoe/limits.py (absolute volts; UK 216.2-253.0 V on the 240.18 V base)
 
 intervals: 48                 # half-hourly envelopes for one day
 scenarios_per_interval: 1000
