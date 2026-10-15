@@ -321,3 +321,52 @@ GENCO's four-wire contribution is modest: it clears 12% of export states, and ab
 - The hourly runs on 2024-07-08 (24 intervals) are development runs, an "hourly subsample of a day", not full days.
 - Hydra job 13330990 (old option C) was cancelled. Job 13330989 (option B, exact four-wire) continues as the development reference.
 - The final evaluation is pre-registered in `docs/preregistration.md`.
+
+## Pre-registered winter day 2024-12-15 and the voltage-limit base error (15 Oct)
+
+### Pre-registered result (as run, under the stated limits)
+
+Options B and C give zero optional incremental envelopes in all 96 intervals, in both directions.
+
+- **Weak agreement check.** At level 0 the acceptance rule already failed, so the search only evaluated the endpoints. B = C here is weak evidence of agreement; summer must test a nonzero boundary.
+- **Search work, B vs C:**
+  - OpenDSS calls: 76,800 (B) vs 38,845 (C), 49% fewer;
+  - envelope-search wall-clock: 3,001 s vs 1,648 s, 1.82x faster. This times the search only; independent verification is not included.
+- **Interpretation:** no safe *optional incremental envelope containing zero* exists. This does not mean the feeder "cannot host export": moderate mandatory export could relieve existing import overloads, but the frozen method does not consider it.
+- **Confidence intervals.** 95% Clopper-Pearson upper bound of four-wire P(ok) below 0.95: B export 86/96 intervals, B import 96/96. Even zero envelopes are not certifiable.
+
+### Baseline diagnosis
+
+Command: `python -m gencodoe.diagnose_baseline`, 50 fresh no-envelope draws per interval, seed 202. Output: `results/winter_2024-12-15_baseline_diagnosis.json`.
+
+| | Four-wire | Balanced |
+|---|---|---|
+| Draws with any violation | 63% | 0.5% |
+| Worst-customer voltage, median (5-95%) | 0.933 (0.869-0.959) | 0.968 |
+
+Composition of the four-wire violations:
+- Almost all are undervoltage. Line overload occurs in 5.9% of draws, always together with undervoltage.
+- No transformer overload and no non-convergence. The feeder is lightly loaded: median 148 kW, transformer about 20% loaded.
+- Phase 1 (74 customers) is the worst phase. Transformer phase-current imbalance (max/mean) is 1.16 median and 1.42 at the 95th percentile.
+- Neutral current: median 62 A, 95th percentile 151 A.
+
+### Error: voltage limits on the wrong base
+
+- 1 pu in this study is the no-load transformer secondary: 416 V line-to-line, 240.2 V phase-neutral.
+- The limits 0.94 / 1.10 pu (from the handoff) were applied on that base, giving 225.8 V / 264.2 V.
+- Statutory limits for ENWL (UK) are 230 V −6% / +10% = 216.2 V / 253.0 V, i.e. **0.900 / 1.053 pu** on our base.
+- Under EN 50160 (Belgium), 230 V ±10% gives 207 / 253 V, i.e. 0.862 / 1.053 pu.
+
+Consequences:
+- The lower limit was about 10 V too strict and the upper limit about 11 V too lax.
+- This applies to every balanced and four-wire result so far. Export envelopes were overstated; winter undervoltage was overstated.
+
+Winter baseline, share of draws violating under each lower limit:
+
+| Lower limit | Undervoltage | Any violation |
+|---|---|---|
+| 225.8 V (as implemented) | 63.3% | 63.3% |
+| 216.2 V (UK) | 14.9% | 15.8% |
+| 207 V (EN 50160) | 3.9% | 7.2% |
+
+Methods are unaffected (surrogate, conformal error margins, search, verification); feasibility thresholds and all envelope numbers are affected. The pre-registered runs stand as a record under their stated limits.
