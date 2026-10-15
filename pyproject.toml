@@ -14,6 +14,7 @@ dependencies = ["numpy>=1.24", "scipy>=1.10", "pandas>=2.0", "pyyaml>=6.0"]
 [project.optional-dependencies]
 genco = ["gridfm-datakit", "gridfm-graphkit"]
 feeders = ["pandapower>=2.13"]
+unbalanced = ["opendssdirect.py>=0.9"]
 dev = ["pytest>=7"]
 
 [tool.setuptools.packages.find]
