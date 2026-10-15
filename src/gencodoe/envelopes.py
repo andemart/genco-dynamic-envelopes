@@ -88,8 +88,11 @@ class ScreenedFeasibility:
     """Screen with a fast surrogate (GENCO), verify only uncertain rows with the exact oracle.
 
     q_v, q_l are conformal quantiles of the surrogate's |error| in voltage and
-    loading (conformal.calibrate_pf). With verifier=None uncertain rows count as
-    infeasible, which gives a conservative envelope with no AC calls at all.
+    loading (conformal.calibrate_pf). q_v may also be a callable mapping the
+    predicted non-slack voltages (n, n_bus - 1) to per-element margins, e.g.
+    binned (Mondrian) quantiles from conformal.calibrate_binned. With
+    verifier=None uncertain rows count as infeasible, which gives a conservative
+    envelope with no AC calls at all.
     """
 
     def __init__(self, feeder: Feeder, surrogate: Oracle, q_v: float, q_l: float, verifier: Oracle | None = None):
@@ -100,7 +103,8 @@ class ScreenedFeasibility:
 
     def __call__(self, p: np.ndarray, q: np.ndarray, direction: str | None = None) -> np.ndarray:
         pred = self.surrogate(self.feeder, p, q)
-        decision = conformal.screen(self.feeder, pred, self.q_v, self.q_l, direction)
+        q_v = self.q_v(pred.vm[:, 1:]) if callable(self.q_v) else self.q_v
+        decision = conformal.screen(self.feeder, pred, q_v, self.q_l, direction)
         ok = decision == "safe"
         unsure = decision == "uncertain"
         self.n_surrogate += len(p)

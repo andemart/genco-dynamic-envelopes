@@ -34,6 +34,32 @@ def calibrate(pred: np.ndarray, true: np.ndarray, alpha: float = 0.05, per_eleme
     return float(np.quantile(flat, level, method="higher"))
 
 
+VM_BIN_EDGES = (-np.inf, 0.90, 0.93, 0.95, 0.98, 1.02, 1.05, 1.08, 1.11, 1.15, np.inf)
+
+
+def calibrate_binned(pred: np.ndarray, true: np.ndarray, alpha: float, edges=VM_BIN_EDGES) -> np.ndarray:
+    """Mondrian (group-conditional) split conformal: one quantile of |pred - true| per bin of
+    the *predicted* value, so coverage holds within each bin (e.g. near 0.94 / 1.10 pu), not
+    only on average. Bins with too few samples for the level fall back to the largest score."""
+    p, t = np.ravel(pred), np.ravel(true)
+    scores = np.abs(p - t)
+    b = np.digitize(p, edges[1:-1])
+    q = np.empty(len(edges) - 1)
+    for k in range(len(q)):
+        sk = scores[b == k]
+        if sk.size == 0:
+            q[k] = scores.max()
+            continue
+        level = np.ceil((sk.size + 1) * (1 - alpha)) / sk.size
+        q[k] = sk.max() if level > 1 else np.quantile(sk, level, method="higher")
+    return q
+
+
+def binned_margin(pred: np.ndarray, q_bins: np.ndarray, edges=VM_BIN_EDGES) -> np.ndarray:
+    """Per-element margin for predictions `pred` from the per-bin quantiles."""
+    return q_bins[np.digitize(pred, edges[1:-1])]
+
+
 def calibrate_pf(feeder: Feeder, pred: PFResult, true: PFResult, alpha: float = 0.05) -> tuple[float, float]:
     """Conformal quantiles (q_v, q_l) for voltage magnitude (non-slack buses) and loading (rated branches)."""
     q_v = calibrate(pred.vm[:, 1:], true.vm[:, 1:], alpha)

@@ -43,11 +43,14 @@ def pfres(feeder, truth, vm, va):
 
 
 def assess(feeder, truth, pred: fdr.PFResult, q_v, q_l) -> dict:
-    """Coverage and screening on one dataset for margins q_v, q_l (scalars or per element)."""
+    """Coverage and screening on one dataset for margins q_v, q_l: scalars, per element
+    (n_bus - 1,), or per state and element (n, n_bus - 1)."""
     true = pfres(feeder, truth, truth["vm"], truth["va"])
     ev, el = np.abs(pred.vm[:, 1:] - true.vm[:, 1:]), np.abs(pred.loading[:, 1:] - true.loading[:, 1:])
-    qv = q_v if np.isscalar(q_v) else np.asarray(q_v)[None, :]
-    ql = q_l if np.isscalar(q_l) else np.asarray(q_l)[None, :]
+    qv = q_v if np.isscalar(q_v) else np.asarray(q_v)
+    ql = q_l if np.isscalar(q_l) else np.asarray(q_l)
+    qv = qv[None, :] if np.ndim(qv) == 1 else qv
+    ql = ql[None, :] if np.ndim(ql) == 1 else ql
     near_v = (true.vm[:, 1:] < VMIN + 0.01) | (true.vm[:, 1:] > VMAX - 0.01)
     near_l = true.loading[:, 1:] > 0.9
     vm = pred.vm[:, 1:]
@@ -96,16 +99,23 @@ def main():
         pt = pfres(feeder, test, *predict(kind, feeder, test, model))
         tc = pfres(feeder, cal, cal["vm"], cal["va"])
         for alpha in a.alpha:
-            for per_element in (False, True):
-                q_v = conformal.calibrate(pc.vm[:, 1:], tc.vm[:, 1:], alpha, per_element)
-                q_l = conformal.calibrate(pc.loading[:, 1:], tc.loading[:, 1:], alpha, per_element)
-                r = {"predictor": kind, "alpha": alpha, "per_element": per_element,
-                     "q_v": float(np.max(q_v)) if per_element else float(q_v),
-                     "q_v_median": float(np.median(q_v)), "q_l": float(np.max(q_l)) if per_element else float(q_l),
-                     "test": assess(feeder, test, pt, q_v, q_l), "calib": assess(feeder, cal, pc, q_v, q_l)}
+            for mode in ("global", "per-el", "binned"):
+                q_l = conformal.calibrate(pc.loading[:, 1:], tc.loading[:, 1:], alpha, mode == "per-el")
+                if mode == "binned":
+                    qb = conformal.calibrate_binned(pc.vm[:, 1:], tc.vm[:, 1:], alpha)
+                    q_v_cal = conformal.binned_margin(pc.vm[:, 1:], qb)
+                    q_v_test = conformal.binned_margin(pt.vm[:, 1:], qb)
+                    q_v_rep = {"q_v_bins": qb.tolist(), "q_v_bin_edges": [float(e) for e in conformal.VM_BIN_EDGES]}
+                else:
+                    q_v_cal = q_v_test = conformal.calibrate(pc.vm[:, 1:], tc.vm[:, 1:], alpha, mode == "per-el")
+                    q_v_rep = {}
+                r = {"predictor": kind, "alpha": alpha, "mode": mode,
+                     "q_v": float(np.max(q_v_test)), "q_v_median": float(np.median(q_v_test)),
+                     "q_l": float(np.max(q_l)), **q_v_rep,
+                     "test": assess(feeder, test, pt, q_v_test, q_l), "calib": assess(feeder, cal, pc, q_v_cal, q_l)}
                 results.append(r)
                 s = r["test"]
-                print(f"{kind:14s} alpha={alpha:<6} {'per-el' if per_element else 'global':6s} q_v={r['q_v']:.4g} "
+                print(f"{kind:14s} alpha={alpha:<6} {mode:6s} q_v={r['q_v']:.4g} "
                       f"q_l={r['q_l']:.4g} | test cov_v {s['coverage_vm']:.4f} near {s['coverage_vm_near_limits']} "
                       f"| safe {s['share_safe']:.3f} AC-fallback {s['share_uncertain_ac_fallback']:.3f} "
                       f"false-safe {s['false_safe_states']}/{s['violating_states']} conservative {s['conservatism_feasible_not_safe']:.3f}")

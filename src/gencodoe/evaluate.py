@@ -153,10 +153,11 @@ def _sweep_voltage(feeder, p, q, tol=1e-10, max_iter=100):
     return v
 
 
-def evaluate_genco(feeder, truth, run: Path, config: Path, device: str, batch_size: int) -> dict:
+def evaluate_genco(feeder, truth, run: Path, config: Path, device: str, batch_size: int,
+                   checkpoint: str = "artifacts/model/best_model_state_dict.pt") -> dict:
     from .genco import GencoModel, frames_to_graphs
 
-    model = GencoModel(config, run / "artifacts/model/best_model_state_dict.pt",
+    model = GencoModel(config, run / checkpoint,
                        run / "artifacts/stats/normalizer_stats.pt", device=device)
     graphs = frames_to_graphs(*truth["frames"])
     model.predict_graphs(graphs[:batch_size], batch_size)          # warm-up
@@ -165,7 +166,7 @@ def evaluate_genco(feeder, truth, run: Path, config: Path, device: str, batch_si
     dt = time.perf_counter() - t0
     loading = _loading(feeder, truth, vm, va)
     out = score(f"genco:{run.name}", feeder, truth, vm, va, loading, dt)
-    out["run"], out["config"], out["device"] = str(run), str(config), device
+    out["run"], out["config"], out["device"], out["checkpoint"] = str(run), str(config), device, checkpoint
     return out
 
 
@@ -179,6 +180,8 @@ def main():
     ap.add_argument("--train-data", type=Path, default=ROOT / "data_out" / "datakit",
                     help="training dataset, for the train_mean baseline (train-day states only)")
     ap.add_argument("--device", default="cpu")
+    ap.add_argument("--checkpoint", default="artifacts/model/best_model_state_dict.pt",
+                    help="path inside the run dir, e.g. checkpoints/last.ckpt")
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--max-states", type=int)
     ap.add_argument("--scenario-file", type=Path, help="graphkit split .pt with the scenario ids to evaluate")
@@ -198,7 +201,7 @@ def main():
         tr_ids = torch.load(a.train_data / "splits" / "train.pt").numpy()[:2000]
         results += baselines(feeder, truth, load_truth(a.train_data, tr_ids))
     if a.run:
-        results.append(evaluate_genco(feeder, truth, a.run, a.config, a.device, a.batch_size))
+        results.append(evaluate_genco(feeder, truth, a.run, a.config, a.device, a.batch_size, a.checkpoint))
     a.out.parent.mkdir(parents=True, exist_ok=True)
     doc = {"data": str(a.data), "scenario_file": str(a.scenario_file) if a.scenario_file else None,
            "splits_in_data": sorted(set(truth["draws"]["split"])) if "split" in truth["draws"] else None,

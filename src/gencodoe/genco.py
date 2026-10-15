@@ -138,7 +138,9 @@ class GencoModel:
         self.args = NestedNamespace(**yaml.safe_load(Path(config).read_text()))
         self.device = torch.device(device)
         self.model = load_model(self.args)
-        state = torch.load(model_path, map_location="cpu")
+        state = torch.load(model_path, map_location="cpu", weights_only=False)
+        if "state_dict" in state:   # a Lightning .ckpt (e.g. checkpoints/last.ckpt)
+            state = {k: v for k, v in state["state_dict"].items() if k.startswith("model.")}
         state = {k.removeprefix("_orig_mod.").removeprefix("model."): v for k, v in state.items()}
         self.model.load_state_dict(state)
         self.model.to(self.device).eval()
@@ -167,7 +169,7 @@ class GencoModel:
                 batch = Batch.from_data_list(chunk).to(self.device)
                 out = self.model(batch)["bus"]
                 n_bus = chunk[0]["bus"].num_nodes
-                vm.append(out[:, VM_OUT].reshape(len(chunk), n_bus)[:k].cpu().numpy())
+                vm.append(out[:, VM_OUT].reshape(len(chunk), n_bus)[:k].cpu().numpy())   # .cpu() synchronises
                 va.append(out[:, VA_OUT].reshape(len(chunk), n_bus)[:k].cpu().numpy())
         return np.concatenate(vm).astype(float), np.concatenate(va).astype(float)
 

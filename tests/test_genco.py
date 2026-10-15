@@ -213,3 +213,46 @@ def test_linear_prior_equals_first_sweep_iteration():
     v1 = evaluate._sweep_voltage(fd, -truth["pd"], -truth["qd"], max_iter=1)
     np.testing.assert_allclose(pr[:, :, 0], np.abs(v1), atol=2e-6)      # float32 features
     np.testing.assert_allclose(pr[:, :, 1], np.angle(v1), atol=2e-6)
+
+
+def test_binned_conformal_covers_each_bin():
+    from gencodoe import conformal
+    rng = np.random.default_rng(0)
+    pred = np.concatenate([rng.uniform(0.95, 1.05, 4000), rng.uniform(0.90, 0.94, 4000)])
+    noise = np.where(pred < 0.94, 0.02, 0.002) * rng.standard_normal(pred.size)   # larger errors near the limit
+    q = conformal.calibrate_binned(pred, pred + noise, alpha=0.05)
+    test_pred = np.concatenate([rng.uniform(0.95, 1.05, 4000), rng.uniform(0.90, 0.94, 4000)])
+    test_noise = np.where(test_pred < 0.94, 0.02, 0.002) * rng.standard_normal(test_pred.size)
+    m = conformal.binned_margin(test_pred, q)
+    near = test_pred < 0.94
+    assert (np.abs(test_noise[near]) <= m[near]).mean() > 0.93           # a global quantile would under-cover here
+    assert (np.abs(test_noise[~near]) <= m[~near]).mean() > 0.93
+
+
+def test_best_model_callback_keeps_float_score():
+    import torch
+    from gencodoe import graphkit_cli  # noqa: F401  (applies the fix)
+    from gridfm_graphkit.training.callbacks import SaveBestModelStateDict
+
+    cb = SaveBestModelStateDict(monitor="Validation loss")
+    metric = torch.tensor(1.0)
+
+    class _T:
+        sanity_checking = False
+        callback_metrics = {"Validation loss": metric}
+        logger = type("L", (), {"save_dir": None})()
+
+    saved = []
+    import gridfm_graphkit.training.callbacks as cbm
+    orig_save, cbm_os_makedirs = cbm.torch.save, cbm.os.makedirs
+    cbm.torch.save = lambda obj, path: saved.append(path)
+    cbm.os.makedirs = lambda *a, **k: None
+    try:
+        pl = type("M", (), {"state_dict": lambda self: {}})()
+        _T.logger.save_dir = "/nonexistent"
+        cb.on_validation_end(_T, pl)
+        metric.fill_(0.5)                    # Lightning updates the tensor in place
+        cb.on_validation_end(_T, pl)
+    finally:
+        cbm.torch.save, cbm.os.makedirs = orig_save, cbm_os_makedirs
+    assert len(saved) == 2 and isinstance(cb.best_score, float) and cb.best_score == 0.5
