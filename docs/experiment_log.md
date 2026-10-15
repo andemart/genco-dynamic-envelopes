@@ -392,3 +392,26 @@ The pre-registered runs stand as a record under their stated limits.
 - **Runtime comparisons.** B and C run as separate jobs, possibly on different nodes, so runtime ratios are descriptive measurements.
 - **Old evaluation outputs archived.** Threshold-dependent outputs in `data_out/eval` computed under the old limits are moved to `data_out/eval/superseded_wrong_voltage_base/`: coverage, false-safe, near-limit, screening and data-check shares. Timing benchmarks are kept, because they do not depend on the limits.
 - **Not to circulate yet:** `README.md`, `docs/workplan.md` and the one-pager (`docs/genco_challenge_onepager.*`) still contain old numbers and limits.
+
+## Winter 2024-12-15 baseline diagnosis, pre-registered population (household seed 101, UK limits)
+
+`results/winter_2024-12-15_baseline_diagnosis_hh101_uk.json`: 50 no-envelope draws × 96 intervals, draw seed 202, household seed 101.
+
+| | Value |
+|---|---|
+| Any four-wire violation | 35.1% (balanced: 1.1%) |
+| Undervoltage | 29.7% |
+| Line overload | 26.6% |
+| Overvoltage | 0.8% |
+| Transformer overload | 0% |
+| Non-converged | 0.04% |
+| Overlaps | undervoltage + line overload 983; undervoltage only 405; line overload only 256; all three 38; none 3,116 (of 4,800) |
+| Worst line on phase 1 / 2 / 3 | 3,337 / 1,230 / 231 draws |
+| Most frequent worst lines | line1917, line1919, line1948, line1920 (one lateral) |
+| Phase-current imbalance (median / 95th pct) | 1.26 / 1.56 |
+
+**Reading.** The congestion is local: phase 1 of one lateral, where this household allocation concentrates heat-pump and EV homes. It is not a feeder-wide shortage.
+
+**Placement sensitivity.** The same day under household seed 0 (exploratory) gives 15.8% under UK limits. Any penetration study must therefore vary household placement over several seeds.
+
+This is a baseline analysis only. The corrected DOE outputs were not opened when it was produced.

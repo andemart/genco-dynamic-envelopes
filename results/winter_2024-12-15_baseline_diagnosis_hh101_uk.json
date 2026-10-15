@@ -1,0 +1,888 @@
+{
+ "draws": 4800,
+ "intervals": 96,
+ "share_any_four_wire_violation": 0.35083333333333333,
+ "share_balanced_violation": 0.011458333333333333,
+ "share_non_converged": 0.0004166666666666667,
+ "share_by_cause": {
+  "undervoltage": 0.2970833333333333,
+  "overvoltage": 0.007916666666666667,
+  "line_overload": 0.2660416666666667,
+  "transformer_overload": 0.0
+ },
+ "cause_overlaps_converged_draws": {
+  "none": 3116,
+  "undervoltage+line_overload": 983,
+  "undervoltage": 405,
+  "line_overload": 256,
+  "undervoltage+overvoltage+line_overload": 38
+ },
+ "worst_line_phase_counts": {
+  "1": 3337,
+  "2": 1230,
+  "3": 231
+ },
+ "top_worst_lines": {
+  "line1917": 480,
+  "line1919": 258,
+  "line1948": 240,
+  "line1920": 121,
+  "line1916": 72,
+  "line1918": 18,
+  "line1934": 11,
+  "line1933": 11
+ },
+ "undervoltage_customers_by_phase_mean": {
+  "phase_1": 2.0866666666666664,
+  "phase_2": 0.6816666666666666,
+  "phase_3": 0.10708333333333334
+ },
+ "customers_per_phase": {
+  "1": 74,
+  "2": 68,
+  "3": 58
+ },
+ "distributions": {
+  "v_pn_min": {
+   "0.05": 0.8431954956792638,
+   "0.25": 0.8943221130615724,
+   "0.5": 0.9173681052458322,
+   "0.75": 0.9326677856788941,
+   "0.95": 0.9498740815641586
+  },
+  "line_loading_max": {
+   "0.05": 0.5771326371044538,
+   "0.25": 0.7245614279602134,
+   "0.5": 0.8530889052249566,
+   "0.75": 1.0154388699315993,
+   "0.95": 1.3717476116722132
+  },
+  "transformer_loading": {
+   "0.05": 0.16467611962906922,
+   "0.25": 0.20066044541736655,
+   "0.5": 0.2261960260234417,
+   "0.75": 0.25231128320060137,
+   "0.95": 0.2948654258005593
+  },
+  "n_overloaded_lines": {
+   "0.05": 0.0,
+   "0.25": 0.0,
+   "0.5": 0.0,
+   "0.75": 24.0,
+   "0.95": 40.0
+  },
+  "neutral_over_rating_max": {
+   "0.05": 0.276699758130373,
+   "0.25": 0.38095740960681185,
+   "0.5": 0.5011206793484144,
+   "0.75": 0.6493665020885118,
+   "0.95": 0.9400413921763386
+  },
+  "tr_in": {
+   "0.05": 36.90449867573843,
+   "0.25": 77.88537486565198,
+   "0.5": 112.03243100658491,
+   "0.75": 151.45446706125406,
+   "0.95": 220.2518376176376
+  },
+  "feeder_kw": {
+   "0.05": 121.33979977273849,
+   "0.25": 147.04000020131934,
+   "0.5": 165.17399951512922,
+   "0.75": 183.67000045708846,
+   "0.95": 211.6851996793412
+  },
+  "balanced_vmin": {
+   "0.05": 0.9446439801496489,
+   "0.25": 0.9559339146288164,
+   "0.5": 0.9618011311104785,
+   "0.75": 0.9670048726206497,
+   "0.95": 0.9739384848100273
+  }
+ },
+ "transformer_phase_current_imbalance_max_over_mean": {
+  "0.5": 1.2626920886294917,
+  "0.95": 1.5591553147968906
+ },
+ "by_interval": [
+  {
+   "interval": 0,
+   "any_four_wire": 0.86,
+   "balanced": 0.2,
+   "undervoltage": 0.78,
+   "line_overload": 0.74,
+   "feeder_kw": 210.002
+  },
+  {
+   "interval": 1,
+   "any_four_wire": 0.84,
+   "balanced": 0.16,
+   "undervoltage": 0.78,
+   "line_overload": 0.72,
+   "feeder_kw": 200.69
+  },
+  {
+   "interval": 2,
+   "any_four_wire": 0.88,
+   "balanced": 0.04,
+   "undervoltage": 0.8,
+   "line_overload": 0.82,
+   "feeder_kw": 193.312
+  },
+  {
+   "interval": 3,
+   "any_four_wire": 0.74,
+   "balanced": 0.04,
+   "undervoltage": 0.6,
+   "line_overload": 0.66,
+   "feeder_kw": 192.336
+  },
+  {
+   "interval": 4,
+   "any_four_wire": 0.84,
+   "balanced": 0.0,
+   "undervoltage": 0.82,
+   "line_overload": 0.62,
+   "feeder_kw": 177.696
+  },
+  {
+   "interval": 5,
+   "any_four_wire": 0.7,
+   "balanced": 0.06,
+   "undervoltage": 0.64,
+   "line_overload": 0.62,
+   "feeder_kw": 184.126
+  },
+  {
+   "interval": 6,
+   "any_four_wire": 0.58,
+   "balanced": 0.08,
+   "undervoltage": 0.54,
+   "line_overload": 0.46,
+   "feeder_kw": 169.878
+  },
+  {
+   "interval": 7,
+   "any_four_wire": 0.54,
+   "balanced": 0.0,
+   "undervoltage": 0.52,
+   "line_overload": 0.4,
+   "feeder_kw": 166.916
+  },
+  {
+   "interval": 8,
+   "any_four_wire": 0.58,
+   "balanced": 0.0,
+   "undervoltage": 0.48,
+   "line_overload": 0.48,
+   "feeder_kw": 161.998
+  },
+  {
+   "interval": 9,
+   "any_four_wire": 0.64,
+   "balanced": 0.0,
+   "undervoltage": 0.56,
+   "line_overload": 0.58,
+   "feeder_kw": 157.554
+  },
+  {
+   "interval": 10,
+   "any_four_wire": 0.56,
+   "balanced": 0.0,
+   "undervoltage": 0.44,
+   "line_overload": 0.5,
+   "feeder_kw": 157.788
+  },
+  {
+   "interval": 11,
+   "any_four_wire": 0.44,
+   "balanced": 0.0,
+   "undervoltage": 0.38,
+   "line_overload": 0.32,
+   "feeder_kw": 148.588
+  },
+  {
+   "interval": 12,
+   "any_four_wire": 0.5,
+   "balanced": 0.0,
+   "undervoltage": 0.5,
+   "line_overload": 0.32,
+   "feeder_kw": 150.484
+  },
+  {
+   "interval": 13,
+   "any_four_wire": 0.48,
+   "balanced": 0.0,
+   "undervoltage": 0.4,
+   "line_overload": 0.38,
+   "feeder_kw": 145.296
+  },
+  {
+   "interval": 14,
+   "any_four_wire": 0.44,
+   "balanced": 0.0,
+   "undervoltage": 0.42,
+   "line_overload": 0.24,
+   "feeder_kw": 138.384
+  },
+  {
+   "interval": 15,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.34,
+   "line_overload": 0.18,
+   "feeder_kw": 137.07
+  },
+  {
+   "interval": 16,
+   "any_four_wire": 0.46,
+   "balanced": 0.0,
+   "undervoltage": 0.4,
+   "line_overload": 0.3,
+   "feeder_kw": 140.614
+  },
+  {
+   "interval": 17,
+   "any_four_wire": 0.38,
+   "balanced": 0.0,
+   "undervoltage": 0.3,
+   "line_overload": 0.22,
+   "feeder_kw": 138.772
+  },
+  {
+   "interval": 18,
+   "any_four_wire": 0.38,
+   "balanced": 0.0,
+   "undervoltage": 0.28,
+   "line_overload": 0.26,
+   "feeder_kw": 141.38
+  },
+  {
+   "interval": 19,
+   "any_four_wire": 0.44,
+   "balanced": 0.0,
+   "undervoltage": 0.38,
+   "line_overload": 0.32,
+   "feeder_kw": 140.136
+  },
+  {
+   "interval": 20,
+   "any_four_wire": 0.5,
+   "balanced": 0.0,
+   "undervoltage": 0.44,
+   "line_overload": 0.36,
+   "feeder_kw": 139.764
+  },
+  {
+   "interval": 21,
+   "any_four_wire": 0.38,
+   "balanced": 0.0,
+   "undervoltage": 0.34,
+   "line_overload": 0.24,
+   "feeder_kw": 138.206
+  },
+  {
+   "interval": 22,
+   "any_four_wire": 0.38,
+   "balanced": 0.0,
+   "undervoltage": 0.38,
+   "line_overload": 0.28,
+   "feeder_kw": 135.824
+  },
+  {
+   "interval": 23,
+   "any_four_wire": 0.34,
+   "balanced": 0.0,
+   "undervoltage": 0.34,
+   "line_overload": 0.1,
+   "feeder_kw": 133.87
+  },
+  {
+   "interval": 24,
+   "any_four_wire": 0.3,
+   "balanced": 0.0,
+   "undervoltage": 0.28,
+   "line_overload": 0.22,
+   "feeder_kw": 135.792
+  },
+  {
+   "interval": 25,
+   "any_four_wire": 0.44,
+   "balanced": 0.0,
+   "undervoltage": 0.4,
+   "line_overload": 0.28,
+   "feeder_kw": 143.04
+  },
+  {
+   "interval": 26,
+   "any_four_wire": 0.26,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.12,
+   "feeder_kw": 132.034
+  },
+  {
+   "interval": 27,
+   "any_four_wire": 0.32,
+   "balanced": 0.0,
+   "undervoltage": 0.28,
+   "line_overload": 0.14,
+   "feeder_kw": 129.722
+  },
+  {
+   "interval": 28,
+   "any_four_wire": 0.22,
+   "balanced": 0.0,
+   "undervoltage": 0.2,
+   "line_overload": 0.1,
+   "feeder_kw": 125.17
+  },
+  {
+   "interval": 29,
+   "any_four_wire": 0.08,
+   "balanced": 0.0,
+   "undervoltage": 0.06,
+   "line_overload": 0.04,
+   "feeder_kw": 121.844
+  },
+  {
+   "interval": 30,
+   "any_four_wire": 0.12,
+   "balanced": 0.0,
+   "undervoltage": 0.1,
+   "line_overload": 0.06,
+   "feeder_kw": 125.676
+  },
+  {
+   "interval": 31,
+   "any_four_wire": 0.08,
+   "balanced": 0.0,
+   "undervoltage": 0.08,
+   "line_overload": 0.02,
+   "feeder_kw": 124.62
+  },
+  {
+   "interval": 32,
+   "any_four_wire": 0.04,
+   "balanced": 0.0,
+   "undervoltage": 0.04,
+   "line_overload": 0.0,
+   "feeder_kw": 133.052
+  },
+  {
+   "interval": 33,
+   "any_four_wire": 0.1,
+   "balanced": 0.0,
+   "undervoltage": 0.1,
+   "line_overload": 0.08,
+   "feeder_kw": 142.954
+  },
+  {
+   "interval": 34,
+   "any_four_wire": 0.16,
+   "balanced": 0.0,
+   "undervoltage": 0.14,
+   "line_overload": 0.16,
+   "feeder_kw": 150.646
+  },
+  {
+   "interval": 35,
+   "any_four_wire": 0.18,
+   "balanced": 0.0,
+   "undervoltage": 0.16,
+   "line_overload": 0.16,
+   "feeder_kw": 153.232
+  },
+  {
+   "interval": 36,
+   "any_four_wire": 0.18,
+   "balanced": 0.0,
+   "undervoltage": 0.16,
+   "line_overload": 0.16,
+   "feeder_kw": 157.004
+  },
+  {
+   "interval": 37,
+   "any_four_wire": 0.22,
+   "balanced": 0.0,
+   "undervoltage": 0.16,
+   "line_overload": 0.18,
+   "feeder_kw": 161.078
+  },
+  {
+   "interval": 38,
+   "any_four_wire": 0.14,
+   "balanced": 0.0,
+   "undervoltage": 0.1,
+   "line_overload": 0.1,
+   "feeder_kw": 157.166
+  },
+  {
+   "interval": 39,
+   "any_four_wire": 0.1,
+   "balanced": 0.0,
+   "undervoltage": 0.08,
+   "line_overload": 0.06,
+   "feeder_kw": 151.172
+  },
+  {
+   "interval": 40,
+   "any_four_wire": 0.12,
+   "balanced": 0.0,
+   "undervoltage": 0.12,
+   "line_overload": 0.02,
+   "feeder_kw": 150.122
+  },
+  {
+   "interval": 41,
+   "any_four_wire": 0.12,
+   "balanced": 0.0,
+   "undervoltage": 0.08,
+   "line_overload": 0.08,
+   "feeder_kw": 144.848
+  },
+  {
+   "interval": 42,
+   "any_four_wire": 0.14,
+   "balanced": 0.0,
+   "undervoltage": 0.12,
+   "line_overload": 0.12,
+   "feeder_kw": 147.518
+  },
+  {
+   "interval": 43,
+   "any_four_wire": 0.2,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.18,
+   "feeder_kw": 155.108
+  },
+  {
+   "interval": 44,
+   "any_four_wire": 0.14,
+   "balanced": 0.0,
+   "undervoltage": 0.06,
+   "line_overload": 0.12,
+   "feeder_kw": 165.06
+  },
+  {
+   "interval": 45,
+   "any_four_wire": 0.26,
+   "balanced": 0.0,
+   "undervoltage": 0.16,
+   "line_overload": 0.24,
+   "feeder_kw": 168.8815
+  },
+  {
+   "interval": 46,
+   "any_four_wire": 0.32,
+   "balanced": 0.0,
+   "undervoltage": 0.3,
+   "line_overload": 0.24,
+   "feeder_kw": 172.594
+  },
+  {
+   "interval": 47,
+   "any_four_wire": 0.16,
+   "balanced": 0.0,
+   "undervoltage": 0.14,
+   "line_overload": 0.12,
+   "feeder_kw": 176.4255
+  },
+  {
+   "interval": 48,
+   "any_four_wire": 0.3,
+   "balanced": 0.0,
+   "undervoltage": 0.2,
+   "line_overload": 0.2,
+   "feeder_kw": 182.434
+  },
+  {
+   "interval": 49,
+   "any_four_wire": 0.22,
+   "balanced": 0.0,
+   "undervoltage": 0.12,
+   "line_overload": 0.2,
+   "feeder_kw": 176.886
+  },
+  {
+   "interval": 50,
+   "any_four_wire": 0.18,
+   "balanced": 0.0,
+   "undervoltage": 0.12,
+   "line_overload": 0.14,
+   "feeder_kw": 176.9235
+  },
+  {
+   "interval": 51,
+   "any_four_wire": 0.22,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.16,
+   "feeder_kw": 168.568
+  },
+  {
+   "interval": 52,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.28,
+   "line_overload": 0.26,
+   "feeder_kw": 169.704
+  },
+  {
+   "interval": 53,
+   "any_four_wire": 0.18,
+   "balanced": 0.0,
+   "undervoltage": 0.14,
+   "line_overload": 0.12,
+   "feeder_kw": 168.948
+  },
+  {
+   "interval": 54,
+   "any_four_wire": 0.3,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.28,
+   "feeder_kw": 178.164
+  },
+  {
+   "interval": 55,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.3,
+   "line_overload": 0.3,
+   "feeder_kw": 184.6815
+  },
+  {
+   "interval": 56,
+   "any_four_wire": 0.32,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.18,
+   "feeder_kw": 174.554
+  },
+  {
+   "interval": 57,
+   "any_four_wire": 0.3,
+   "balanced": 0.0,
+   "undervoltage": 0.22,
+   "line_overload": 0.22,
+   "feeder_kw": 172.434
+  },
+  {
+   "interval": 58,
+   "any_four_wire": 0.32,
+   "balanced": 0.0,
+   "undervoltage": 0.3,
+   "line_overload": 0.18,
+   "feeder_kw": 173.136
+  },
+  {
+   "interval": 59,
+   "any_four_wire": 0.34,
+   "balanced": 0.0,
+   "undervoltage": 0.24,
+   "line_overload": 0.28,
+   "feeder_kw": 173.164
+  },
+  {
+   "interval": 60,
+   "any_four_wire": 0.26,
+   "balanced": 0.0,
+   "undervoltage": 0.14,
+   "line_overload": 0.24,
+   "feeder_kw": 174.934
+  },
+  {
+   "interval": 61,
+   "any_four_wire": 0.22,
+   "balanced": 0.0,
+   "undervoltage": 0.14,
+   "line_overload": 0.16,
+   "feeder_kw": 165.548
+  },
+  {
+   "interval": 62,
+   "any_four_wire": 0.22,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.12,
+   "feeder_kw": 161.402
+  },
+  {
+   "interval": 63,
+   "any_four_wire": 0.2,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.1,
+   "feeder_kw": 162.144
+  },
+  {
+   "interval": 64,
+   "any_four_wire": 0.14,
+   "balanced": 0.0,
+   "undervoltage": 0.12,
+   "line_overload": 0.12,
+   "feeder_kw": 163.97
+  },
+  {
+   "interval": 65,
+   "any_four_wire": 0.2,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.14,
+   "feeder_kw": 167.786
+  },
+  {
+   "interval": 66,
+   "any_four_wire": 0.26,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.2,
+   "feeder_kw": 168.056
+  },
+  {
+   "interval": 67,
+   "any_four_wire": 0.16,
+   "balanced": 0.0,
+   "undervoltage": 0.12,
+   "line_overload": 0.14,
+   "feeder_kw": 169.632
+  },
+  {
+   "interval": 68,
+   "any_four_wire": 0.3,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.14,
+   "feeder_kw": 182.146
+  },
+  {
+   "interval": 69,
+   "any_four_wire": 0.2,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.14,
+   "feeder_kw": 182.37
+  },
+  {
+   "interval": 70,
+   "any_four_wire": 0.34,
+   "balanced": 0.02,
+   "undervoltage": 0.24,
+   "line_overload": 0.32,
+   "feeder_kw": 188.688
+  },
+  {
+   "interval": 71,
+   "any_four_wire": 0.46,
+   "balanced": 0.0,
+   "undervoltage": 0.34,
+   "line_overload": 0.4,
+   "feeder_kw": 194.666
+  },
+  {
+   "interval": 72,
+   "any_four_wire": 0.38,
+   "balanced": 0.0,
+   "undervoltage": 0.28,
+   "line_overload": 0.3,
+   "feeder_kw": 203.056
+  },
+  {
+   "interval": 73,
+   "any_four_wire": 0.42,
+   "balanced": 0.02,
+   "undervoltage": 0.28,
+   "line_overload": 0.3,
+   "feeder_kw": 201.114
+  },
+  {
+   "interval": 74,
+   "any_four_wire": 0.4,
+   "balanced": 0.0,
+   "undervoltage": 0.32,
+   "line_overload": 0.28,
+   "feeder_kw": 198.21
+  },
+  {
+   "interval": 75,
+   "any_four_wire": 0.32,
+   "balanced": 0.0,
+   "undervoltage": 0.2,
+   "line_overload": 0.28,
+   "feeder_kw": 198.536
+  },
+  {
+   "interval": 76,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.32,
+   "feeder_kw": 196.844
+  },
+  {
+   "interval": 77,
+   "any_four_wire": 0.3,
+   "balanced": 0.02,
+   "undervoltage": 0.24,
+   "line_overload": 0.22,
+   "feeder_kw": 188.504
+  },
+  {
+   "interval": 78,
+   "any_four_wire": 0.24,
+   "balanced": 0.0,
+   "undervoltage": 0.14,
+   "line_overload": 0.2,
+   "feeder_kw": 186.55
+  },
+  {
+   "interval": 79,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.28,
+   "feeder_kw": 184.586
+  },
+  {
+   "interval": 80,
+   "any_four_wire": 0.32,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.28,
+   "feeder_kw": 175.768
+  },
+  {
+   "interval": 81,
+   "any_four_wire": 0.16,
+   "balanced": 0.0,
+   "undervoltage": 0.12,
+   "line_overload": 0.08,
+   "feeder_kw": 174.158
+  },
+  {
+   "interval": 82,
+   "any_four_wire": 0.24,
+   "balanced": 0.0,
+   "undervoltage": 0.22,
+   "line_overload": 0.18,
+   "feeder_kw": 170.182
+  },
+  {
+   "interval": 83,
+   "any_four_wire": 0.24,
+   "balanced": 0.0,
+   "undervoltage": 0.22,
+   "line_overload": 0.18,
+   "feeder_kw": 165.662
+  },
+  {
+   "interval": 84,
+   "any_four_wire": 0.16,
+   "balanced": 0.0,
+   "undervoltage": 0.16,
+   "line_overload": 0.1,
+   "feeder_kw": 164.562
+  },
+  {
+   "interval": 85,
+   "any_four_wire": 0.16,
+   "balanced": 0.0,
+   "undervoltage": 0.16,
+   "line_overload": 0.06,
+   "feeder_kw": 161.302
+  },
+  {
+   "interval": 86,
+   "any_four_wire": 0.08,
+   "balanced": 0.0,
+   "undervoltage": 0.06,
+   "line_overload": 0.02,
+   "feeder_kw": 150.642
+  },
+  {
+   "interval": 87,
+   "any_four_wire": 0.2,
+   "balanced": 0.0,
+   "undervoltage": 0.18,
+   "line_overload": 0.14,
+   "feeder_kw": 150.248
+  },
+  {
+   "interval": 88,
+   "any_four_wire": 0.32,
+   "balanced": 0.0,
+   "undervoltage": 0.26,
+   "line_overload": 0.28,
+   "feeder_kw": 158.816
+  },
+  {
+   "interval": 89,
+   "any_four_wire": 0.56,
+   "balanced": 0.04,
+   "undervoltage": 0.5,
+   "line_overload": 0.48,
+   "feeder_kw": 177.126
+  },
+  {
+   "interval": 90,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.52,
+   "line_overload": 0.42,
+   "feeder_kw": 180.462
+  },
+  {
+   "interval": 91,
+   "any_four_wire": 0.7,
+   "balanced": 0.04,
+   "undervoltage": 0.62,
+   "line_overload": 0.6,
+   "feeder_kw": 188.328
+  },
+  {
+   "interval": 92,
+   "any_four_wire": 0.7,
+   "balanced": 0.04,
+   "undervoltage": 0.62,
+   "line_overload": 0.64,
+   "feeder_kw": 194.074
+  },
+  {
+   "interval": 93,
+   "any_four_wire": 0.9,
+   "balanced": 0.1,
+   "undervoltage": 0.8,
+   "line_overload": 0.82,
+   "feeder_kw": 210.402
+  },
+  {
+   "interval": 94,
+   "any_four_wire": 0.76,
+   "balanced": 0.12,
+   "undervoltage": 0.68,
+   "line_overload": 0.56,
+   "feeder_kw": 206.578
+  },
+  {
+   "interval": 95,
+   "any_four_wire": 0.8,
+   "balanced": 0.12,
+   "undervoltage": 0.66,
+   "line_overload": 0.66,
+   "feeder_kw": 193.66
+  }
+ ],
+ "day": "2024-12-15",
+ "draw_seed": 202,
+ "household_seed": 101,
+ "voltage_limits": {
+  "jurisdiction": "uk_esqcr",
+  "vbase_volts": 240.17771198288432,
+  "vmin_volts": 216.2,
+  "vmax_volts": 253.0,
+  "vmin_pu": 0.9001667898951713,
+  "vmax_pu": 1.0533866690262643
+ }
+}
