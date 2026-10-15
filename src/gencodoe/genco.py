@@ -173,6 +173,49 @@ class GencoModel:
                 va.append(out[:, VA_OUT].reshape(len(chunk), n_bus)[:k].cpu().numpy())
         return np.concatenate(vm).astype(float), np.concatenate(va).astype(float)
 
+    def prepare_template(self, template_graph, batch_size: int):
+        """Normalized, masked batch of `batch_size` copies of one graph, kept on the device.
+
+        PF masking never touches Pd/Qd and normalization only divides them by the
+        normalizer's baseMVA, so new injections can be written straight into this
+        batch (predict_injections) without rebuilding graphs."""
+        import torch
+        from torch_geometric.data import Batch
+
+        g = template_graph.clone()
+        self.normalizer.transform(g)
+        g = self.transform(g)
+        batch = Batch.from_data_list([g] * batch_size).to(self.device)
+        n_bus = g["bus"].num_nodes
+        self._template = (batch, n_bus, float(self.normalizer.baseMVA))
+        return self._template
+
+    def predict_injections(self, pd_mw: np.ndarray, qd_mvar: np.ndarray, sync: bool = True):
+        """Fast path for one feeder: Pd/Qd (n, n_bus) in MW/MVAr -> (vm, va rad), using the
+        cached template batch from prepare_template (n <= its batch size)."""
+        import torch
+        from gridfm_graphkit.datasets.globals import PD_H, QD_H, VA_OUT, VM_OUT
+
+        batch, n_bus, base = self._template
+        n = pd_mw.shape[0]
+        n_tmpl = batch["bus"].x.shape[0] // n_bus
+        if n > n_tmpl:
+            raise ValueError(f"{n} rows > template batch {n_tmpl}")
+        x = batch["bus"].x
+        pdt = torch.zeros(n_tmpl, n_bus, dtype=x.dtype)
+        qdt = torch.zeros_like(pdt)
+        pdt[:n] = torch.as_tensor(pd_mw / base, dtype=x.dtype)
+        qdt[:n] = torch.as_tensor(qd_mvar / base, dtype=x.dtype)
+        x[:, PD_H] = pdt.reshape(-1).to(x.device, non_blocking=True)
+        x[:, QD_H] = qdt.reshape(-1).to(x.device, non_blocking=True)
+        with torch.no_grad():
+            out = self.model(batch)["bus"]
+        out = out.reshape(n_tmpl, n_bus, -1)[:n]
+        if not sync:
+            return out
+        out = out.cpu().numpy().astype(float)
+        return out[..., VM_OUT], out[..., VA_OUT]
+
     def predict_frames(self, bus, gen, branch, batch_size: int = 256):
         return self.predict_graphs(frames_to_graphs(bus, gen, branch), batch_size)
 
@@ -187,7 +230,16 @@ class GencoOracle:
         self.calls = 0   # number of power flows evaluated
 
     def __call__(self, feeder: Feeder, p: np.ndarray, q: np.ndarray) -> PFResult:
-        graphs = graphs_from_injections(self.template_graph, p, q, feeder.base_mva)
-        vm, va = self.model.predict_graphs(graphs, batch_size=self.batch_size)
-        self.calls += len(graphs)
-        return branch_flows_kcl(feeder, vm, va, np.atleast_2d(p), np.atleast_2d(q))
+        p, q = np.atleast_2d(p), np.atleast_2d(q)
+        vm, va = [], []
+        for i in range(0, len(p), self.batch_size):
+            pi, qi = p[i:i + self.batch_size], q[i:i + self.batch_size]
+            if getattr(self.model, "_template", None) is None or \
+                    self.model._template[0]["bus"].x.shape[0] // self.model._template[1] < len(pi):
+                self.model.prepare_template(self.template_graph, self.batch_size)
+            a, b = self.model.predict_injections(-pi * feeder.base_mva, -qi * feeder.base_mva)
+            vm.append(a)
+            va.append(b)
+        self.calls += len(p)
+        vm, va = np.concatenate(vm), np.concatenate(va)
+        return branch_flows_kcl(feeder, vm, va, p, q)

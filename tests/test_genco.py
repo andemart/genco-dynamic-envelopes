@@ -256,3 +256,58 @@ def test_best_model_callback_keeps_float_score():
     finally:
         cbm.torch.save, cbm.os.makedirs = orig_save, cbm_os_makedirs
     assert len(saved) == 2 and isinstance(cb.best_score, float) and cb.best_score == 0.5
+
+
+def test_acceptance_threshold_bounds_false_acceptance():
+    from gencodoe.envelopes import acceptance_threshold
+    assert acceptance_threshold(200, 0.05, None) == 0.95
+    t = acceptance_threshold(200, 0.05, 0.05)
+    rng = np.random.default_rng(0)
+    # a level whose true feasibility is just below target (0.949) must be accepted <= beta of the time
+    acc = (rng.binomial(200, 0.949, 200_000) / 200 >= t).mean()
+    assert acc <= 0.05
+    assert acceptance_threshold(10, 0.05, 0.01) > 1.0      # nothing certifiable with 10 scenarios
+
+
+@needs_data
+def test_fast_injection_path_matches_graph_path_in_float64(tmp_path):
+    import torch
+    import yaml
+    from gridfm_graphkit.io.param_handler import NestedNamespace, load_model
+
+    from gencodoe import genco_model  # noqa: F401
+
+    cfg = yaml.safe_load((ROOT / "configs" / "genco_pf_enwl1_lv_prior_v2.yaml").read_text())
+    torch.manual_seed(0)
+    m = load_model(NestedNamespace(**cfg))
+    for prm in m.parameters():                      # non-trivial head so the correction is exercised
+        prm.data.add_(0.01 * torch.randn_like(prm))
+    torch.save(m.state_dict(), tmp_path / "m.pt")
+    torch.save({"enwl1_fluvius": {"baseMVA_orig": torch.tensor(1.0), "baseMVA": torch.tensor(0.0021),
+                                  "vn_kv_max": torch.tensor(0.416)}}, tmp_path / "s.pt")
+    (tmp_path / "c.yaml").write_text(yaml.safe_dump(cfg))
+    gm = genco.GencoModel(tmp_path / "c.yaml", tmp_path / "m.pt", tmp_path / "s.pt")
+    gm.model.double()
+    oracle = genco.GencoOracle(gm, _template(), batch_size=3)
+    truth = evaluate.load_truth(CALIB, range(3))
+    p, q = -truth["pd"], -truth["qd"]
+    ch = []
+    for g in genco.graphs_from_injections(oracle.template_graph, p, q):
+        gm.normalizer.transform(g)
+        g = gm.transform(g)
+        for store in g.stores:
+            for k, v in list(store.items()):
+                if torch.is_tensor(v) and v.is_floating_point():
+                    store[k] = v.double()
+        ch.append(g)
+    from torch_geometric.data import Batch
+    with torch.no_grad():
+        slow = gm.model(Batch.from_data_list(ch))["bus"][:, 0].reshape(3, -1).numpy()
+    gm.prepare_template(oracle.template_graph, 3)
+    b = gm._template[0]
+    for store in b.stores:
+        for k, v in list(store.items()):
+            if torch.is_tensor(v) and v.is_floating_point():
+                store[k] = v.double()
+    fast, _ = gm.predict_injections(-p, -q)
+    np.testing.assert_allclose(fast, slow, atol=1e-5)

@@ -78,22 +78,25 @@ def fixed_point_oracle(feeder: fdr.Feeder, p: np.ndarray, q: np.ndarray) -> fdr.
 
 
 def conformal_margins(model, feeder: fdr.Feeder, calib_dir: Path, alpha: float, max_states: int | None = None):
+    """model: a GencoOracle, or None for the fixed-point prior."""
     """Conformal margins of GENCO on the calibration days: binned (Mondrian) voltage quantiles
     as a callable, the global voltage quantile, and the global loading quantile."""
     from .evaluate import _loading, load_truth
-    from .genco import frames_to_graphs
 
     truth = load_truth(calib_dir, None if max_states is None else range(max_states))
     names = set(truth["draws"]["split"]) if "split" in truth["draws"] else None
     if names is not None and names != {"calib"}:
         raise ValueError(f"calibration data contains splits {names}")
+    p, q = -truth["pd"] / feeder.base_mva, -truth["qd"] / feeder.base_mva
     if model is None:   # fixed-point prior
-        r = fixed_point_oracle(feeder, -truth["pd"] / feeder.base_mva, -truth["qd"] / feeder.base_mva)
+        r = fixed_point_oracle(feeder, p, q)
         vm, va = r.vm, None
     else:
-        vm, va = model.predict_graphs(frames_to_graphs(*truth["frames"]))
-    pred = (r if model is None else
-            fdr.PFResult(vm=vm, loading=_loading(feeder, truth, vm, va), p_branch=np.zeros_like(vm)))
+        # calibrate on the deployment path (GencoOracle's cached-template fast path): float32
+        # inference has rounding jitter of up to ~3e-3 pu that depends on the exact input path
+        r = model(feeder, p, q)
+        vm = r.vm
+    pred = r
     true = fdr.PFResult(vm=truth["vm"], loading=_loading(feeder, truth, truth["vm"], truth["va"]),
                         p_branch=np.zeros_like(vm))
     q_v, q_l = conformal.calibrate_pf(feeder, pred, true, alpha)
@@ -103,7 +106,7 @@ def conformal_margins(model, feeder: fdr.Feeder, calib_dir: Path, alpha: float, 
 
 def run_day(day: str, feeder, customers, scen: DayScenarios, methods: dict, n_s: int, eps: float,
             levels_per_round: int, seed: int, steps_per_hour: int = 4, unbalanced=None,
-            n_unbalanced: int = 0) -> list[dict]:
+            n_unbalanced: int = 0, beta: float | None = None, n_verify: int | None = None) -> list[dict]:
     """Envelopes for every interval of `day` with every method; AC-verified on fresh draws."""
     rng = np.random.default_rng(seed)
     # days are indexed by row position (96 steps per local day; file timestamps are UTC)
@@ -115,13 +118,13 @@ def run_day(day: str, feeder, customers, scen: DayScenarios, methods: dict, n_s:
     for k in range(0, 96, 4 // steps_per_hour):
         step = t0 + k
         p, q = scen.sample(step, n_s, rng, feeder.base_mva)
-        pv, qv = scen.sample(step, n_s, rng, feeder.base_mva)       # fresh draws for verification
+        pv, qv = scen.sample(step, n_verify or n_s, rng, feeder.base_mva)   # fresh draws for verification
         for direction in ("export", "import"):
             for name, make in methods.items():
                 feas, counter = make()
                 t = time.perf_counter()
                 env = envelopes.scalar_envelope(feas, feeder.n_bus, customers, p, q, direction, "uniform", eps,
-                                                levels_per_round)
+                                                levels_per_round, beta=beta)
                 dt = time.perf_counter() - t
                 sign = envelopes.DIRECTIONS[direction]
                 inj = sign * env.limit @ customers.incidence(feeder.n_bus)
@@ -162,6 +165,9 @@ def main():
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--unbalanced", type=int, default=0, help="fresh draws per interval checked on OpenDSS")
+    ap.add_argument("--beta", type=float, default=None,
+                    help="finite-sample confidence: certify P(violation) <= eps with probability 1 - beta")
+    ap.add_argument("--verify-draws", type=int, default=None, help="fresh AC verification draws (default: --scenarios)")
     a = ap.parse_args()
 
     net = load_enwl1()
@@ -175,7 +181,8 @@ def main():
     lin = envelopes.exact(fdr.lindistflow, feeder)
     methods = {"ac": lambda: (ac, lambda env: env.n_evals),
                "lindistflow": lambda: (lin, lambda env: 0)}
-    meta = {"day": a.day, "scenarios": a.scenarios, "eps": a.eps, "mix": MIX, "alpha": a.alpha,
+    meta = {"day": a.day, "scenarios": a.scenarios, "eps": a.eps, "beta": a.beta, "verify_draws": a.verify_draws,
+            "acceptance_threshold": envelopes.acceptance_threshold(a.scenarios, a.eps, a.beta), "mix": MIX, "alpha": a.alpha,
             "export_cap_kw": FLEX_EXPORT_KW, "import_cap_kw": FLEX_IMPORT_KW}
     fp_bin, fp_qb, _, fp_ql, n_cal = conformal_margins(None, feeder, a.calib, a.alpha)
     meta.update({"fixed_point_q_v_bins": fp_qb.tolist(), "fixed_point_q_l": fp_ql, "calib_states": n_cal})
@@ -190,7 +197,7 @@ def main():
         model = GencoModel(a.config, a.run / "artifacts/model/best_model_state_dict.pt",
                            a.run / "artifacts/stats/normalizer_stats.pt", device=a.device)
         oracle = GencoOracle(model, read_raw(a.calib / "enwl1_fluvius" / "raw", scenarios=[0]))
-        q_bin, qb, q_v, q_l, n_cal = conformal_margins(model, feeder, a.calib, a.alpha)
+        q_bin, qb, q_v, q_l, n_cal = conformal_margins(oracle, feeder, a.calib, a.alpha)
         meta.update({"run": str(a.run), "q_v_global": q_v, "q_v_bins": qb.tolist(), "q_l": q_l})
         print(f"conformal margins on {n_cal} calibration-day states: binned q_v={np.round(qb, 5)}, "
               f"global q_v={q_v:.5f} pu, q_l={q_l:.5f}")
@@ -207,7 +214,7 @@ def main():
         from .unbalanced import UnbalancedENWL1
         ub = UnbalancedENWL1()
     rows = run_day(a.day, feeder, customers, scen, methods, a.scenarios, a.eps, a.levels_per_round, a.seed,
-                   a.steps_per_hour, ub, a.unbalanced)
+                   a.steps_per_hour, ub, a.unbalanced, a.beta, a.verify_draws)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps({"meta": meta, "rows": rows}, indent=1))
     import pandas as pd

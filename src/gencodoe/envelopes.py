@@ -122,10 +122,32 @@ def allocate(customers: Customers, policy: str, level: float | np.ndarray, direc
     return np.minimum(level[..., None] * w, cap)
 
 
+def acceptance_threshold(n: int, eps: float, beta: float | None) -> float:
+    """Share of the n scenarios that must be feasible to accept a level.
+
+    beta=None: the plain empirical rule, 1 - eps. Otherwise the smallest k/n with
+    P[Binomial(n, 1 - eps) >= k] <= beta. Feasibility is monotone in the level, so
+    the search can only end above the true (1 - eps)-level L* if the count at a
+    level just above L* -- a fixed level, P(feasible) < 1 - eps -- reaches k; hence
+    P(true violation probability of the envelope > eps) <= beta.
+    """
+    if beta is None:
+        return 1.0 - eps
+    from scipy.stats import binom
+    k = np.arange(n + 1)
+    tail = binom.sf(k - 1, n, 1.0 - eps)          # P[X >= k]
+    ok = np.flatnonzero(tail <= beta)
+    return float(ok[0] / n) if len(ok) else 1.0 + 1e-9   # unreachable: no level certifiable with n scenarios
+
+
 def scalar_envelope(feasible: Feasibility, n_bus: int, customers: Customers, p0: np.ndarray, q0: np.ndarray,
                     direction: str = "export", policy: str = "uniform", eps: float = 0.05,
-                    levels_per_round: int = 1, rel_tol: float = 1e-3, max_rounds: int = 60) -> Envelope:
+                    levels_per_round: int = 1, rel_tol: float = 1e-3, max_rounds: int = 60,
+                    beta: float | None = None) -> Envelope:
     """Largest level such that P(feasible) >= 1 - eps over the scenarios p0, q0 (n_s, n_bus).
+
+    With beta, the empirical share must reach acceptance_threshold(n_s, eps, beta),
+    which certifies P(violation) <= eps with confidence 1 - beta (finite-sample).
 
     k-section search: each round evaluates `levels_per_round` candidate levels for
     all scenarios in one batch (k=1 is bisection; larger k means fewer, bigger
@@ -137,7 +159,7 @@ def scalar_envelope(feasible: Feasibility, n_bus: int, customers: Customers, p0:
     sign, cap = DIRECTIONS[direction], customers.cap(direction)
     C = customers.incidence(n_bus)
     n_s = p0.shape[0]
-    target = 1.0 - eps
+    target = acceptance_threshold(n_s, eps, beta)
     n_evals = 0
 
     def prob(levels: np.ndarray) -> np.ndarray:
