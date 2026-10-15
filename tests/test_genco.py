@@ -456,3 +456,37 @@ def test_report_final_seed_fallback_requires_listing_in_manifest(tmp_path):
     other.write_text(json.dumps(doc))
     with pytest.raises(SystemExit):
         report_final.load_runs([other], expect)
+
+
+def test_report_annual_on_synthetic_days(tmp_path):
+    import json
+    from gencodoe import limits, report_annual
+    from gencodoe.report_final import feasibility, load_runs
+    files = []
+    for day, lim in (("2024-01-10", 0.0), ("2024-04-09", 1.0), ("2024-07-08", 2.0), ("2024-10-17", 1.0)):
+        for method in ("b_opendss_exact", "c_genco_4w_opendss"):
+            rows = []
+            for direction in ("export", "import"):
+                for step in range(24):
+                    for m, l in (("ac", 3.0), (method, lim)):
+                        rows.append({"step": step, "time": "x", "direction": direction, "method": m, "limit_kw": l,
+                                     "total_kw": 200 * l, "prob_ok_oracle": 1.0, "prob_ok_ac_fresh": 0.99,
+                                     "prob_ok_unbalanced": 0.99, "unbalanced_draws": 200, "power_flows": 10,
+                                     "ac_calls": 7 if m.startswith("c") else 10, "runtime_s": 1.0})
+            meta = {"voltage_limits": limits.record(), "day": day, "scenarios": 200, "verify_draws": 1000,
+                    "scenario_seed": 101, "household_seed": 101, "steps_per_hour": 1}
+            f = tmp_path / f"{day}_{method}.json"
+            f.write_text(json.dumps({"meta": meta, "rows": rows}))
+            files.append(f)
+    expect = {"jurisdiction": limits.JURISDICTION, "vmin_pu": limits.VMIN_PU, "vmax_pu": limits.VMAX_PU,
+              "seed": 101, "manifest": None, "steps_per_hour": 1}
+    df, _ = load_runs(files, expect)
+    res = report_annual.annual(feasibility(df))
+    exp = res["by_direction"]["export"]
+    # daily kWh/household = 24 h x limit; mean over (0, 1, 2, 1) = 24 kWh/day -> x366
+    assert abs(exp["B"]["kwh_per_household_year"] - 24 * 366) < 1e-6
+    assert exp["annual_static_limit_kw"] == 0.0 and "relative_uplift_vs_annual_static" not in exp["B"]
+    lo, hi = exp["B"]["ci95"]
+    assert lo <= 24 * 366 <= hi
+    assert exp["agreement_paired"]["share_within_tol"] == 1.0 and exp["agreement_paired"]["intervals_both_zero"] == 24
+    assert exp["paired_cost"]["exact_calls_C"] < exp["paired_cost"]["exact_calls_B"]
