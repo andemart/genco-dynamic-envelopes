@@ -6,7 +6,7 @@ Committed **before** any annual job was submitted, and **before** the corrected 
 
 DOE benefit is seasonal, so two days cannot support annual statements. Only the 36 test days are clean for option C: GENCO and its margins were trained, selected and calibrated on train, val and calib days. The test days are the d mod 5 = 4 blocks, spread over the whole of 2024, so they form a stratified sample of the year (about 10% of days).
 
-The days are listed in `results/annual_test_days.txt`: 9 winter (Dec–Feb), 9 spring, 8 summer, 10 autumn.
+The days are listed in `results/annual_test_days.txt`: 9 winter (Dec–Feb), 9 spring (Mar–May), 9 summer (Jun–Aug), 9 autumn (Sep–Nov).
 
 ## Protocol (identical to the pre-registered days except the resolution)
 
