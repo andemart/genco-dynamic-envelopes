@@ -11,6 +11,12 @@ what the balanced envelopes miss:
 
 The ENWL1 OpenDSS files reference load-shape CSVs on another machine; a
 snapshot study does not need them, so the circuit is built without them.
+
+Loads are constant power over 0.5-1.5 pu (Vminpu/Vmaxpu), as in the balanced
+model and datakit. OpenDSS's default switches a load to constant impedance
+below 0.95 pu and above 1.05 pu, which understates exactly the under- and
+overvoltage this check is for. A solve that does not converge is retried once
+from the no-load solution (OpenDSS starts from the previous solution).
 """
 
 from __future__ import annotations
@@ -52,7 +58,7 @@ class UnbalancedENWL1:
         self.load_names, self.load_bus = [], []
         for line in (folder / "Loads.dss").read_text().splitlines():
             if line.lower().startswith("new load"):
-                dss.Text.Command(re.sub(r"\s+Daily=\S+", "", line))
+                dss.Text.Command(re.sub(r"\s+Daily=\S+", "", line) + " Vminpu=0.5 Vmaxpu=1.5")
                 m = re.search(r"New Load\.(\w+).*?Bus1=(\S+)", line, re.I)
                 self.load_names.append(m.group(1))
                 self.load_bus.append(m.group(2).lower())
@@ -76,6 +82,14 @@ class UnbalancedENWL1:
             if not dss.Lines.Next():
                 break
 
+    def _reset(self):
+        """Solve the no-load case so the next solve starts from a flat, feasible point."""
+        for name in self.load_names:
+            self.dss.Loads.Name(name)
+            self.dss.Loads.kW(0.0)
+            self.dss.Loads.kvar(0.0)
+        self.dss.Solution.Solve()
+
     def _run_file(self, path: Path):
         for line in path.read_text().splitlines():
             s = line.strip()
@@ -90,6 +104,13 @@ class UnbalancedENWL1:
             dss.Loads.kW(float(p))
             dss.Loads.kvar(float(q))
         dss.Solution.Solve()
+        if not dss.Solution.Converged():
+            self._reset()
+            for name, p, q in zip(self.load_names, p_kw, q_kvar):
+                dss.Loads.Name(name)
+                dss.Loads.kW(float(p))
+                dss.Loads.kvar(float(q))
+            dss.Solution.Solve()
         v = np.array(dss.Circuit.AllBusVolts())
         v = v[0::2] + 1j * v[1::2]
         v_pn = np.abs(v[self.cust_phase] - v[self.cust_neutral]) / V_PN
@@ -109,3 +130,41 @@ class UnbalancedENWL1:
                 "v_pn_max": float(v_pn.max()), "line_loading_max": worst_line, "transformer_loading": tr_loading,
                 "undervoltage": bool(v_pn.min() < 0.94), "overvoltage": bool(v_pn.max() > 1.10),
                 "line_overload": worst_line > 1.0, "transformer_overload": tr_loading > 1.0}
+
+
+def four_wire_truth(data_dir: Path, out: Path | None = None) -> "pd.DataFrame":
+    """Four-wire OpenDSS summary for every state of a datakit dataset.
+
+    Each customer has its own bus in the reduced network, so the bus Pd/Qd of the
+    datakit state is that customer's net consumption (MW/MVAr, + = consumption).
+    Columns: scenario, v_pn_min, v_pn_max, line_loading_max, transformer_loading,
+    converged."""
+    import pandas as pd
+
+    from .enwl import load_enwl1
+    from .evaluate import load_truth
+
+    net = load_enwl1()
+    truth = load_truth(data_dir)
+    u = UnbalancedENWL1()
+    rows = []
+    for i, sc in enumerate(truth["scenario"]):
+        r = u.solve(truth["pd"][i, net.customer_bus] * 1e3, truth["qd"][i, net.customer_bus] * 1e3)
+        rows.append({"scenario": int(sc), **{k: r[k] for k in ("v_pn_min", "v_pn_max", "line_loading_max",
+                                                               "transformer_loading", "converged")}})
+    df = pd.DataFrame(rows)
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        df.to_parquet(out)
+    return df
+
+
+if __name__ == "__main__":
+    import argparse
+
+    ap = argparse.ArgumentParser(description="four-wire OpenDSS truth for datakit datasets")
+    ap.add_argument("--data", type=Path, nargs="+", required=True)
+    a = ap.parse_args()
+    for d in a.data:
+        df = four_wire_truth(d, d / "enwl1_fluvius" / "four_wire_truth.parquet")
+        print(d, len(df), "states, converged", df.converged.mean())

@@ -246,3 +246,54 @@ With passive load alone, 2.1% of snapshots are undervoltage on the four-wire mod
 - mean P(ok): 0.974 export, 0.976 import;
 - intervals below 0.95: 3 export and 4 import, none significantly below (one-sided p >= 0.087);
 - capacity cost vs the plain empirical rule: 1.3% export, 3.7% import.
+
+## Correction: four-wire checker loads were not constant power (15 Oct)
+
+OpenDSS loads default to `Vminpu=0.95` / `Vmaxpu=1.05`: outside that band a load becomes constant impedance. That understated undervoltage and distorted export rows above 1.05 pu.
+
+- `gencodoe.unbalanced` now sets `Vminpu=0.5 Vmaxpu=1.5`, i.e. constant power as in the balanced model and datakit, and retries a non-converged solve from the no-load solution.
+- **Invalid, superseded by the numbers below:** the earlier "+1.7 kW export: Vmax 1.096, loading 1.37" figures and the "~3% unbalanced P(ok)" of the hourly DOE run.
+
+Revalidated at 13:00 on 2024-07-08:
+
+| Case | Balanced | Four-wire, three-phase loads | Four-wire, real single-phase loads |
+|---|---|---|---|
+| +1.7 kW export | Vmax 1.071, L 1.18 | Vmax 1.078, L 1.18 | Vmax 1.083, L 1.22 |
+| +1.7 kW import | Vmin 0.945, L 0.83 | Vmin 0.938, L 0.85 | Vmin 0.904, L 1.10 |
+
+The export gap is small; the import gap is large.
+
+### Four-wire truth on v2 calib/test (2,953 / 2,968 states; `python -m gencodoe.unbalanced`)
+
+- 9-10% of states do not converge on four wires. All are extreme imports that already violate on the balanced model (voltage collapse); they count as violating.
+
+| State type | dVmin (four-wire − balanced) | dVmax | Loading ratio (four-wire / balanced) |
+|---|---|---|---|
+| import rows | mean −0.07, 5th pct −0.17 | — | median 1.23, 95th pct 1.56 |
+| export rows | — | mean +0.031, 95th pct +0.061 | median 1.13, 95th pct 2.2 |
+| real states | mean −0.036 | mean +0.012 | median 1.43, 95th pct 2.35 |
+
+- 22% of states are balanced-safe but four-wire-violating. Calib and test agree.
+
+### Option C: GENCO screen with four-wire conformal margins (`gencodoe.four_wire`)
+
+Setup:
+- Mondrian split conformal on state-level worst cases: min V and max V offsets, loading ratio.
+- Fitted on calib days against OpenDSS; collapsed states give +inf for undervoltage and loading.
+- Evaluated on test days against OpenDSS.
+
+| α | Direction | Safe | Violated | OpenDSS fallback | False-safe | Conservative |
+|---|---|---|---|---|---|---|
+| 0.05 | import | 0.127 | 0.434 | 0.439 | 11/1775 | 0.69 |
+| 0.05 | export | 0.447 | 0.379 | 0.174 | 12/1311 | 0.21 |
+| 0.01 | import | 0.000 | 0.403 | 0.597 | 0/1775 | 1.00 |
+| 0.01 | export | 0.295 | 0.374 | 0.331 | 3/1311 | 0.47 |
+
+Two bugs were found and fixed on the way:
+- Collapsed states poisoned the overvoltage bins.
+- `~` on a Python bool gives −2, not False.
+
+Reading:
+- The screen is safe-ish at α = 0.05 (false-safe 0.6-0.9% of violating states) and strict at α = 0.01.
+- Import screening is weak: balanced-model error grows with import, so most import rows need OpenDSS.
+- Next: DOE days with option C vs option B (exact OpenDSS envelopes) to measure capacity and OpenDSS calls.

@@ -321,3 +321,16 @@ def test_monthly_average_peak_applies_floor_per_month():
     kw[0, month == 2] = 1.0
     assert np.isclose(monthly_average_peak(kw, month, 0.0)[0], 7.0 / 12)
     assert np.isclose(monthly_average_peak(kw, month, 2.5)[0], (6.0 + 11 * 2.5) / 12)
+
+
+def test_four_wire_screen_directional_logic():
+    from gencodoe.four_wire import FourWireMargins
+    rng = np.random.default_rng(0)
+    n = 4000
+    pv, px, pl = rng.uniform(0.95, 1.0, n), rng.uniform(1.0, 1.05, n), rng.uniform(0.1, 0.5, n)
+    m = FourWireMargins.fit(pv, px, pl, pv - 0.005, px + 0.005, pl * 1.1, np.ones(n, bool), alpha=0.05)
+    # a comfortably feasible state is safe in both directions; a deep undervoltage one is not for imports
+    for d in ("import", "export", None):
+        assert m.screen(np.array([0.99]), np.array([1.01]), np.array([0.2]), d)[0] == "safe"
+    assert m.screen(np.array([0.942]), np.array([1.01]), np.array([0.2]), "import")[0] != "safe"
+    assert m.screen(np.array([0.942]), np.array([1.01]), np.array([0.2]), "export")[0] == "safe"   # export ignores Vmin
