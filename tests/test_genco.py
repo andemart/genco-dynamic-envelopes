@@ -311,3 +311,13 @@ def test_fast_injection_path_matches_graph_path_in_float64(tmp_path):
                 store[k] = v.double()
     fast, _ = gm.predict_injections(-p, -q)
     np.testing.assert_allclose(fast, slow, atol=1e-5)
+
+
+def test_monthly_average_peak_applies_floor_per_month():
+    from gencodoe.contracts import monthly_average_peak
+    month = np.repeat(np.arange(1, 13), 10)
+    kw = np.zeros((1, 120))
+    kw[0, month == 1] = 6.0       # one month at 6 kW, the rest near zero
+    kw[0, month == 2] = 1.0
+    assert np.isclose(monthly_average_peak(kw, month, 0.0)[0], 7.0 / 12)
+    assert np.isclose(monthly_average_peak(kw, month, 2.5)[0], (6.0 + 11 * 2.5) / 12)

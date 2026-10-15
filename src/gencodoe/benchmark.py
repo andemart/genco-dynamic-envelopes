@@ -4,6 +4,8 @@ Times what one envelope round costs per method, for batches of injection rows
 (scenarios x candidate levels):
   ac_sweep        exact backward/forward sweep, numpy (CPU)
   fixed_point_1   one sweep iteration (the linear prior alone)
+  zbus_pf         generic exact Z-bus fixed point (any network with one slack,
+                  meshed too): V <- Vs + Z conj(S / V) until converged
   genco           GencoOracle end to end: injections written into a cached
                   normalized batch, model, copy back, KCL branch flows
   genco_model     model forward only, inputs already on the device (synchronised)
@@ -44,6 +46,28 @@ def _time(fn, repeats: int):
         fn()
         warm.append(time.perf_counter() - t0)
     return cold, float(np.median(warm))
+
+
+def zbus_solver(net, base_mva: float = 1.0):
+    """Exact Z-bus fixed-point power flow for the reduced network (dense Z, one slack at bus 0)."""
+    from .enwl import KV_LV
+    n, zb = net.n_bus, KV_LV ** 2 / base_mva
+    y = np.zeros((n, n), complex)
+    for f, t, r, x in zip(net.from_bus, net.to_bus, net.r_ohm / zb, net.x_ohm / zb):
+        yy = 1 / complex(r, x)
+        y[f, f] += yy; y[t, t] += yy; y[f, t] -= yy; y[t, f] -= yy
+    zt = np.linalg.inv(y[1:, 1:]).T
+
+    def solve(p, q, tol=1e-9, max_iter=200):
+        s = (p + 1j * q)[:, 1:]
+        v = np.ones_like(s)
+        for _ in range(max_iter):
+            vn = 1.0 + np.conj(s / v) @ zt
+            if np.abs(vn - v).max() < tol:
+                return vn
+            v = vn
+        return v
+    return solve
 
 
 def pandapower_net(net):
@@ -113,6 +137,7 @@ def main():
     truth = load_truth(a.data, range(max(a.batch)))
     p_all, q_all = -truth["pd"] / feeder.base_mva, -truth["qd"] / feeder.base_mva
     rows = []
+    zbus = zbus_solver(net, feeder.base_mva)
     oracle = None
     if a.run:
         t0 = time.perf_counter()
@@ -125,6 +150,7 @@ def main():
         reps = int(np.ceil(n / len(p_all)))
         p, q = np.tile(p_all, (reps, 1))[:n], np.tile(q_all, (reps, 1))[:n]
         methods = {"ac_sweep": lambda: fdr.sweep_pf(feeder, p, q),
+                   "zbus_pf": lambda: zbus(p, q),
                    "fixed_point_1": lambda: fdr.branch_flows_kcl(
                        feeder, *(lambda v: (np.abs(v), np.angle(v)))(_sweep_voltage(feeder, p, q, max_iter=1)), p, q)}
         if oracle is not None:
