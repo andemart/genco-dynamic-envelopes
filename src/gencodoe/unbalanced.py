@@ -132,6 +132,46 @@ class UnbalancedENWL1:
                 "line_overload": worst_line > 1.0, "transformer_overload": tr_loading > 1.0}
 
 
+def diagnose(u: "UnbalancedENWL1", p_kw: np.ndarray, q_kvar: np.ndarray) -> dict:
+    """Detailed four-wire snapshot: per-customer voltage, worst line (name, phase, loading),
+    neutral currents, and per-phase transformer current/power. Slower than solve()."""
+    dss = u.dss
+    r = u.solve(p_kw, q_kvar)
+    v = np.array(dss.Circuit.AllBusVolts())
+    v = v[0::2] + 1j * v[1::2]
+    v_pn = np.abs(v[u.cust_phase] - v[u.cust_neutral]) / V_PN
+    phase = np.array([int(b.split(".")[1]) for b in u.load_bus])
+    worst = (0.0, "", 0)
+    neutral_ratio = 0.0
+    overloaded = []
+    dss.Lines.First()
+    while True:
+        name, amps = dss.Lines.Name(), u.line_amps[dss.Lines.Name()]
+        mags = np.array(dss.CktElement.CurrentsMagAng()[0:8:2])     # a, b, c, n at terminal 1
+        if amps > 0:
+            ld = mags[:3] / amps
+            k = int(ld.argmax())
+            if ld[k] > worst[0]:
+                worst = (float(ld[k]), name, k + 1)
+            if ld[k] > 1.0:
+                overloaded.append(name)
+            neutral_ratio = max(neutral_ratio, float(mags[3] / amps))
+        if not dss.Lines.Next():
+            break
+    dss.Transformers.Name("TR1")
+    cur = np.array(dss.CktElement.CurrentsMagAng())[::2]
+    n_cond = dss.CktElement.NumConductors()
+    lv = cur[n_cond:2 * n_cond]                                       # terminal 2 (LV): a, b, c, n
+    pw = np.array(dss.CktElement.Powers())
+    lv_pw = pw[2 * n_cond:2 * n_cond + 6].reshape(3, 2)               # kW, kvar per LV phase (into the transformer)
+    return {**r, "v_pn": v_pn, "customer_phase": phase,
+            "undervoltage_customers_by_phase": {int(ph): int(((v_pn < 0.94) & (phase == ph)).sum()) for ph in (1, 2, 3)},
+            "worst_line": worst[1], "worst_line_phase": worst[2], "worst_line_loading": worst[0],
+            "n_overloaded_lines": len(overloaded), "neutral_over_rating_max": neutral_ratio,
+            "tr_lv_phase_current_a": lv[:3].tolist(), "tr_lv_neutral_current_a": float(lv[3]) if len(lv) > 3 else float("nan"),
+            "tr_lv_phase_kw": (-lv_pw[:, 0]).tolist()}
+
+
 def four_wire_truth(data_dir: Path, out: Path | None = None) -> "pd.DataFrame":
     """Four-wire OpenDSS summary for every state of a datakit dataset.
 

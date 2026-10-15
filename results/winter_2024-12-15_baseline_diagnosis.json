@@ -1,0 +1,4729 @@
+{
+ "draws": 4800,
+ "intervals": 96,
+ "share_any_four_wire_violation": 0.6333333333333333,
+ "share_balanced_violation": 0.004791666666666666,
+ "share_non_converged": 0.0,
+ "share_by_cause": {
+  "undervoltage": 0.6333333333333333,
+  "overvoltage": 0.0,
+  "line_overload": 0.058958333333333335,
+  "transformer_overload": 0.0
+ },
+ "cause_overlaps_converged_draws": {
+  "undervoltage": 2757,
+  "none": 1760,
+  "undervoltage+line_overload": 283
+ },
+ "worst_line_phase_counts": {
+  "1": 2150,
+  "2": 1638,
+  "3": 1012
+ },
+ "top_worst_lines": {
+  "line1914": 61,
+  "line1920": 51,
+  "line1913a": 39,
+  "line1916": 24,
+  "line1933": 13,
+  "line1919": 11,
+  "line1915": 10,
+  "line1934": 9
+ },
+ "undervoltage_customers_by_phase_mean": {
+  "phase_1": 3.915,
+  "phase_2": 1.6208333333333333,
+  "phase_3": 2.073541666666667
+ },
+ "customers_per_phase": {
+  "1": 74,
+  "2": 68,
+  "3": 58
+ },
+ "distributions": {
+  "v_pn_min": {
+   "0.05": 0.8691550275150183,
+   "0.25": 0.9138766705934247,
+   "0.5": 0.9329822116866104,
+   "0.75": 0.9457226660325803,
+   "0.95": 0.9591639404175003
+  },
+  "line_loading_max": {
+   "0.05": 0.42875689062009686,
+   "0.25": 0.5543472936617169,
+   "0.5": 0.65309643956652,
+   "0.75": 0.7773893943859237,
+   "0.95": 1.0245332307186577
+  },
+  "transformer_loading": {
+   "0.05": 0.1387305033350859,
+   "0.25": 0.1746657074892745,
+   "0.5": 0.2006664097964706,
+   "0.75": 0.22634330145030088,
+   "0.95": 0.2637827654412468
+  },
+  "n_overloaded_lines": {
+   "0.05": 0.0,
+   "0.25": 0.0,
+   "0.5": 0.0,
+   "0.75": 0.0,
+   "0.95": 24.0
+  },
+  "neutral_over_rating_max": {
+   "0.05": 0.23209720552327706,
+   "0.25": 0.3131714330627262,
+   "0.5": 0.40488654416186426,
+   "0.75": 0.552561899564403,
+   "0.95": 0.8083688819052458
+  },
+  "tr_in": {
+   "0.05": 17.019970909938404,
+   "0.25": 39.974494201527904,
+   "0.5": 62.29145741026895,
+   "0.75": 93.03829887134461,
+   "0.95": 151.04475492293102
+  },
+  "feeder_kw": {
+   "0.05": 102.67560025900603,
+   "0.25": 128.94900039816275,
+   "0.5": 147.94800031743944,
+   "0.75": 166.05475733976346,
+   "0.95": 192.25879970754033
+  },
+  "balanced_vmin": {
+   "0.05": 0.9534819621541066,
+   "0.25": 0.9626977768410019,
+   "0.5": 0.9678937227468134,
+   "0.75": 0.9727792527430235,
+   "0.95": 0.9790544179873062
+  }
+ },
+ "transformer_phase_current_imbalance_max_over_mean": {
+  "0.5": 1.1629454276546425,
+  "0.95": 1.4173540182999997
+ },
+ "by_interval": [
+  {
+   "interval": 0,
+   "any_four_wire": 0.94,
+   "balanced": 0.04,
+   "undervoltage": 0.94,
+   "line_overload": 0.32,
+   "feeder_kw": 185.69
+  },
+  {
+   "interval": 1,
+   "any_four_wire": 0.98,
+   "balanced": 0.02,
+   "undervoltage": 0.98,
+   "line_overload": 0.38,
+   "feeder_kw": 178.466
+  },
+  {
+   "interval": 2,
+   "any_four_wire": 0.88,
+   "balanced": 0.02,
+   "undervoltage": 0.88,
+   "line_overload": 0.34,
+   "feeder_kw": 167.138
+  },
+  {
+   "interval": 3,
+   "any_four_wire": 0.98,
+   "balanced": 0.02,
+   "undervoltage": 0.98,
+   "line_overload": 0.28,
+   "feeder_kw": 169.794
+  },
+  {
+   "interval": 4,
+   "any_four_wire": 0.92,
+   "balanced": 0.0,
+   "undervoltage": 0.92,
+   "line_overload": 0.22,
+   "feeder_kw": 158.15
+  },
+  {
+   "interval": 5,
+   "any_four_wire": 0.86,
+   "balanced": 0.02,
+   "undervoltage": 0.86,
+   "line_overload": 0.2,
+   "feeder_kw": 157.474
+  },
+  {
+   "interval": 6,
+   "any_four_wire": 0.86,
+   "balanced": 0.0,
+   "undervoltage": 0.86,
+   "line_overload": 0.1,
+   "feeder_kw": 151.68
+  },
+  {
+   "interval": 7,
+   "any_four_wire": 0.76,
+   "balanced": 0.0,
+   "undervoltage": 0.76,
+   "line_overload": 0.04,
+   "feeder_kw": 138.922
+  },
+  {
+   "interval": 8,
+   "any_four_wire": 0.8,
+   "balanced": 0.02,
+   "undervoltage": 0.8,
+   "line_overload": 0.06,
+   "feeder_kw": 137.114
+  },
+  {
+   "interval": 9,
+   "any_four_wire": 0.84,
+   "balanced": 0.02,
+   "undervoltage": 0.84,
+   "line_overload": 0.12,
+   "feeder_kw": 138.288
+  },
+  {
+   "interval": 10,
+   "any_four_wire": 0.7,
+   "balanced": 0.0,
+   "undervoltage": 0.7,
+   "line_overload": 0.04,
+   "feeder_kw": 125.838
+  },
+  {
+   "interval": 11,
+   "any_four_wire": 0.8,
+   "balanced": 0.0,
+   "undervoltage": 0.8,
+   "line_overload": 0.06,
+   "feeder_kw": 129.462
+  },
+  {
+   "interval": 12,
+   "any_four_wire": 0.78,
+   "balanced": 0.0,
+   "undervoltage": 0.78,
+   "line_overload": 0.06,
+   "feeder_kw": 129.234
+  },
+  {
+   "interval": 13,
+   "any_four_wire": 0.64,
+   "balanced": 0.0,
+   "undervoltage": 0.64,
+   "line_overload": 0.02,
+   "feeder_kw": 126.672
+  },
+  {
+   "interval": 14,
+   "any_four_wire": 0.76,
+   "balanced": 0.0,
+   "undervoltage": 0.76,
+   "line_overload": 0.04,
+   "feeder_kw": 117.08
+  },
+  {
+   "interval": 15,
+   "any_four_wire": 0.76,
+   "balanced": 0.0,
+   "undervoltage": 0.76,
+   "line_overload": 0.0,
+   "feeder_kw": 117.292
+  },
+  {
+   "interval": 16,
+   "any_four_wire": 0.7,
+   "balanced": 0.0,
+   "undervoltage": 0.7,
+   "line_overload": 0.0,
+   "feeder_kw": 116.776
+  },
+  {
+   "interval": 17,
+   "any_four_wire": 0.62,
+   "balanced": 0.0,
+   "undervoltage": 0.62,
+   "line_overload": 0.06,
+   "feeder_kw": 118.626
+  },
+  {
+   "interval": 18,
+   "any_four_wire": 0.86,
+   "balanced": 0.0,
+   "undervoltage": 0.86,
+   "line_overload": 0.06,
+   "feeder_kw": 121.802
+  },
+  {
+   "interval": 19,
+   "any_four_wire": 0.74,
+   "balanced": 0.02,
+   "undervoltage": 0.74,
+   "line_overload": 0.1,
+   "feeder_kw": 127.156
+  },
+  {
+   "interval": 20,
+   "any_four_wire": 0.7,
+   "balanced": 0.0,
+   "undervoltage": 0.7,
+   "line_overload": 0.04,
+   "feeder_kw": 121.75
+  },
+  {
+   "interval": 21,
+   "any_four_wire": 0.72,
+   "balanced": 0.02,
+   "undervoltage": 0.72,
+   "line_overload": 0.04,
+   "feeder_kw": 117.876
+  },
+  {
+   "interval": 22,
+   "any_four_wire": 0.78,
+   "balanced": 0.0,
+   "undervoltage": 0.78,
+   "line_overload": 0.08,
+   "feeder_kw": 117.202
+  },
+  {
+   "interval": 23,
+   "any_four_wire": 0.7,
+   "balanced": 0.0,
+   "undervoltage": 0.7,
+   "line_overload": 0.02,
+   "feeder_kw": 118.158
+  },
+  {
+   "interval": 24,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.6,
+   "line_overload": 0.04,
+   "feeder_kw": 116.26
+  },
+  {
+   "interval": 25,
+   "any_four_wire": 0.72,
+   "balanced": 0.0,
+   "undervoltage": 0.72,
+   "line_overload": 0.04,
+   "feeder_kw": 114.858
+  },
+  {
+   "interval": 26,
+   "any_four_wire": 0.48,
+   "balanced": 0.0,
+   "undervoltage": 0.48,
+   "line_overload": 0.02,
+   "feeder_kw": 108.894
+  },
+  {
+   "interval": 27,
+   "any_four_wire": 0.66,
+   "balanced": 0.0,
+   "undervoltage": 0.66,
+   "line_overload": 0.04,
+   "feeder_kw": 117.008
+  },
+  {
+   "interval": 28,
+   "any_four_wire": 0.22,
+   "balanced": 0.0,
+   "undervoltage": 0.22,
+   "line_overload": 0.0,
+   "feeder_kw": 102.792
+  },
+  {
+   "interval": 29,
+   "any_four_wire": 0.2,
+   "balanced": 0.0,
+   "undervoltage": 0.2,
+   "line_overload": 0.02,
+   "feeder_kw": 99.708
+  },
+  {
+   "interval": 30,
+   "any_four_wire": 0.24,
+   "balanced": 0.0,
+   "undervoltage": 0.24,
+   "line_overload": 0.04,
+   "feeder_kw": 106.942
+  },
+  {
+   "interval": 31,
+   "any_four_wire": 0.3,
+   "balanced": 0.0,
+   "undervoltage": 0.3,
+   "line_overload": 0.0,
+   "feeder_kw": 108.478
+  },
+  {
+   "interval": 32,
+   "any_four_wire": 0.2,
+   "balanced": 0.0,
+   "undervoltage": 0.2,
+   "line_overload": 0.0,
+   "feeder_kw": 116.946
+  },
+  {
+   "interval": 33,
+   "any_four_wire": 0.42,
+   "balanced": 0.0,
+   "undervoltage": 0.42,
+   "line_overload": 0.0,
+   "feeder_kw": 125.422
+  },
+  {
+   "interval": 34,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.36,
+   "line_overload": 0.0,
+   "feeder_kw": 135.62
+  },
+  {
+   "interval": 35,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.36,
+   "line_overload": 0.0,
+   "feeder_kw": 132.942
+  },
+  {
+   "interval": 36,
+   "any_four_wire": 0.46,
+   "balanced": 0.0,
+   "undervoltage": 0.46,
+   "line_overload": 0.0,
+   "feeder_kw": 137.476
+  },
+  {
+   "interval": 37,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.6,
+   "line_overload": 0.0,
+   "feeder_kw": 144.8775
+  },
+  {
+   "interval": 38,
+   "any_four_wire": 0.34,
+   "balanced": 0.0,
+   "undervoltage": 0.34,
+   "line_overload": 0.0,
+   "feeder_kw": 137.694
+  },
+  {
+   "interval": 39,
+   "any_four_wire": 0.36,
+   "balanced": 0.0,
+   "undervoltage": 0.36,
+   "line_overload": 0.0,
+   "feeder_kw": 126.62
+  },
+  {
+   "interval": 40,
+   "any_four_wire": 0.3,
+   "balanced": 0.0,
+   "undervoltage": 0.3,
+   "line_overload": 0.0,
+   "feeder_kw": 130.692
+  },
+  {
+   "interval": 41,
+   "any_four_wire": 0.4,
+   "balanced": 0.0,
+   "undervoltage": 0.4,
+   "line_overload": 0.0,
+   "feeder_kw": 129.786
+  },
+  {
+   "interval": 42,
+   "any_four_wire": 0.44,
+   "balanced": 0.0,
+   "undervoltage": 0.44,
+   "line_overload": 0.0,
+   "feeder_kw": 131.1895
+  },
+  {
+   "interval": 43,
+   "any_four_wire": 0.38,
+   "balanced": 0.0,
+   "undervoltage": 0.38,
+   "line_overload": 0.0,
+   "feeder_kw": 135.622
+  },
+  {
+   "interval": 44,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.6,
+   "line_overload": 0.0,
+   "feeder_kw": 148.3249
+  },
+  {
+   "interval": 45,
+   "any_four_wire": 0.62,
+   "balanced": 0.0,
+   "undervoltage": 0.62,
+   "line_overload": 0.04,
+   "feeder_kw": 150.916
+  },
+  {
+   "interval": 46,
+   "any_four_wire": 0.42,
+   "balanced": 0.0,
+   "undervoltage": 0.42,
+   "line_overload": 0.0,
+   "feeder_kw": 155.736
+  },
+  {
+   "interval": 47,
+   "any_four_wire": 0.76,
+   "balanced": 0.0,
+   "undervoltage": 0.76,
+   "line_overload": 0.0,
+   "feeder_kw": 161.44
+  },
+  {
+   "interval": 48,
+   "any_four_wire": 0.74,
+   "balanced": 0.0,
+   "undervoltage": 0.74,
+   "line_overload": 0.0,
+   "feeder_kw": 165.374
+  },
+  {
+   "interval": 49,
+   "any_four_wire": 0.64,
+   "balanced": 0.0,
+   "undervoltage": 0.64,
+   "line_overload": 0.0,
+   "feeder_kw": 158.5735
+  },
+  {
+   "interval": 50,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.6,
+   "line_overload": 0.04,
+   "feeder_kw": 152.6155
+  },
+  {
+   "interval": 51,
+   "any_four_wire": 0.62,
+   "balanced": 0.0,
+   "undervoltage": 0.62,
+   "line_overload": 0.0,
+   "feeder_kw": 154.744
+  },
+  {
+   "interval": 52,
+   "any_four_wire": 0.54,
+   "balanced": 0.0,
+   "undervoltage": 0.54,
+   "line_overload": 0.0,
+   "feeder_kw": 153.714
+  },
+  {
+   "interval": 53,
+   "any_four_wire": 0.66,
+   "balanced": 0.0,
+   "undervoltage": 0.66,
+   "line_overload": 0.02,
+   "feeder_kw": 154.814
+  },
+  {
+   "interval": 54,
+   "any_four_wire": 0.68,
+   "balanced": 0.0,
+   "undervoltage": 0.68,
+   "line_overload": 0.04,
+   "feeder_kw": 165.086
+  },
+  {
+   "interval": 55,
+   "any_four_wire": 0.74,
+   "balanced": 0.0,
+   "undervoltage": 0.74,
+   "line_overload": 0.08,
+   "feeder_kw": 165.228
+  },
+  {
+   "interval": 56,
+   "any_four_wire": 0.72,
+   "balanced": 0.0,
+   "undervoltage": 0.72,
+   "line_overload": 0.0,
+   "feeder_kw": 161.5155
+  },
+  {
+   "interval": 57,
+   "any_four_wire": 0.82,
+   "balanced": 0.0,
+   "undervoltage": 0.82,
+   "line_overload": 0.04,
+   "feeder_kw": 159.08
+  },
+  {
+   "interval": 58,
+   "any_four_wire": 0.62,
+   "balanced": 0.0,
+   "undervoltage": 0.62,
+   "line_overload": 0.0,
+   "feeder_kw": 155.19
+  },
+  {
+   "interval": 59,
+   "any_four_wire": 0.74,
+   "balanced": 0.0,
+   "undervoltage": 0.74,
+   "line_overload": 0.06,
+   "feeder_kw": 164.38
+  },
+  {
+   "interval": 60,
+   "any_four_wire": 0.56,
+   "balanced": 0.0,
+   "undervoltage": 0.56,
+   "line_overload": 0.0,
+   "feeder_kw": 154.324
+  },
+  {
+   "interval": 61,
+   "any_four_wire": 0.64,
+   "balanced": 0.0,
+   "undervoltage": 0.64,
+   "line_overload": 0.04,
+   "feeder_kw": 156.102
+  },
+  {
+   "interval": 62,
+   "any_four_wire": 0.54,
+   "balanced": 0.0,
+   "undervoltage": 0.54,
+   "line_overload": 0.04,
+   "feeder_kw": 146.304
+  },
+  {
+   "interval": 63,
+   "any_four_wire": 0.44,
+   "balanced": 0.0,
+   "undervoltage": 0.44,
+   "line_overload": 0.0,
+   "feeder_kw": 146.15
+  },
+  {
+   "interval": 64,
+   "any_four_wire": 0.48,
+   "balanced": 0.0,
+   "undervoltage": 0.48,
+   "line_overload": 0.0,
+   "feeder_kw": 148.326
+  },
+  {
+   "interval": 65,
+   "any_four_wire": 0.42,
+   "balanced": 0.0,
+   "undervoltage": 0.42,
+   "line_overload": 0.02,
+   "feeder_kw": 146.176
+  },
+  {
+   "interval": 66,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.6,
+   "line_overload": 0.0,
+   "feeder_kw": 153.89
+  },
+  {
+   "interval": 67,
+   "any_four_wire": 0.48,
+   "balanced": 0.0,
+   "undervoltage": 0.48,
+   "line_overload": 0.02,
+   "feeder_kw": 158.966
+  },
+  {
+   "interval": 68,
+   "any_four_wire": 0.64,
+   "balanced": 0.0,
+   "undervoltage": 0.64,
+   "line_overload": 0.02,
+   "feeder_kw": 166.476
+  },
+  {
+   "interval": 69,
+   "any_four_wire": 0.68,
+   "balanced": 0.0,
+   "undervoltage": 0.68,
+   "line_overload": 0.02,
+   "feeder_kw": 170.424
+  },
+  {
+   "interval": 70,
+   "any_four_wire": 0.78,
+   "balanced": 0.0,
+   "undervoltage": 0.78,
+   "line_overload": 0.06,
+   "feeder_kw": 172.054
+  },
+  {
+   "interval": 71,
+   "any_four_wire": 0.76,
+   "balanced": 0.0,
+   "undervoltage": 0.76,
+   "line_overload": 0.04,
+   "feeder_kw": 173.982
+  },
+  {
+   "interval": 72,
+   "any_four_wire": 0.76,
+   "balanced": 0.0,
+   "undervoltage": 0.76,
+   "line_overload": 0.08,
+   "feeder_kw": 183.826
+  },
+  {
+   "interval": 73,
+   "any_four_wire": 0.88,
+   "balanced": 0.0,
+   "undervoltage": 0.88,
+   "line_overload": 0.04,
+   "feeder_kw": 188.456
+  },
+  {
+   "interval": 74,
+   "any_four_wire": 0.88,
+   "balanced": 0.02,
+   "undervoltage": 0.88,
+   "line_overload": 0.1,
+   "feeder_kw": 187.69
+  },
+  {
+   "interval": 75,
+   "any_four_wire": 0.76,
+   "balanced": 0.0,
+   "undervoltage": 0.76,
+   "line_overload": 0.1,
+   "feeder_kw": 184.852
+  },
+  {
+   "interval": 76,
+   "any_four_wire": 0.7,
+   "balanced": 0.0,
+   "undervoltage": 0.7,
+   "line_overload": 0.04,
+   "feeder_kw": 178.134
+  },
+  {
+   "interval": 77,
+   "any_four_wire": 0.7,
+   "balanced": 0.0,
+   "undervoltage": 0.7,
+   "line_overload": 0.0,
+   "feeder_kw": 171.436
+  },
+  {
+   "interval": 78,
+   "any_four_wire": 0.66,
+   "balanced": 0.0,
+   "undervoltage": 0.66,
+   "line_overload": 0.02,
+   "feeder_kw": 171.186
+  },
+  {
+   "interval": 79,
+   "any_four_wire": 0.52,
+   "balanced": 0.0,
+   "undervoltage": 0.52,
+   "line_overload": 0.02,
+   "feeder_kw": 162.434
+  },
+  {
+   "interval": 80,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.6,
+   "line_overload": 0.04,
+   "feeder_kw": 164.932
+  },
+  {
+   "interval": 81,
+   "any_four_wire": 0.46,
+   "balanced": 0.0,
+   "undervoltage": 0.46,
+   "line_overload": 0.0,
+   "feeder_kw": 159.512
+  },
+  {
+   "interval": 82,
+   "any_four_wire": 0.42,
+   "balanced": 0.0,
+   "undervoltage": 0.42,
+   "line_overload": 0.02,
+   "feeder_kw": 152.052
+  },
+  {
+   "interval": 83,
+   "any_four_wire": 0.4,
+   "balanced": 0.0,
+   "undervoltage": 0.4,
+   "line_overload": 0.0,
+   "feeder_kw": 147.746
+  },
+  {
+   "interval": 84,
+   "any_four_wire": 0.4,
+   "balanced": 0.0,
+   "undervoltage": 0.4,
+   "line_overload": 0.0,
+   "feeder_kw": 149.022
+  },
+  {
+   "interval": 85,
+   "any_four_wire": 0.4,
+   "balanced": 0.0,
+   "undervoltage": 0.4,
+   "line_overload": 0.0,
+   "feeder_kw": 147.676
+  },
+  {
+   "interval": 86,
+   "any_four_wire": 0.24,
+   "balanced": 0.0,
+   "undervoltage": 0.24,
+   "line_overload": 0.0,
+   "feeder_kw": 139.216
+  },
+  {
+   "interval": 87,
+   "any_four_wire": 0.34,
+   "balanced": 0.0,
+   "undervoltage": 0.34,
+   "line_overload": 0.0,
+   "feeder_kw": 132.854
+  },
+  {
+   "interval": 88,
+   "any_four_wire": 0.6,
+   "balanced": 0.0,
+   "undervoltage": 0.6,
+   "line_overload": 0.02,
+   "feeder_kw": 150.534
+  },
+  {
+   "interval": 89,
+   "any_four_wire": 0.78,
+   "balanced": 0.0,
+   "undervoltage": 0.78,
+   "line_overload": 0.06,
+   "feeder_kw": 157.796
+  },
+  {
+   "interval": 90,
+   "any_four_wire": 0.88,
+   "balanced": 0.0,
+   "undervoltage": 0.88,
+   "line_overload": 0.18,
+   "feeder_kw": 160.002
+  },
+  {
+   "interval": 91,
+   "any_four_wire": 0.94,
+   "balanced": 0.02,
+   "undervoltage": 0.94,
+   "line_overload": 0.2,
+   "feeder_kw": 169.89
+  },
+  {
+   "interval": 92,
+   "any_four_wire": 0.92,
+   "balanced": 0.08,
+   "undervoltage": 0.92,
+   "line_overload": 0.34,
+   "feeder_kw": 178.432
+  },
+  {
+   "interval": 93,
+   "any_four_wire": 0.96,
+   "balanced": 0.06,
+   "undervoltage": 0.96,
+   "line_overload": 0.3,
+   "feeder_kw": 178.9
+  },
+  {
+   "interval": 94,
+   "any_four_wire": 0.96,
+   "balanced": 0.06,
+   "undervoltage": 0.96,
+   "line_overload": 0.42,
+   "feeder_kw": 174.106
+  },
+  {
+   "interval": 95,
+   "any_four_wire": 0.98,
+   "balanced": 0.02,
+   "undervoltage": 0.98,
+   "line_overload": 0.22,
+   "feeder_kw": 171.884
+  }
+ ],
+ "doe_four_wire_ci": {
+  "file": "data_out/doe/hydra/2024-12-15_certified_4w_b_opendss_exact_sph4_seed101.json",
+  "intervals_with_ci_hi_below_0.95": {
+   "export|ac": 96,
+   "export|b_opendss_exact": 86,
+   "import|ac": 96,
+   "import|b_opendss_exact": 96
+  },
+  "per_interval": [
+   {
+    "step": 33504,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.425,
+    "ci95_lo": 0.3556,
+    "ci95_hi": 0.4967,
+    "n": 200,
+    "limit_kw": 2.5776
+   },
+   {
+    "step": 33504,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.27,
+    "ci95_lo": 0.2098,
+    "ci95_hi": 0.3372,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33504,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33504,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33505,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.64,
+    "ci95_lo": 0.5693,
+    "ci95_hi": 0.7065,
+    "n": 200,
+    "limit_kw": 2.456
+   },
+   {
+    "step": 33505,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.195,
+    "ci95_lo": 0.1425,
+    "ci95_hi": 0.2568,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33505,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.005,
+    "ci95_lo": 0.0001,
+    "ci95_hi": 0.0275,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33505,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.005,
+    "ci95_lo": 0.0001,
+    "ci95_hi": 0.0275,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33506,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.65,
+    "ci95_lo": 0.5795,
+    "ci95_hi": 0.7159,
+    "n": 200,
+    "limit_kw": 2.4336
+   },
+   {
+    "step": 33506,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.275,
+    "ci95_lo": 0.2144,
+    "ci95_hi": 0.3424,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33506,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33506,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33507,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.67,
+    "ci95_lo": 0.6002,
+    "ci95_hi": 0.7347,
+    "n": 200,
+    "limit_kw": 2.432
+   },
+   {
+    "step": 33507,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.305,
+    "ci95_lo": 0.242,
+    "ci95_hi": 0.3739,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33507,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33507,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33508,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.635,
+    "ci95_lo": 0.5642,
+    "ci95_hi": 0.7018,
+    "n": 200,
+    "limit_kw": 2.4448
+   },
+   {
+    "step": 33508,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.435,
+    "ci95_lo": 0.3652,
+    "ci95_hi": 0.5067,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33508,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.02,
+    "ci95_lo": 0.0055,
+    "ci95_hi": 0.0504,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33508,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.02,
+    "ci95_lo": 0.0055,
+    "ci95_hi": 0.0504,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33509,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.645,
+    "ci95_lo": 0.5744,
+    "ci95_hi": 0.7112,
+    "n": 200,
+    "limit_kw": 2.4432
+   },
+   {
+    "step": 33509,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.455,
+    "ci95_lo": 0.3846,
+    "ci95_hi": 0.5267,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33509,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33509,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33510,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.6,
+    "ci95_lo": 0.5285,
+    "ci95_hi": 0.6685,
+    "n": 200,
+    "limit_kw": 2.4224
+   },
+   {
+    "step": 33510,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.45,
+    "ci95_lo": 0.3798,
+    "ci95_hi": 0.5218,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33510,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.015,
+    "ci95_lo": 0.0031,
+    "ci95_hi": 0.0432,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33510,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.015,
+    "ci95_lo": 0.0031,
+    "ci95_hi": 0.0432,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33511,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.505,
+    "ci95_lo": 0.4336,
+    "ci95_hi": 0.5763,
+    "n": 200,
+    "limit_kw": 2.4352
+   },
+   {
+    "step": 33511,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.575,
+    "ci95_lo": 0.5033,
+    "ci95_hi": 0.6444,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33511,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33511,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33512,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.58,
+    "ci95_lo": 0.5083,
+    "ci95_hi": 0.6493,
+    "n": 200,
+    "limit_kw": 2.4224
+   },
+   {
+    "step": 33512,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.55,
+    "ci95_lo": 0.4782,
+    "ci95_hi": 0.6202,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33512,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.045,
+    "ci95_lo": 0.0208,
+    "ci95_hi": 0.0837,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33512,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.045,
+    "ci95_lo": 0.0208,
+    "ci95_hi": 0.0837,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33513,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.63,
+    "ci95_lo": 0.5591,
+    "ci95_hi": 0.697,
+    "n": 200,
+    "limit_kw": 2.3456
+   },
+   {
+    "step": 33513,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.59,
+    "ci95_lo": 0.5184,
+    "ci95_hi": 0.6589,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33513,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.1,
+    "ci95_lo": 0.0622,
+    "ci95_hi": 0.1502,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33513,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.1,
+    "ci95_lo": 0.0622,
+    "ci95_hi": 0.1502,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33514,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.6,
+    "ci95_lo": 0.5285,
+    "ci95_hi": 0.6685,
+    "n": 200,
+    "limit_kw": 2.3568
+   },
+   {
+    "step": 33514,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.515,
+    "ci95_lo": 0.4435,
+    "ci95_hi": 0.5861,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33514,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.025,
+    "ci95_lo": 0.0082,
+    "ci95_hi": 0.0574,
+    "n": 200,
+    "limit_kw": 0.0663
+   },
+   {
+    "step": 33514,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33515,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.555,
+    "ci95_lo": 0.4832,
+    "ci95_hi": 0.6251,
+    "n": 200,
+    "limit_kw": 2.3568
+   },
+   {
+    "step": 33515,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.695,
+    "ci95_lo": 0.6261,
+    "ci95_hi": 0.758,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33515,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33515,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33516,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.565,
+    "ci95_lo": 0.4933,
+    "ci95_hi": 0.6348,
+    "n": 200,
+    "limit_kw": 2.3456
+   },
+   {
+    "step": 33516,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.625,
+    "ci95_lo": 0.5539,
+    "ci95_hi": 0.6923,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33516,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.08,
+    "ci95_lo": 0.0464,
+    "ci95_hi": 0.1267,
+    "n": 200,
+    "limit_kw": 0.0142
+   },
+   {
+    "step": 33516,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.08,
+    "ci95_lo": 0.0464,
+    "ci95_hi": 0.1267,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33517,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.59,
+    "ci95_lo": 0.5184,
+    "ci95_hi": 0.6589,
+    "n": 200,
+    "limit_kw": 2.336
+   },
+   {
+    "step": 33517,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.645,
+    "ci95_lo": 0.5744,
+    "ci95_hi": 0.7112,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33517,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.07,
+    "ci95_lo": 0.0388,
+    "ci95_hi": 0.1147,
+    "n": 200,
+    "limit_kw": 0.0237
+   },
+   {
+    "step": 33517,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.085,
+    "ci95_lo": 0.0503,
+    "ci95_hi": 0.1326,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33518,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.54,
+    "ci95_lo": 0.4683,
+    "ci95_hi": 0.6105,
+    "n": 200,
+    "limit_kw": 2.3168
+   },
+   {
+    "step": 33518,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.73,
+    "ci95_lo": 0.6628,
+    "ci95_hi": 0.7902,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33518,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.095,
+    "ci95_lo": 0.0582,
+    "ci95_hi": 0.1444,
+    "n": 200,
+    "limit_kw": 0.1231
+   },
+   {
+    "step": 33518,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.145,
+    "ci95_lo": 0.0993,
+    "ci95_hi": 0.2016,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33519,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.685,
+    "ci95_lo": 0.6157,
+    "ci95_hi": 0.7487,
+    "n": 200,
+    "limit_kw": 2.2512
+   },
+   {
+    "step": 33519,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.735,
+    "ci95_lo": 0.6681,
+    "ci95_hi": 0.7948,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33519,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.055,
+    "ci95_lo": 0.0278,
+    "ci95_hi": 0.0963,
+    "n": 200,
+    "limit_kw": 0.2036
+   },
+   {
+    "step": 33519,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33520,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.55,
+    "ci95_lo": 0.4782,
+    "ci95_hi": 0.6202,
+    "n": 200,
+    "limit_kw": 2.3168
+   },
+   {
+    "step": 33520,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.745,
+    "ci95_lo": 0.6787,
+    "ci95_hi": 0.8039,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33520,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.1,
+    "ci95_lo": 0.0622,
+    "ci95_hi": 0.1502,
+    "n": 200,
+    "limit_kw": 0.1018
+   },
+   {
+    "step": 33520,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.13,
+    "ci95_lo": 0.0867,
+    "ci95_hi": 0.1847,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33521,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.505,
+    "ci95_lo": 0.4336,
+    "ci95_hi": 0.5763,
+    "n": 200,
+    "limit_kw": 2.3168
+   },
+   {
+    "step": 33521,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.715,
+    "ci95_lo": 0.6471,
+    "ci95_hi": 0.7764,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33521,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.06,
+    "ci95_lo": 0.0314,
+    "ci95_hi": 0.1025,
+    "n": 200,
+    "limit_kw": 0.206
+   },
+   {
+    "step": 33521,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.115,
+    "ci95_lo": 0.0743,
+    "ci95_hi": 0.1675,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33522,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.67,
+    "ci95_lo": 0.6002,
+    "ci95_hi": 0.7347,
+    "n": 200,
+    "limit_kw": 2.2672
+   },
+   {
+    "step": 33522,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.71,
+    "ci95_lo": 0.6418,
+    "ci95_hi": 0.7718,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33522,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.11,
+    "ci95_lo": 0.0702,
+    "ci95_hi": 0.1618,
+    "n": 200,
+    "limit_kw": 0.071
+   },
+   {
+    "step": 33522,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.125,
+    "ci95_lo": 0.0826,
+    "ci95_hi": 0.179,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33523,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.52,
+    "ci95_lo": 0.4484,
+    "ci95_hi": 0.591,
+    "n": 200,
+    "limit_kw": 2.32
+   },
+   {
+    "step": 33523,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.705,
+    "ci95_lo": 0.6366,
+    "ci95_hi": 0.7672,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33523,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.095,
+    "ci95_lo": 0.0582,
+    "ci95_hi": 0.1444,
+    "n": 200,
+    "limit_kw": 0.0426
+   },
+   {
+    "step": 33523,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.095,
+    "ci95_lo": 0.0582,
+    "ci95_hi": 0.1444,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33524,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.515,
+    "ci95_lo": 0.4435,
+    "ci95_hi": 0.5861,
+    "n": 200,
+    "limit_kw": 2.3152
+   },
+   {
+    "step": 33524,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.72,
+    "ci95_lo": 0.6523,
+    "ci95_hi": 0.781,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33524,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.08,
+    "ci95_lo": 0.0464,
+    "ci95_hi": 0.1267,
+    "n": 200,
+    "limit_kw": 0.1208
+   },
+   {
+    "step": 33524,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.12,
+    "ci95_lo": 0.0784,
+    "ci95_hi": 0.1733,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33525,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.63,
+    "ci95_lo": 0.5591,
+    "ci95_hi": 0.697,
+    "n": 200,
+    "limit_kw": 2.2688
+   },
+   {
+    "step": 33525,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.715,
+    "ci95_lo": 0.6471,
+    "ci95_hi": 0.7764,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33525,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.0426
+   },
+   {
+    "step": 33525,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.115,
+    "ci95_lo": 0.0743,
+    "ci95_hi": 0.1675,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33526,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.53,
+    "ci95_lo": 0.4583,
+    "ci95_hi": 0.6008,
+    "n": 200,
+    "limit_kw": 2.2688
+   },
+   {
+    "step": 33526,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.765,
+    "ci95_lo": 0.7,
+    "ci95_hi": 0.8219,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33526,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.11,
+    "ci95_lo": 0.0702,
+    "ci95_hi": 0.1618,
+    "n": 200,
+    "limit_kw": 0.1681
+   },
+   {
+    "step": 33526,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.16,
+    "ci95_lo": 0.1121,
+    "ci95_hi": 0.2183,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33527,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.59,
+    "ci95_lo": 0.5184,
+    "ci95_hi": 0.6589,
+    "n": 200,
+    "limit_kw": 2.272
+   },
+   {
+    "step": 33527,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.805,
+    "ci95_lo": 0.7432,
+    "ci95_hi": 0.8575,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33527,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.1444
+   },
+   {
+    "step": 33527,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.17,
+    "ci95_lo": 0.1207,
+    "ci95_hi": 0.2294,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33528,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.65,
+    "ci95_lo": 0.5795,
+    "ci95_hi": 0.7159,
+    "n": 200,
+    "limit_kw": 2.2704
+   },
+   {
+    "step": 33528,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.685,
+    "ci95_lo": 0.6157,
+    "ci95_hi": 0.7487,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33528,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.06,
+    "ci95_lo": 0.0314,
+    "ci95_hi": 0.1025,
+    "n": 200,
+    "limit_kw": 0.1421
+   },
+   {
+    "step": 33528,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.12,
+    "ci95_lo": 0.0784,
+    "ci95_hi": 0.1733,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33529,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.625,
+    "ci95_lo": 0.5539,
+    "ci95_hi": 0.6923,
+    "n": 200,
+    "limit_kw": 2.256
+   },
+   {
+    "step": 33529,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.735,
+    "ci95_lo": 0.6681,
+    "ci95_hi": 0.7948,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33529,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.065,
+    "ci95_lo": 0.0351,
+    "ci95_hi": 0.1086,
+    "n": 200,
+    "limit_kw": 0.1516
+   },
+   {
+    "step": 33529,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.14,
+    "ci95_lo": 0.0951,
+    "ci95_hi": 0.1959,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33530,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.54,
+    "ci95_lo": 0.4683,
+    "ci95_hi": 0.6105,
+    "n": 200,
+    "limit_kw": 2.2656
+   },
+   {
+    "step": 33530,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.805,
+    "ci95_lo": 0.7432,
+    "ci95_hi": 0.8575,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33530,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.12,
+    "ci95_lo": 0.0784,
+    "ci95_hi": 0.1733,
+    "n": 200,
+    "limit_kw": 0.1634
+   },
+   {
+    "step": 33530,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.195,
+    "ci95_lo": 0.1425,
+    "ci95_hi": 0.2568,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33531,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.665,
+    "ci95_lo": 0.595,
+    "ci95_hi": 0.73,
+    "n": 200,
+    "limit_kw": 2.2416
+   },
+   {
+    "step": 33531,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.825,
+    "ci95_lo": 0.7651,
+    "ci95_hi": 0.875,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33531,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.025,
+    "ci95_lo": 0.0082,
+    "ci95_hi": 0.0574,
+    "n": 200,
+    "limit_kw": 0.3363
+   },
+   {
+    "step": 33531,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.22,
+    "ci95_lo": 0.1646,
+    "ci95_hi": 0.2839,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33532,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.55,
+    "ci95_lo": 0.4782,
+    "ci95_hi": 0.6202,
+    "n": 200,
+    "limit_kw": 2.2496
+   },
+   {
+    "step": 33532,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.95,
+    "ci95_lo": 0.91,
+    "ci95_hi": 0.9758,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33532,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.06,
+    "ci95_lo": 0.0314,
+    "ci95_hi": 0.1025,
+    "n": 200,
+    "limit_kw": 0.4783
+   },
+   {
+    "step": 33532,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.43,
+    "ci95_lo": 0.3604,
+    "ci95_hi": 0.5017,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33533,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.62,
+    "ci95_lo": 0.5489,
+    "ci95_hi": 0.6875,
+    "n": 200,
+    "limit_kw": 2.2304
+   },
+   {
+    "step": 33533,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.925,
+    "ci95_lo": 0.8793,
+    "ci95_hi": 0.9574,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33533,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.075,
+    "ci95_lo": 0.0426,
+    "ci95_hi": 0.1207,
+    "n": 200,
+    "limit_kw": 0.3599
+   },
+   {
+    "step": 33533,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.405,
+    "ci95_lo": 0.3363,
+    "ci95_hi": 0.4765,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33534,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.46,
+    "ci95_lo": 0.3895,
+    "ci95_hi": 0.5317,
+    "n": 200,
+    "limit_kw": 2.28
+   },
+   {
+    "step": 33534,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.925,
+    "ci95_lo": 0.8793,
+    "ci95_hi": 0.9574,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33534,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.065,
+    "ci95_lo": 0.0351,
+    "ci95_hi": 0.1086,
+    "n": 200,
+    "limit_kw": 0.4452
+   },
+   {
+    "step": 33534,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.415,
+    "ci95_lo": 0.3459,
+    "ci95_hi": 0.4866,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33535,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.55,
+    "ci95_lo": 0.4782,
+    "ci95_hi": 0.6202,
+    "n": 200,
+    "limit_kw": 2.2672
+   },
+   {
+    "step": 33535,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.955,
+    "ci95_lo": 0.9163,
+    "ci95_hi": 0.9792,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33535,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.015,
+    "ci95_lo": 0.0031,
+    "ci95_hi": 0.0432,
+    "n": 200,
+    "limit_kw": 0.5091
+   },
+   {
+    "step": 33535,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.485,
+    "ci95_lo": 0.4139,
+    "ci95_hi": 0.5565,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33536,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.475,
+    "ci95_lo": 0.4041,
+    "ci95_hi": 0.5466,
+    "n": 200,
+    "limit_kw": 2.3296
+   },
+   {
+    "step": 33536,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.985,
+    "ci95_lo": 0.9568,
+    "ci95_hi": 0.9969,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33536,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.045,
+    "ci95_lo": 0.0208,
+    "ci95_hi": 0.0837,
+    "n": 200,
+    "limit_kw": 0.4641
+   },
+   {
+    "step": 33536,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.475,
+    "ci95_lo": 0.4041,
+    "ci95_hi": 0.5466,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33537,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.465,
+    "ci95_lo": 0.3944,
+    "ci95_hi": 0.5367,
+    "n": 200,
+    "limit_kw": 2.3712
+   },
+   {
+    "step": 33537,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.96,
+    "ci95_lo": 0.9227,
+    "ci95_hi": 0.9826,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33537,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.4049
+   },
+   {
+    "step": 33537,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.35,
+    "ci95_lo": 0.2841,
+    "ci95_hi": 0.4205,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33538,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.45,
+    "ci95_lo": 0.3798,
+    "ci95_hi": 0.5218,
+    "n": 200,
+    "limit_kw": 2.4
+   },
+   {
+    "step": 33538,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.91,
+    "ci95_lo": 0.8615,
+    "ci95_hi": 0.9458,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33538,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.045,
+    "ci95_lo": 0.0208,
+    "ci95_hi": 0.0837,
+    "n": 200,
+    "limit_kw": 0.3339
+   },
+   {
+    "step": 33538,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.275,
+    "ci95_lo": 0.2144,
+    "ci95_hi": 0.3424,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33539,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.515,
+    "ci95_lo": 0.4435,
+    "ci95_hi": 0.5861,
+    "n": 200,
+    "limit_kw": 2.4064
+   },
+   {
+    "step": 33539,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.865,
+    "ci95_lo": 0.8097,
+    "ci95_hi": 0.9091,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33539,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.02,
+    "ci95_lo": 0.0055,
+    "ci95_hi": 0.0504,
+    "n": 200,
+    "limit_kw": 0.3552
+   },
+   {
+    "step": 33539,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.28,
+    "ci95_lo": 0.219,
+    "ci95_hi": 0.3477,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33540,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.575,
+    "ci95_lo": 0.5033,
+    "ci95_hi": 0.6444,
+    "n": 200,
+    "limit_kw": 2.432
+   },
+   {
+    "step": 33540,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.825,
+    "ci95_lo": 0.7651,
+    "ci95_hi": 0.875,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33540,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.2486
+   },
+   {
+    "step": 33540,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.195,
+    "ci95_lo": 0.1425,
+    "ci95_hi": 0.2568,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33541,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.485,
+    "ci95_lo": 0.4139,
+    "ci95_hi": 0.5565,
+    "n": 200,
+    "limit_kw": 2.44
+   },
+   {
+    "step": 33541,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.87,
+    "ci95_lo": 0.8153,
+    "ci95_hi": 0.9133,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33541,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.2723
+   },
+   {
+    "step": 33541,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.215,
+    "ci95_lo": 0.1602,
+    "ci95_hi": 0.2785,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33542,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.555,
+    "ci95_lo": 0.4832,
+    "ci95_hi": 0.6251,
+    "n": 200,
+    "limit_kw": 2.424
+   },
+   {
+    "step": 33542,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.875,
+    "ci95_lo": 0.821,
+    "ci95_hi": 0.9174,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33542,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.025,
+    "ci95_lo": 0.0082,
+    "ci95_hi": 0.0574,
+    "n": 200,
+    "limit_kw": 0.322
+   },
+   {
+    "step": 33542,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.195,
+    "ci95_lo": 0.1425,
+    "ci95_hi": 0.2568,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33543,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.46,
+    "ci95_lo": 0.3895,
+    "ci95_hi": 0.5317,
+    "n": 200,
+    "limit_kw": 2.4
+   },
+   {
+    "step": 33543,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.905,
+    "ci95_lo": 0.8556,
+    "ci95_hi": 0.9418,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33543,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.01,
+    "ci95_lo": 0.0012,
+    "ci95_hi": 0.0357,
+    "n": 200,
+    "limit_kw": 0.3623
+   },
+   {
+    "step": 33543,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.25,
+    "ci95_lo": 0.1916,
+    "ci95_hi": 0.316,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33544,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.505,
+    "ci95_lo": 0.4336,
+    "ci95_hi": 0.5763,
+    "n": 200,
+    "limit_kw": 2.3856
+   },
+   {
+    "step": 33544,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.91,
+    "ci95_lo": 0.8615,
+    "ci95_hi": 0.9458,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33544,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.02,
+    "ci95_lo": 0.0055,
+    "ci95_hi": 0.0504,
+    "n": 200,
+    "limit_kw": 0.3505
+   },
+   {
+    "step": 33544,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.22,
+    "ci95_lo": 0.1646,
+    "ci95_hi": 0.2839,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33545,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.775,
+    "ci95_lo": 0.7108,
+    "ci95_hi": 0.8309,
+    "n": 200,
+    "limit_kw": 2.3056
+   },
+   {
+    "step": 33545,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.915,
+    "ci95_lo": 0.8674,
+    "ci95_hi": 0.9497,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33545,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.025,
+    "ci95_lo": 0.0082,
+    "ci95_hi": 0.0574,
+    "n": 200,
+    "limit_kw": 0.3197
+   },
+   {
+    "step": 33545,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.22,
+    "ci95_lo": 0.1646,
+    "ci95_hi": 0.2839,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33546,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.535,
+    "ci95_lo": 0.4633,
+    "ci95_hi": 0.6056,
+    "n": 200,
+    "limit_kw": 2.3776
+   },
+   {
+    "step": 33546,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.895,
+    "ci95_lo": 0.844,
+    "ci95_hi": 0.9338,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33546,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.03,
+    "ci95_lo": 0.0111,
+    "ci95_hi": 0.0642,
+    "n": 200,
+    "limit_kw": 0.367
+   },
+   {
+    "step": 33546,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.23,
+    "ci95_lo": 0.1736,
+    "ci95_hi": 0.2946,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33547,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.565,
+    "ci95_lo": 0.4933,
+    "ci95_hi": 0.6348,
+    "n": 200,
+    "limit_kw": 2.4256
+   },
+   {
+    "step": 33547,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.89,
+    "ci95_lo": 0.8382,
+    "ci95_hi": 0.9298,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33547,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.045,
+    "ci95_lo": 0.0208,
+    "ci95_hi": 0.0837,
+    "n": 200,
+    "limit_kw": 0.2842
+   },
+   {
+    "step": 33547,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.255,
+    "ci95_lo": 0.1961,
+    "ci95_hi": 0.3213,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33548,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.59,
+    "ci95_lo": 0.5184,
+    "ci95_hi": 0.6589,
+    "n": 200,
+    "limit_kw": 2.4288
+   },
+   {
+    "step": 33548,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.865,
+    "ci95_lo": 0.8097,
+    "ci95_hi": 0.9091,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33548,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.11,
+    "ci95_lo": 0.0702,
+    "ci95_hi": 0.1618,
+    "n": 200,
+    "limit_kw": 0.1397
+   },
+   {
+    "step": 33548,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.185,
+    "ci95_lo": 0.1337,
+    "ci95_hi": 0.2459,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33549,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.545,
+    "ci95_lo": 0.4733,
+    "ci95_hi": 0.6154,
+    "n": 200,
+    "limit_kw": 2.488
+   },
+   {
+    "step": 33549,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.765,
+    "ci95_lo": 0.7,
+    "ci95_hi": 0.8219,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33549,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.2202
+   },
+   {
+    "step": 33549,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.125,
+    "ci95_lo": 0.0826,
+    "ci95_hi": 0.179,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33550,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.645,
+    "ci95_lo": 0.5744,
+    "ci95_hi": 0.7112,
+    "n": 200,
+    "limit_kw": 2.424
+   },
+   {
+    "step": 33550,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.845,
+    "ci95_lo": 0.7873,
+    "ci95_hi": 0.8922,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33550,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.045,
+    "ci95_lo": 0.0208,
+    "ci95_hi": 0.0837,
+    "n": 200,
+    "limit_kw": 0.1918
+   },
+   {
+    "step": 33550,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.19,
+    "ci95_lo": 0.1381,
+    "ci95_hi": 0.2513,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33551,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.655,
+    "ci95_lo": 0.5847,
+    "ci95_hi": 0.7206,
+    "n": 200,
+    "limit_kw": 2.4672
+   },
+   {
+    "step": 33551,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.795,
+    "ci95_lo": 0.7323,
+    "ci95_hi": 0.8487,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33551,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.075,
+    "ci95_lo": 0.0426,
+    "ci95_hi": 0.1207,
+    "n": 200,
+    "limit_kw": 0.1421
+   },
+   {
+    "step": 33551,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.13,
+    "ci95_lo": 0.0867,
+    "ci95_hi": 0.1847,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33552,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.595,
+    "ci95_lo": 0.5235,
+    "ci95_hi": 0.6637,
+    "n": 200,
+    "limit_kw": 2.4864
+   },
+   {
+    "step": 33552,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.79,
+    "ci95_lo": 0.7269,
+    "ci95_hi": 0.8443,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33552,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.04,
+    "ci95_lo": 0.0174,
+    "ci95_hi": 0.0773,
+    "n": 200,
+    "limit_kw": 0.1113
+   },
+   {
+    "step": 33552,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.125,
+    "ci95_lo": 0.0826,
+    "ci95_hi": 0.179,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33553,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.655,
+    "ci95_lo": 0.5847,
+    "ci95_hi": 0.7206,
+    "n": 200,
+    "limit_kw": 2.464
+   },
+   {
+    "step": 33553,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.82,
+    "ci95_lo": 0.7596,
+    "ci95_hi": 0.8706,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33553,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.02,
+    "ci95_lo": 0.0055,
+    "ci95_hi": 0.0504,
+    "n": 200,
+    "limit_kw": 0.1563
+   },
+   {
+    "step": 33553,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.09,
+    "ci95_lo": 0.0542,
+    "ci95_hi": 0.1385,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33554,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.555,
+    "ci95_lo": 0.4832,
+    "ci95_hi": 0.6251,
+    "n": 200,
+    "limit_kw": 2.472
+   },
+   {
+    "step": 33554,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.84,
+    "ci95_lo": 0.7817,
+    "ci95_hi": 0.8879,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33554,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.015,
+    "ci95_lo": 0.0031,
+    "ci95_hi": 0.0432,
+    "n": 200,
+    "limit_kw": 0.2108
+   },
+   {
+    "step": 33554,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.12,
+    "ci95_lo": 0.0784,
+    "ci95_hi": 0.1733,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33555,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.54,
+    "ci95_lo": 0.4683,
+    "ci95_hi": 0.6105,
+    "n": 200,
+    "limit_kw": 2.4528
+   },
+   {
+    "step": 33555,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.855,
+    "ci95_lo": 0.7984,
+    "ci95_hi": 0.9007,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33555,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.04,
+    "ci95_lo": 0.0174,
+    "ci95_hi": 0.0773,
+    "n": 200,
+    "limit_kw": 0.2084
+   },
+   {
+    "step": 33555,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.145,
+    "ci95_lo": 0.0993,
+    "ci95_hi": 0.2016,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33556,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.52,
+    "ci95_lo": 0.4484,
+    "ci95_hi": 0.591,
+    "n": 200,
+    "limit_kw": 2.4576
+   },
+   {
+    "step": 33556,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.8,
+    "ci95_lo": 0.7378,
+    "ci95_hi": 0.8531,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33556,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.07,
+    "ci95_lo": 0.0388,
+    "ci95_hi": 0.1147,
+    "n": 200,
+    "limit_kw": 0.1421
+   },
+   {
+    "step": 33556,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.145,
+    "ci95_lo": 0.0993,
+    "ci95_hi": 0.2016,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33557,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.625,
+    "ci95_lo": 0.5539,
+    "ci95_hi": 0.6923,
+    "n": 200,
+    "limit_kw": 2.4048
+   },
+   {
+    "step": 33557,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.84,
+    "ci95_lo": 0.7817,
+    "ci95_hi": 0.8879,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33557,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.2202
+   },
+   {
+    "step": 33557,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.15,
+    "ci95_lo": 0.1035,
+    "ci95_hi": 0.2072,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33558,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.535,
+    "ci95_lo": 0.4633,
+    "ci95_hi": 0.6056,
+    "n": 200,
+    "limit_kw": 2.4752
+   },
+   {
+    "step": 33558,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.79,
+    "ci95_lo": 0.7269,
+    "ci95_hi": 0.8443,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33558,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.125,
+    "ci95_lo": 0.0826,
+    "ci95_hi": 0.179,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33558,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.125,
+    "ci95_lo": 0.0826,
+    "ci95_hi": 0.179,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33559,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.585,
+    "ci95_lo": 0.5134,
+    "ci95_hi": 0.6541,
+    "n": 200,
+    "limit_kw": 2.4496
+   },
+   {
+    "step": 33559,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.73,
+    "ci95_lo": 0.6628,
+    "ci95_hi": 0.7902,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33559,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.1184
+   },
+   {
+    "step": 33559,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33560,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.62,
+    "ci95_lo": 0.5489,
+    "ci95_hi": 0.6875,
+    "n": 200,
+    "limit_kw": 2.4368
+   },
+   {
+    "step": 33560,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.785,
+    "ci95_lo": 0.7215,
+    "ci95_hi": 0.8398,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33560,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.11,
+    "ci95_lo": 0.0702,
+    "ci95_hi": 0.1618,
+    "n": 200,
+    "limit_kw": 0.0687
+   },
+   {
+    "step": 33560,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.165,
+    "ci95_lo": 0.1164,
+    "ci95_hi": 0.2238,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33561,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.735,
+    "ci95_lo": 0.6681,
+    "ci95_hi": 0.7948,
+    "n": 200,
+    "limit_kw": 2.3968
+   },
+   {
+    "step": 33561,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.72,
+    "ci95_lo": 0.6523,
+    "ci95_hi": 0.781,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33561,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.055,
+    "ci95_lo": 0.0278,
+    "ci95_hi": 0.0963,
+    "n": 200,
+    "limit_kw": 0.0852
+   },
+   {
+    "step": 33561,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33562,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.615,
+    "ci95_lo": 0.5438,
+    "ci95_hi": 0.6828,
+    "n": 200,
+    "limit_kw": 2.4304
+   },
+   {
+    "step": 33562,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.775,
+    "ci95_lo": 0.7108,
+    "ci95_hi": 0.8309,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33562,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.09,
+    "ci95_lo": 0.0542,
+    "ci95_hi": 0.1385,
+    "n": 200,
+    "limit_kw": 0.0781
+   },
+   {
+    "step": 33562,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.14,
+    "ci95_lo": 0.0951,
+    "ci95_hi": 0.1959,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33563,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.615,
+    "ci95_lo": 0.5438,
+    "ci95_hi": 0.6828,
+    "n": 200,
+    "limit_kw": 2.4432
+   },
+   {
+    "step": 33563,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.73,
+    "ci95_lo": 0.6628,
+    "ci95_hi": 0.7902,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33563,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.115,
+    "ci95_lo": 0.0743,
+    "ci95_hi": 0.1675,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33563,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.115,
+    "ci95_lo": 0.0743,
+    "ci95_hi": 0.1675,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33564,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.52,
+    "ci95_lo": 0.4484,
+    "ci95_hi": 0.591,
+    "n": 200,
+    "limit_kw": 2.4368
+   },
+   {
+    "step": 33564,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.82,
+    "ci95_lo": 0.7596,
+    "ci95_hi": 0.8706,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33564,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.075,
+    "ci95_lo": 0.0426,
+    "ci95_hi": 0.1207,
+    "n": 200,
+    "limit_kw": 0.1444
+   },
+   {
+    "step": 33564,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.17,
+    "ci95_lo": 0.1207,
+    "ci95_hi": 0.2294,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33565,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.655,
+    "ci95_lo": 0.5847,
+    "ci95_hi": 0.7206,
+    "n": 200,
+    "limit_kw": 2.3888
+   },
+   {
+    "step": 33565,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.845,
+    "ci95_lo": 0.7873,
+    "ci95_hi": 0.8922,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33565,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.085,
+    "ci95_lo": 0.0503,
+    "ci95_hi": 0.1326,
+    "n": 200,
+    "limit_kw": 0.1492
+   },
+   {
+    "step": 33565,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.18,
+    "ci95_lo": 0.1294,
+    "ci95_hi": 0.2404,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33566,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.545,
+    "ci95_lo": 0.4733,
+    "ci95_hi": 0.6154,
+    "n": 200,
+    "limit_kw": 2.4352
+   },
+   {
+    "step": 33566,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.84,
+    "ci95_lo": 0.7817,
+    "ci95_hi": 0.8879,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33566,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.2439
+   },
+   {
+    "step": 33566,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.18,
+    "ci95_lo": 0.1294,
+    "ci95_hi": 0.2404,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33567,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.49,
+    "ci95_lo": 0.4188,
+    "ci95_hi": 0.5615,
+    "n": 200,
+    "limit_kw": 2.4256
+   },
+   {
+    "step": 33567,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.93,
+    "ci95_lo": 0.8853,
+    "ci95_hi": 0.9612,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33567,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.085,
+    "ci95_lo": 0.0503,
+    "ci95_hi": 0.1326,
+    "n": 200,
+    "limit_kw": 0.2155
+   },
+   {
+    "step": 33567,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.28,
+    "ci95_lo": 0.219,
+    "ci95_hi": 0.3477,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33568,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.64,
+    "ci95_lo": 0.5693,
+    "ci95_hi": 0.7065,
+    "n": 200,
+    "limit_kw": 2.3856
+   },
+   {
+    "step": 33568,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.885,
+    "ci95_lo": 0.8325,
+    "ci95_hi": 0.9257,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33568,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.065,
+    "ci95_lo": 0.0351,
+    "ci95_hi": 0.1086,
+    "n": 200,
+    "limit_kw": 0.2226
+   },
+   {
+    "step": 33568,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.2,
+    "ci95_lo": 0.1469,
+    "ci95_hi": 0.2622,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33569,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.6,
+    "ci95_lo": 0.5285,
+    "ci95_hi": 0.6685,
+    "n": 200,
+    "limit_kw": 2.4064
+   },
+   {
+    "step": 33569,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.92,
+    "ci95_lo": 0.8733,
+    "ci95_hi": 0.9536,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33569,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.045,
+    "ci95_lo": 0.0208,
+    "ci95_hi": 0.0837,
+    "n": 200,
+    "limit_kw": 0.2628
+   },
+   {
+    "step": 33569,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.25,
+    "ci95_lo": 0.1916,
+    "ci95_hi": 0.316,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33570,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.605,
+    "ci95_lo": 0.5336,
+    "ci95_hi": 0.6732,
+    "n": 200,
+    "limit_kw": 2.4432
+   },
+   {
+    "step": 33570,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.875,
+    "ci95_lo": 0.821,
+    "ci95_hi": 0.9174,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33570,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.065,
+    "ci95_lo": 0.0351,
+    "ci95_hi": 0.1086,
+    "n": 200,
+    "limit_kw": 0.1705
+   },
+   {
+    "step": 33570,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.21,
+    "ci95_lo": 0.1557,
+    "ci95_hi": 0.2731,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33571,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.42,
+    "ci95_lo": 0.3507,
+    "ci95_hi": 0.4917,
+    "n": 200,
+    "limit_kw": 2.488
+   },
+   {
+    "step": 33571,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.85,
+    "ci95_lo": 0.7928,
+    "ci95_hi": 0.8965,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33571,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.08,
+    "ci95_lo": 0.0464,
+    "ci95_hi": 0.1267,
+    "n": 200,
+    "limit_kw": 0.1729
+   },
+   {
+    "step": 33571,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.27,
+    "ci95_lo": 0.2098,
+    "ci95_hi": 0.3372,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33572,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.505,
+    "ci95_lo": 0.4336,
+    "ci95_hi": 0.5763,
+    "n": 200,
+    "limit_kw": 2.4896
+   },
+   {
+    "step": 33572,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.78,
+    "ci95_lo": 0.7161,
+    "ci95_hi": 0.8354,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33572,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.085,
+    "ci95_lo": 0.0503,
+    "ci95_hi": 0.1326,
+    "n": 200,
+    "limit_kw": 0.1326
+   },
+   {
+    "step": 33572,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.175,
+    "ci95_lo": 0.125,
+    "ci95_hi": 0.2349,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33573,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.61,
+    "ci95_lo": 0.5387,
+    "ci95_hi": 0.678,
+    "n": 200,
+    "limit_kw": 2.5088
+   },
+   {
+    "step": 33573,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.775,
+    "ci95_lo": 0.7108,
+    "ci95_hi": 0.8309,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33573,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.02,
+    "ci95_lo": 0.0055,
+    "ci95_hi": 0.0504,
+    "n": 200,
+    "limit_kw": 0.1468
+   },
+   {
+    "step": 33573,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.125,
+    "ci95_lo": 0.0826,
+    "ci95_hi": 0.179,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33574,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.52,
+    "ci95_lo": 0.4484,
+    "ci95_hi": 0.591,
+    "n": 200,
+    "limit_kw": 2.5312
+   },
+   {
+    "step": 33574,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.715,
+    "ci95_lo": 0.6471,
+    "ci95_hi": 0.7764,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33574,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.065,
+    "ci95_lo": 0.0351,
+    "ci95_hi": 0.1086,
+    "n": 200,
+    "limit_kw": 0.0308
+   },
+   {
+    "step": 33574,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.075,
+    "ci95_lo": 0.0426,
+    "ci95_hi": 0.1207,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33575,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.63,
+    "ci95_lo": 0.5591,
+    "ci95_hi": 0.697,
+    "n": 200,
+    "limit_kw": 2.5456
+   },
+   {
+    "step": 33575,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.64,
+    "ci95_lo": 0.5693,
+    "ci95_hi": 0.7065,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33575,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.03,
+    "ci95_lo": 0.0111,
+    "ci95_hi": 0.0642,
+    "n": 200,
+    "limit_kw": 0.0734
+   },
+   {
+    "step": 33575,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33576,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.6,
+    "ci95_lo": 0.5285,
+    "ci95_hi": 0.6685,
+    "n": 200,
+    "limit_kw": 2.5664
+   },
+   {
+    "step": 33576,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.575,
+    "ci95_lo": 0.5033,
+    "ci95_hi": 0.6444,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33576,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.0474
+   },
+   {
+    "step": 33576,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.07,
+    "ci95_lo": 0.0388,
+    "ci95_hi": 0.1147,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33577,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.53,
+    "ci95_lo": 0.4583,
+    "ci95_hi": 0.6008,
+    "n": 200,
+    "limit_kw": 2.576
+   },
+   {
+    "step": 33577,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.68,
+    "ci95_lo": 0.6105,
+    "ci95_hi": 0.744,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33577,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.07,
+    "ci95_lo": 0.0388,
+    "ci95_hi": 0.1147,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33577,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.07,
+    "ci95_lo": 0.0388,
+    "ci95_hi": 0.1147,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33578,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.565,
+    "ci95_lo": 0.4933,
+    "ci95_hi": 0.6348,
+    "n": 200,
+    "limit_kw": 2.5472
+   },
+   {
+    "step": 33578,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.63,
+    "ci95_lo": 0.5591,
+    "ci95_hi": 0.697,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33578,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.06,
+    "ci95_lo": 0.0314,
+    "ci95_hi": 0.1025,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33578,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.06,
+    "ci95_lo": 0.0314,
+    "ci95_hi": 0.1025,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33579,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.515,
+    "ci95_lo": 0.4435,
+    "ci95_hi": 0.5861,
+    "n": 200,
+    "limit_kw": 2.5792
+   },
+   {
+    "step": 33579,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.62,
+    "ci95_lo": 0.5489,
+    "ci95_hi": 0.6875,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33579,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33579,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33580,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.52,
+    "ci95_lo": 0.4484,
+    "ci95_hi": 0.591,
+    "n": 200,
+    "limit_kw": 2.52
+   },
+   {
+    "step": 33580,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.7,
+    "ci95_lo": 0.6314,
+    "ci95_hi": 0.7626,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33580,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.065,
+    "ci95_lo": 0.0351,
+    "ci95_hi": 0.1086,
+    "n": 200,
+    "limit_kw": 0.0403
+   },
+   {
+    "step": 33580,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.075,
+    "ci95_lo": 0.0426,
+    "ci95_hi": 0.1207,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33581,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.55,
+    "ci95_lo": 0.4782,
+    "ci95_hi": 0.6202,
+    "n": 200,
+    "limit_kw": 2.5168
+   },
+   {
+    "step": 33581,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.715,
+    "ci95_lo": 0.6471,
+    "ci95_hi": 0.7764,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33581,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.1302
+   },
+   {
+    "step": 33581,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.095,
+    "ci95_lo": 0.0582,
+    "ci95_hi": 0.1444,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33582,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.44,
+    "ci95_lo": 0.3701,
+    "ci95_hi": 0.5117,
+    "n": 200,
+    "limit_kw": 2.5424
+   },
+   {
+    "step": 33582,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.745,
+    "ci95_lo": 0.6787,
+    "ci95_hi": 0.8039,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33582,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.115,
+    "ci95_lo": 0.0743,
+    "ci95_hi": 0.1675,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33582,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.115,
+    "ci95_lo": 0.0743,
+    "ci95_hi": 0.1675,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33583,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.475,
+    "ci95_lo": 0.4041,
+    "ci95_hi": 0.5466,
+    "n": 200,
+    "limit_kw": 2.512
+   },
+   {
+    "step": 33583,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.75,
+    "ci95_lo": 0.684,
+    "ci95_hi": 0.8084,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33583,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.105,
+    "ci95_lo": 0.0662,
+    "ci95_hi": 0.156,
+    "n": 200,
+    "limit_kw": 0.0521
+   },
+   {
+    "step": 33583,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.125,
+    "ci95_lo": 0.0826,
+    "ci95_hi": 0.179,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33584,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.5,
+    "ci95_lo": 0.4287,
+    "ci95_hi": 0.5713,
+    "n": 200,
+    "limit_kw": 2.5088
+   },
+   {
+    "step": 33584,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.81,
+    "ci95_lo": 0.7487,
+    "ci95_hi": 0.8619,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33584,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.02,
+    "ci95_lo": 0.0055,
+    "ci95_hi": 0.0504,
+    "n": 200,
+    "limit_kw": 0.225
+   },
+   {
+    "step": 33584,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.11,
+    "ci95_lo": 0.0702,
+    "ci95_hi": 0.1618,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33585,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.56,
+    "ci95_lo": 0.4883,
+    "ci95_hi": 0.6299,
+    "n": 200,
+    "limit_kw": 2.4816
+   },
+   {
+    "step": 33585,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.805,
+    "ci95_lo": 0.7432,
+    "ci95_hi": 0.8575,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33585,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.04,
+    "ci95_lo": 0.0174,
+    "ci95_hi": 0.0773,
+    "n": 200,
+    "limit_kw": 0.1492
+   },
+   {
+    "step": 33585,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.16,
+    "ci95_lo": 0.1121,
+    "ci95_hi": 0.2183,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33586,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.565,
+    "ci95_lo": 0.4933,
+    "ci95_hi": 0.6348,
+    "n": 200,
+    "limit_kw": 2.4144
+   },
+   {
+    "step": 33586,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.88,
+    "ci95_lo": 0.8267,
+    "ci95_hi": 0.9216,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33586,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.145,
+    "ci95_lo": 0.0993,
+    "ci95_hi": 0.2016,
+    "n": 200,
+    "limit_kw": 0.1326
+   },
+   {
+    "step": 33586,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.245,
+    "ci95_lo": 0.1871,
+    "ci95_hi": 0.3106,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33587,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.6,
+    "ci95_lo": 0.5285,
+    "ci95_hi": 0.6685,
+    "n": 200,
+    "limit_kw": 2.3888
+   },
+   {
+    "step": 33587,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.915,
+    "ci95_lo": 0.8674,
+    "ci95_hi": 0.9497,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33587,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.025,
+    "ci95_lo": 0.0082,
+    "ci95_hi": 0.0574,
+    "n": 200,
+    "limit_kw": 0.3078
+   },
+   {
+    "step": 33587,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.28,
+    "ci95_lo": 0.219,
+    "ci95_hi": 0.3477,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33588,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.645,
+    "ci95_lo": 0.5744,
+    "ci95_hi": 0.7112,
+    "n": 200,
+    "limit_kw": 2.3712
+   },
+   {
+    "step": 33588,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.93,
+    "ci95_lo": 0.8853,
+    "ci95_hi": 0.9612,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33588,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.075,
+    "ci95_lo": 0.0426,
+    "ci95_hi": 0.1207,
+    "n": 200,
+    "limit_kw": 0.2794
+   },
+   {
+    "step": 33588,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.21,
+    "ci95_lo": 0.1557,
+    "ci95_hi": 0.2731,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33589,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.545,
+    "ci95_lo": 0.4733,
+    "ci95_hi": 0.6154,
+    "n": 200,
+    "limit_kw": 2.4016
+   },
+   {
+    "step": 33589,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.9,
+    "ci95_lo": 0.8498,
+    "ci95_hi": 0.9378,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33589,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.065,
+    "ci95_lo": 0.0351,
+    "ci95_hi": 0.1086,
+    "n": 200,
+    "limit_kw": 0.2368
+   },
+   {
+    "step": 33589,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.33,
+    "ci95_lo": 0.2653,
+    "ci95_hi": 0.3998,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33590,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.665,
+    "ci95_lo": 0.595,
+    "ci95_hi": 0.73,
+    "n": 200,
+    "limit_kw": 2.3632
+   },
+   {
+    "step": 33590,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.945,
+    "ci95_lo": 0.9037,
+    "ci95_hi": 0.9722,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33590,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.05,
+    "ci95_lo": 0.0242,
+    "ci95_hi": 0.09,
+    "n": 200,
+    "limit_kw": 0.3055
+   },
+   {
+    "step": 33590,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.31,
+    "ci95_lo": 0.2467,
+    "ci95_hi": 0.3791,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33591,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.58,
+    "ci95_lo": 0.5083,
+    "ci95_hi": 0.6493,
+    "n": 200,
+    "limit_kw": 2.3728
+   },
+   {
+    "step": 33591,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.9,
+    "ci95_lo": 0.8498,
+    "ci95_hi": 0.9378,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33591,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.055,
+    "ci95_lo": 0.0278,
+    "ci95_hi": 0.0963,
+    "n": 200,
+    "limit_kw": 0.3031
+   },
+   {
+    "step": 33591,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.3,
+    "ci95_lo": 0.2374,
+    "ci95_hi": 0.3686,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33592,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.615,
+    "ci95_lo": 0.5438,
+    "ci95_hi": 0.6828,
+    "n": 200,
+    "limit_kw": 2.3792
+   },
+   {
+    "step": 33592,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.795,
+    "ci95_lo": 0.7323,
+    "ci95_hi": 0.8487,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33592,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.1,
+    "ci95_lo": 0.0622,
+    "ci95_hi": 0.1502,
+    "n": 200,
+    "limit_kw": 0.0876
+   },
+   {
+    "step": 33592,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.17,
+    "ci95_lo": 0.1207,
+    "ci95_hi": 0.2294,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33593,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.74,
+    "ci95_lo": 0.6734,
+    "ci95_hi": 0.7993,
+    "n": 200,
+    "limit_kw": 2.3888
+   },
+   {
+    "step": 33593,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.585,
+    "ci95_lo": 0.5134,
+    "ci95_hi": 0.6541,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33593,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33593,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.035,
+    "ci95_lo": 0.0142,
+    "ci95_hi": 0.0708,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33594,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.595,
+    "ci95_lo": 0.5235,
+    "ci95_hi": 0.6637,
+    "n": 200,
+    "limit_kw": 2.4
+   },
+   {
+    "step": 33594,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.56,
+    "ci95_lo": 0.4883,
+    "ci95_hi": 0.6299,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33594,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.04,
+    "ci95_lo": 0.0174,
+    "ci95_hi": 0.0773,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33594,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.04,
+    "ci95_lo": 0.0174,
+    "ci95_hi": 0.0773,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33595,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.61,
+    "ci95_lo": 0.5387,
+    "ci95_hi": 0.678,
+    "n": 200,
+    "limit_kw": 2.4256
+   },
+   {
+    "step": 33595,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.45,
+    "ci95_lo": 0.3798,
+    "ci95_hi": 0.5218,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33595,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.025,
+    "ci95_lo": 0.0082,
+    "ci95_hi": 0.0574,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33595,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.025,
+    "ci95_lo": 0.0082,
+    "ci95_hi": 0.0574,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33596,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.57,
+    "ci95_lo": 0.4983,
+    "ci95_hi": 0.6396,
+    "n": 200,
+    "limit_kw": 2.4528
+   },
+   {
+    "step": 33596,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.39,
+    "ci95_lo": 0.322,
+    "ci95_hi": 0.4613,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33596,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.015,
+    "ci95_lo": 0.0031,
+    "ci95_hi": 0.0432,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33596,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.015,
+    "ci95_lo": 0.0031,
+    "ci95_hi": 0.0432,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33597,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.66,
+    "ci95_lo": 0.5898,
+    "ci95_hi": 0.7253,
+    "n": 200,
+    "limit_kw": 2.4224
+   },
+   {
+    "step": 33597,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.285,
+    "ci95_lo": 0.2236,
+    "ci95_hi": 0.3529,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33597,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.005,
+    "ci95_lo": 0.0001,
+    "ci95_hi": 0.0275,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33597,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.005,
+    "ci95_lo": 0.0001,
+    "ci95_hi": 0.0275,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33598,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.655,
+    "ci95_lo": 0.5847,
+    "ci95_hi": 0.7206,
+    "n": 200,
+    "limit_kw": 2.4016
+   },
+   {
+    "step": 33598,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.295,
+    "ci95_lo": 0.2328,
+    "ci95_hi": 0.3634,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33598,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.005,
+    "ci95_lo": 0.0001,
+    "ci95_hi": 0.0275,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33598,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.005,
+    "ci95_lo": 0.0001,
+    "ci95_hi": 0.0275,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33599,
+    "direction": "export",
+    "method": "ac",
+    "p_ok": 0.545,
+    "ci95_lo": 0.4733,
+    "ci95_hi": 0.6154,
+    "n": 200,
+    "limit_kw": 2.4544
+   },
+   {
+    "step": 33599,
+    "direction": "export",
+    "method": "b_opendss_exact",
+    "p_ok": 0.3,
+    "ci95_lo": 0.2374,
+    "ci95_hi": 0.3686,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33599,
+    "direction": "import",
+    "method": "ac",
+    "p_ok": 0.03,
+    "ci95_lo": 0.0111,
+    "ci95_hi": 0.0642,
+    "n": 200,
+    "limit_kw": 0.0
+   },
+   {
+    "step": 33599,
+    "direction": "import",
+    "method": "b_opendss_exact",
+    "p_ok": 0.03,
+    "ci95_lo": 0.0111,
+    "ci95_hi": 0.0642,
+    "n": 200,
+    "limit_kw": 0.0
+   }
+  ]
+ },
+ "day": "2024-12-15",
+ "draw_seed": 202,
+ "households_seed": 0
+}
