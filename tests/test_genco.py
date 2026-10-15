@@ -433,3 +433,26 @@ def test_report_final_metrics_and_integrity(tmp_path):
     wrong_seed = _fake_run(tmp_path, "seed.json", "b_opendss_exact", 1.0, seed=0)
     with pytest.raises(SystemExit):
         report_final.load_runs([wrong_seed], expect)
+
+
+
+def test_report_final_seed_fallback_requires_listing_in_manifest(tmp_path):
+    import json
+    from gencodoe import limits, report_final
+    run = _fake_run(tmp_path, "2024-06-28_certified_4w_b_opendss_exact_sph4_seed101_uk_esqcr.json", "b_opendss_exact", 1.0)
+    doc = json.loads(run.read_text())
+    for k in ("scenario_seed", "household_seed"):
+        doc["meta"].pop(k)
+    run.write_text(json.dumps(doc))
+    man = tmp_path / "manifest.json"
+    man.write_text(json.dumps({"jobs": {"1": {"command": f"x --out data_out/doe/{run.name}"}},
+                               "seeds": {"scenario_and_verification_seed": 101,
+                                         "household_technology_assignment_seed": 101}}))
+    expect = {"jurisdiction": limits.JURISDICTION, "vmin_pu": limits.VMIN_PU, "vmax_pu": limits.VMAX_PU,
+              "seed": 101, "manifest": man}
+    df, inputs = report_final.load_runs([run], expect)
+    assert inputs[0]["meta"]["_seed_source"] == "run manifest"
+    other = tmp_path / "unlisted.json"
+    other.write_text(json.dumps(doc))
+    with pytest.raises(SystemExit):
+        report_final.load_runs([other], expect)

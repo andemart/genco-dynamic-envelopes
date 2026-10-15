@@ -37,5 +37,35 @@
   },
   "sensitivity": "en50160_band (207-253 V), voltage band only",
   "days_and_seeds": "unchanged"
+ },
+ "extension_annual": {
+  "date": "2026-10-15",
+  "doc": "docs/preregistration_annual_extension.md",
+  "days": "all 36 test days (results/annual_test_days.txt)",
+  "resolution": "24 hourly intervals (steps_per_hour 1)",
+  "methods": [
+   "ac",
+   "b_opendss_exact",
+   "c_genco_4w_opendss"
+  ],
+  "policy": "uniform (no group envelopes)",
+  "scenarios": 200,
+  "eps": 0.05,
+  "beta": 0.05,
+  "alpha_four_wire": 0.01,
+  "seed": 101,
+  "household_seed": 101,
+  "verify_draws_balanced": 1000,
+  "verify_draws_four_wire": 200,
+  "voltage_limits": {
+   "jurisdiction": "uk_esqcr",
+   "vbase_volts": 240.17771198288432,
+   "vmin_volts": 216.2,
+   "vmax_volts": 253.0,
+   "vmin_pu": 0.9001667898951713,
+   "vmax_pu": 1.0533866690262643
+  },
+  "model": "mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee (frozen)",
+  "committed_before": "any annual job and before the summer 2024-06-28 corrected result was opened"
  }
 }
