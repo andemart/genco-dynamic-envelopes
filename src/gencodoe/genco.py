@@ -229,14 +229,20 @@ class GencoOracle:
         self.template_graph = frames_to_graphs(*(df[df.scenario == df.scenario.iloc[0]] for df in template))[0]
         self.calls = 0   # number of power flows evaluated
 
+    def _use_template(self, n: int):
+        """Cached template batch with exactly n graphs (a larger one would compute padding rows)."""
+        if not hasattr(self, "_templates"):
+            self._templates = {}
+        if n not in self._templates:
+            self._templates[n] = self.model.prepare_template(self.template_graph, n)
+        self.model._template = self._templates[n]
+
     def __call__(self, feeder: Feeder, p: np.ndarray, q: np.ndarray) -> PFResult:
         p, q = np.atleast_2d(p), np.atleast_2d(q)
         vm, va = [], []
         for i in range(0, len(p), self.batch_size):
             pi, qi = p[i:i + self.batch_size], q[i:i + self.batch_size]
-            if getattr(self.model, "_template", None) is None or \
-                    self.model._template[0]["bus"].x.shape[0] // self.model._template[1] < len(pi):
-                self.model.prepare_template(self.template_graph, self.batch_size)
+            self._use_template(len(pi))
             a, b = self.model.predict_injections(-pi * feeder.base_mva, -qi * feeder.base_mva)
             vm.append(a)
             va.append(b)

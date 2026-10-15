@@ -134,9 +134,9 @@ def run_day(day: str, feeder, customers, scen: DayScenarios, methods: dict, n_s:
                     # customer net consumption in kW (each customer has its own bus)
                     pc = -(pv + inj)[:n_unbalanced, customers.bus] * 1e3 * feeder.base_mva
                     qc = -qv[:n_unbalanced, customers.bus] * 1e3 * feeder.base_mva
+                    from .four_wire import four_wire_ok
                     res = [unbalanced.solve(pc[i], qc[i]) for i in range(len(pc))]
-                    bad = [(r["undervoltage"] and direction == "import") or (r["overvoltage"] and direction == "export")
-                           or r["line_overload"] or r["transformer_overload"] for r in res]
+                    bad = [not four_wire_ok(r, direction) for r in res]        # non-converged counts as violating
                     ub = {"prob_ok_unbalanced": 1.0 - float(np.mean(bad)),
                           "unbalanced_v_min": min(r["v_pn_min"] for r in res),
                           "unbalanced_v_max": max(r["v_pn_max"] for r in res),
@@ -168,6 +168,10 @@ def main():
     ap.add_argument("--beta", type=float, default=None,
                     help="finite-sample confidence: certify P(violation) <= eps with probability 1 - beta")
     ap.add_argument("--verify-draws", type=int, default=None, help="fresh AC verification draws (default: --scenarios)")
+    ap.add_argument("--four-wire", action="store_true",
+                    help="add option C (GENCO + four-wire conformal margins, OpenDSS fallback) and option B "
+                         "(exact OpenDSS search); needs --run and four_wire_truth.parquet in --calib")
+    ap.add_argument("--methods", nargs="+", default=None, help="run only these methods")
     a = ap.parse_args()
 
     net = load_enwl1()
@@ -210,9 +214,38 @@ def main():
         methods["genco_conformal_ac"] = lambda: screened(True)
 
     ub = None
-    if a.unbalanced:
+    if a.unbalanced or a.four_wire:
         from .unbalanced import UnbalancedENWL1
         ub = UnbalancedENWL1()
+    if a.four_wire:
+        import pandas as pd
+
+        from .evaluate import load_truth
+        from .four_wire import FourWireMargins, FourWireScreened
+        if not a.run:
+            raise SystemExit("--four-wire needs --run (GENCO)")
+        fw = pd.read_parquet(a.calib / "enwl1_fluvius" / "four_wire_truth.parquet")
+        tc = load_truth(a.calib)
+        if not (fw.scenario.to_numpy() == tc["scenario"]).all():
+            raise ValueError("four-wire truth and calibration states are not aligned")
+        pr = oracle(feeder, -tc["pd"] / feeder.base_mva, -tc["qd"] / feeder.base_mva)
+        fwm = FourWireMargins.fit(pr.vm[:, 1:].min(1), pr.vm[:, 1:].max(1), pr.loading[:, 1:].max(1),
+                                  fw.v_pn_min.to_numpy(), fw.v_pn_max.to_numpy(), fw.line_loading_max.to_numpy(),
+                                  fw.converged.to_numpy(), a.alpha)
+        meta.update({"four_wire_alpha": a.alpha, "four_wire_vmin_hi": fwm.vmin_hi.tolist(),
+                     "four_wire_vmax_hi": fwm.vmax_hi.tolist(), "four_wire_load_hi": fwm.load_hi.tolist()})
+
+        def option_c():
+            f = FourWireScreened(feeder, net.customer_bus, ub, oracle, fwm)
+            return f, lambda env: f.n_verified
+
+        def option_b():
+            f = FourWireScreened(feeder, net.customer_bus, ub)
+            return f, lambda env: f.n_verified
+        methods["c_genco_4w_opendss"] = option_c
+        methods["b_opendss_exact"] = option_b
+    if a.methods:
+        methods = {k: v for k, v in methods.items() if k in a.methods}
     rows = run_day(a.day, feeder, customers, scen, methods, a.scenarios, a.eps, a.levels_per_round, a.seed,
                    a.steps_per_hour, ub, a.unbalanced, a.beta, a.verify_draws)
     a.out.parent.mkdir(parents=True, exist_ok=True)
