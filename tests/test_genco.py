@@ -390,3 +390,46 @@ def test_four_wire_flags_at_the_voltage_limits():
                "transformer_overload": False}
         assert four_wire_ok(res, "import") is (not uv)
         assert four_wire_ok(res, "export") is (not ov)
+
+
+def _fake_run(tmp_path, name, method, limit_b, limit_c=None, jurisdiction=None, seed=101):
+    from gencodoe import limits
+    rows = []
+    for direction in ("export", "import"):
+        for step in range(96):
+            for m, lim in (("ac", 2.0), (method, limit_b if method == "b_opendss_exact" else limit_c)):
+                rows.append({"step": step, "time": "x", "direction": direction, "method": m, "limit_kw": lim,
+                             "total_kw": 200 * lim, "prob_ok_oracle": 1.0, "prob_ok_ac_fresh": 0.99,
+                             "prob_ok_unbalanced": 0.99, "unbalanced_draws": 200, "power_flows": 10,
+                             "ac_calls": 7, "runtime_s": 1.0})
+    vl = limits.record()
+    if jurisdiction:
+        vl["jurisdiction"] = jurisdiction
+    meta = {"voltage_limits": vl, "day": "2024-06-28", "scenarios": 200, "verify_draws": 1000,
+            "scenario_seed": seed, "household_seed": seed, "steps_per_hour": 4}
+    path = tmp_path / name
+    path.write_text(__import__("json").dumps({"meta": meta, "rows": rows}))
+    return path
+
+
+def test_report_final_metrics_and_integrity(tmp_path):
+    from gencodoe import report_final
+    from gencodoe import limits
+    b = _fake_run(tmp_path, "b.json", "b_opendss_exact", 1.0)
+    c = _fake_run(tmp_path, "c.json", "c_genco_4w_opendss", None, limit_c=1.0)
+    expect = {"jurisdiction": limits.JURISDICTION, "vmin_pu": limits.VMIN_PU, "vmax_pu": limits.VMAX_PU, "seed": 101}
+    df, inputs = report_final.load_runs([b, c], expect)
+    res = report_final.report(report_final.feasibility(df))
+    agree = res["agreement"][0]
+    assert agree["share_within_tol"] == 1.0 and agree["intervals_c_exceeds_b"] == 0
+    cap = {(r["direction"], r["method"]): r for r in res["capacity"]}
+    assert abs(cap[("export", "B")]["kwh_per_household"] - 1.0 * 0.25 * 96) < 1e-9
+    # p = 0.99 with n = 200 -> one-sided 95% lower bound ~0.968 >= 0.95: all intervals certified
+    assert res["safety"][0]["intervals_lb4_ge_0.95"] == 96
+    assert abs(report_final.cp_lower(198, 200) - 0.9686) < 1e-3
+    bad = _fake_run(tmp_path, "bad.json", "b_opendss_exact", 1.0, jurisdiction="old_0.94_1.10")
+    with pytest.raises(SystemExit):
+        report_final.load_runs([bad], expect)
+    wrong_seed = _fake_run(tmp_path, "seed.json", "b_opendss_exact", 1.0, seed=0)
+    with pytest.raises(SystemExit):
+        report_final.load_runs([wrong_seed], expect)

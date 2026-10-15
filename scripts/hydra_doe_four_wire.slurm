@@ -11,6 +11,8 @@
 set -euo pipefail
 cd "$VSC_DATA/genco-dynamic-envelopes"
 module load Python/3.12.3-GCCcore-13.3.0
+export GENCODOE_VOLTAGE_LIMITS="${GENCODOE_VOLTAGE_LIMITS:-uk_esqcr}"   # pinned; recorded in the output metadata
+echo "voltage limits: $GENCODOE_VOLTAGE_LIMITS  commit: ${GENCODOE_COMMIT:-unknown}"
 lscpu | grep -E "Model name"
 .venv/bin/python -m gencodoe.doe_day --day "$2" --steps-per-hour "${3:-1}" --scenarios 200 --beta 0.05 --seed "${4:-0}" \
   --verify-draws 1000 --unbalanced 200 --four-wire --methods ac "$1" \

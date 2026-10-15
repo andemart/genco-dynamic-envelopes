@@ -84,7 +84,8 @@ def check_dataset(data_dir: Path, chunk: int = 2000) -> dict:
                   "share_line_overload": float((lmax[m] > 1).mean()),
                   "share_transformer_overload": float((loading[m, 1] > 1).mean()),
                   "loading_max_p50_p100": np.percentile(lmax[m], [50, 100]).round(3).tolist()}
-    return {"data": str(data_dir), "states": int(n), "buses": int(n_bus),
+    from .limits import record as limits_record
+    return {"voltage_limits": limits_record(), "data": str(data_dir), "states": int(n), "buses": int(n_bus),
             "max_abs_dvm_sweep_vs_datakit_pu": dvm, "max_abs_dva_sweep_vs_datakit_deg": dva,
             "max_abs_dloading_sweep_vs_datakit": dload,
             "max_abs_branch_flow_rebuilt_vs_datakit_mva": dflow,

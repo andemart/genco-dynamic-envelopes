@@ -150,6 +150,16 @@ def run_day(day: str, feeder, customers, scen: DayScenarios, methods: dict, n_s:
     return rows
 
 
+def _git_commit() -> str | None:
+    import subprocess
+    try:
+        return subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True,
+                              cwd=Path(__file__).resolve().parents[2]).stdout.strip()
+    except Exception:          # no git checkout (e.g. a synced copy on the cluster)
+        import os
+        return os.environ.get("GENCODOE_COMMIT")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--day", required=True, help="a test day, e.g. 2024-07-03")
@@ -163,7 +173,10 @@ def main():
     ap.add_argument("--levels-per-round", type=int, default=4)
     ap.add_argument("--steps-per-hour", type=int, default=4, choices=[1, 2, 4])
     ap.add_argument("--device", default="cpu")
-    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--seed", type=int, default=0,
+                    help="scenario and verification RNG seed (and household seed unless --household-seed)")
+    ap.add_argument("--household-seed", type=int, default=None,
+                    help="seed of the household technology assignment; default: --seed (as in the pre-registered runs)")
     ap.add_argument("--unbalanced", type=int, default=0, help="fresh draws per interval checked on OpenDSS")
     ap.add_argument("--beta", type=float, default=None,
                     help="finite-sample confidence: certify P(violation) <= eps with probability 1 - beta")
@@ -179,14 +192,18 @@ def main():
     n_c = len(net.customer_bus)
     customers = envelopes.Customers(bus=net.customer_bus, export_cap=np.full(n_c, FLEX_EXPORT_KW / 1e3),
                                     import_cap=np.full(n_c, FLEX_IMPORT_KW / 1e3))
-    scen = DayScenarios(net.customer_bus, net.n_bus, seed=a.seed)
+    household_seed = a.seed if a.household_seed is None else a.household_seed
+    scen = DayScenarios(net.customer_bus, net.n_bus, seed=household_seed)
 
     ac = envelopes.exact(fdr.sweep_pf, feeder)
     lin = envelopes.exact(fdr.lindistflow, feeder)
     methods = {"ac": lambda: (ac, lambda env: env.n_evals),
                "lindistflow": lambda: (lin, lambda env: 0)}
     from .limits import record as limits_record
-    meta = {"voltage_limits": limits_record(), "day": a.day, "scenarios": a.scenarios, "eps": a.eps, "beta": a.beta, "verify_draws": a.verify_draws,
+    meta = {"voltage_limits": limits_record(), "code_commit": _git_commit(), "scenario_seed": a.seed,
+            "household_seed": household_seed, "steps_per_hour": a.steps_per_hour,
+            "levels_per_round": a.levels_per_round, "verify_draws": a.verify_draws, "unbalanced_draws": a.unbalanced,
+            "methods_requested": a.methods, "day": a.day, "scenarios": a.scenarios, "eps": a.eps, "beta": a.beta, "verify_draws": a.verify_draws,
             "acceptance_threshold": envelopes.acceptance_threshold(a.scenarios, a.eps, a.beta), "mix": MIX, "alpha": a.alpha,
             "export_cap_kw": FLEX_EXPORT_KW, "import_cap_kw": FLEX_IMPORT_KW}
     fp_bin, fp_qb, _, fp_ql, n_cal = conformal_margins(None, feeder, a.calib, a.alpha)

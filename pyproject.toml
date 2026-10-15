@@ -9,7 +9,7 @@ description = "Probabilistic dynamic operating envelopes with GENCO (GridFM GENC
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10,<3.13"
-dependencies = ["numpy>=1.24", "scipy>=1.10", "pandas>=2.0", "pyyaml>=6.0"]
+dependencies = ["numpy>=1.24", "scipy>=1.10", "pandas>=2.0", "pyyaml>=6.0", "tabulate>=0.9"]
 
 [project.optional-dependencies]
 genco = ["gridfm-datakit", "gridfm-graphkit"]

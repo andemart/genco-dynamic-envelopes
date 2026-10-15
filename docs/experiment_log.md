@@ -337,7 +337,7 @@ Options B and C give zero optional incremental envelopes in all 96 intervals, in
 
 ### Baseline diagnosis
 
-Command: `python -m gencodoe.diagnose_baseline`, 50 fresh no-envelope draws per interval, seed 202. Output: `results/winter_2024-12-15_baseline_diagnosis.json`.
+Command: `python -m gencodoe.diagnose_baseline`, 50 fresh no-envelope draws per interval, seed 202. Output: `results/superseded_wrong_voltage_base/winter_2024-12-15_baseline_diagnosis.json`. **Exploratory:** it used household seed 0, not the pre-registered 101, so it describes a different household/phase allocation (see the amendment erratum).
 
 | | Four-wire | Balanced |
 |---|---|---|
@@ -369,7 +369,14 @@ Winter baseline, share of draws violating under each lower limit:
 | 216.2 V (UK) | 14.9% | 15.8% |
 | 207 V (EN 50160) | 3.9% | 7.2% |
 
-Methods are unaffected (surrogate, conformal error margins, search, verification); feasibility thresholds and all envelope numbers are affected. The pre-registered runs stand as a record under their stated limits.
+~~Methods are unaffected~~ (corrected after review). The architecture, trained weights and conformal error residuals are unaffected. **Everything that depends on the feasibility thresholds is affected and is recomputed:**
+- screen shares, fallback and OpenDSS-call counts;
+- false-safe validation;
+- runtimes;
+- envelopes and capacity comparisons;
+- near-limit error metrics.
+
+The pre-registered runs stand as a record under their stated limits.
 
 ## Pre-registration amendment 1 (voltage limits): applied before any corrected run
 
@@ -377,3 +384,11 @@ Methods are unaffected (surrogate, conformal error margins, search, verification
 - The EN 50160 voltage band (207–253 V) is a secondary sensitivity.
 - Old-limit outputs were moved to `superseded_wrong_voltage_base/`. The summer jobs still running under the old limits (13331014, 13331015) were cancelled.
 - The corrected B and C runs repeat 2024-12-15 and 2024-06-28 with unchanged seeds; see `docs/preregistration_amendment_1.md`.
+
+## Erratum after Codex review (16:10)
+
+- **Household seed.** The pre-registered DOE runs use household seed 101, equal to `--seed`; the amendment text claimed 0. The winter diagnosis used seed 0, so it is exploratory and is rerun with seed 101.
+- **Reporting plan frozen.** `docs/reporting_plan.md` and `gencodoe.report_final` were committed before the corrected outputs were opened.
+- **Runtime comparisons.** B and C run as separate jobs, possibly on different nodes, so runtime ratios are descriptive measurements.
+- **Old evaluation outputs archived.** Threshold-dependent outputs in `data_out/eval` computed under the old limits are moved to `data_out/eval/superseded_wrong_voltage_base/`: coverage, false-safe, near-limit, screening and data-check shares. Timing benchmarks are kept, because they do not depend on the limits.
+- **Not to circulate yet:** `README.md`, `docs/workplan.md` and the one-pager (`docs/genco_challenge_onepager.*`) still contain old numbers and limits.

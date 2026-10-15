@@ -1,7 +1,8 @@
 """Baseline (no envelope) four-wire diagnosis of one day: why is no envelope certifiable?
 
 For every interval, draws fresh baseline states of the case-study households
-(same technology groups as the DOE runs, DayScenarios seed 0; draw seed given)
+(technology assignment from --household-seed, which must match the DOE run;
+fresh draws from --seed)
 and records, per draw, on the ENWL1 four-wire benchmark:
   * violation causes: undervoltage, overvoltage, line overload, transformer
     overload, non-convergence, and their overlaps;
@@ -12,7 +13,7 @@ Optionally adds per-interval Clopper-Pearson intervals of the four-wire P(ok)
 stored in a DOE run JSON.
 
 Usage:
-  python -m gencodoe.diagnose_baseline --day 2024-12-15 --draws 50 --seed 202 \
+  python -m gencodoe.diagnose_baseline --day 2024-12-15 --draws 50 --seed 202 --household-seed 101 \
       --doe data_out/doe/hydra/2024-12-15_certified_4w_b_opendss_exact_sph4_seed101.json \
       --out results/winter_2024-12-15_baseline_diagnosis.json
 """
@@ -42,10 +43,10 @@ def clopper_pearson(k: int, n: int, conf: float = 0.95) -> tuple[float, float]:
     return float(lo), float(hi)
 
 
-def run(day: str, draws: int, seed: int) -> pd.DataFrame:
+def run(day: str, draws: int, seed: int, household_seed: int) -> pd.DataFrame:
     net = load_enwl1()
     fd = net.to_feeder()
-    scen = DayScenarios(net.customer_bus, net.n_bus, seed=0)
+    scen = DayScenarios(net.customer_bus, net.n_bus, seed=household_seed)
     u = UnbalancedENWL1()
     rng = np.random.default_rng(seed)
     t0 = int((np.datetime64(day) - np.datetime64("2024-01-01")).astype(int)) * 96
@@ -133,11 +134,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--day", required=True)
     ap.add_argument("--draws", type=int, default=50)
-    ap.add_argument("--seed", type=int, default=202)
+    ap.add_argument("--seed", type=int, default=202, help="seed of the diagnostic baseline draws")
+    ap.add_argument("--household-seed", type=int, required=True,
+                    help="household technology assignment seed; must equal the DOE run's (101 for the pre-registered runs)")
     ap.add_argument("--doe", type=Path, help="DOE run JSON for per-interval confidence intervals")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args()
-    df = run(a.day, a.draws, a.seed)
+    df = run(a.day, a.draws, a.seed, a.household_seed)
     doe = None
     if a.doe:
         doe = json.loads(a.doe.read_text())
@@ -145,7 +148,7 @@ def main():
     s = summarise(df, doe)
     s["customers_per_phase"] = {int(k): int(v) for k, v in
                                 collections.Counter(int(b.split(".")[1]) for b in UnbalancedENWL1().load_bus).items()}
-    s.update({"day": a.day, "draw_seed": a.seed, "households_seed": 0, "voltage_limits": limits_record()})
+    s.update({"day": a.day, "draw_seed": a.seed, "household_seed": a.household_seed, "voltage_limits": limits_record()})
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(s, indent=1, default=float))
     df.to_parquet(a.out.with_suffix(".parquet"))

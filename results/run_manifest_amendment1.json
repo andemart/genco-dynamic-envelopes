@@ -1,0 +1,55 @@
+{
+ "purpose": "amended pre-registered evaluation (docs/preregistration.md, docs/preregistration_amendment_1.md)",
+ "code_commit": "de7ee71efa1cd3590c77029e5b28a75f14cd4588",
+ "commit_time": "2026-10-15T15:50:39+02:00",
+ "submitted": "2026-10-15T15:50:52+02:00",
+ "cluster": "VUB Hydra, partition zen4 (CPU), one job per (day, method)",
+ "slurm_script": "scripts/hydra_doe_four_wire.slurm <method> <day> 4 101",
+ "environment": "GENCODOE_VOLTAGE_LIMITS unset at submission -> default uk_esqcr (the script now pins it)",
+ "jobs": {
+  "13331847": {
+   "method": "b_opendss_exact",
+   "day": "2024-12-15",
+   "command": ".venv/bin/python -m gencodoe.doe_day --day 2024-12-15 --steps-per-hour 4 --scenarios 200 --beta 0.05 --seed 101 --verify-draws 1000 --unbalanced 200 --four-wire --methods ac b_opendss_exact --run mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee --config configs/genco_pf_enwl1_lv_prior_v2.yaml --calib data_out/datakit_v2_calib --out data_out/doe/2024-12-15_certified_4w_b_opendss_exact_sph4_seed101_uk_esqcr.json"
+  },
+  "13331848": {
+   "method": "c_genco_4w_opendss",
+   "day": "2024-12-15",
+   "command": ".venv/bin/python -m gencodoe.doe_day --day 2024-12-15 --steps-per-hour 4 --scenarios 200 --beta 0.05 --seed 101 --verify-draws 1000 --unbalanced 200 --four-wire --methods ac c_genco_4w_opendss --run mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee --config configs/genco_pf_enwl1_lv_prior_v2.yaml --calib data_out/datakit_v2_calib --out data_out/doe/2024-12-15_certified_4w_c_genco_4w_opendss_sph4_seed101_uk_esqcr.json"
+  },
+  "13331849": {
+   "method": "b_opendss_exact",
+   "day": "2024-06-28",
+   "command": ".venv/bin/python -m gencodoe.doe_day --day 2024-06-28 --steps-per-hour 4 --scenarios 200 --beta 0.05 --seed 101 --verify-draws 1000 --unbalanced 200 --four-wire --methods ac b_opendss_exact --run mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee --config configs/genco_pf_enwl1_lv_prior_v2.yaml --calib data_out/datakit_v2_calib --out data_out/doe/2024-06-28_certified_4w_b_opendss_exact_sph4_seed101_uk_esqcr.json"
+  },
+  "13331850": {
+   "method": "c_genco_4w_opendss",
+   "day": "2024-06-28",
+   "command": ".venv/bin/python -m gencodoe.doe_day --day 2024-06-28 --steps-per-hour 4 --scenarios 200 --beta 0.05 --seed 101 --verify-draws 1000 --unbalanced 200 --four-wire --methods ac c_genco_4w_opendss --run mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee --config configs/genco_pf_enwl1_lv_prior_v2.yaml --calib data_out/datakit_v2_calib --out data_out/doe/2024-06-28_certified_4w_c_genco_4w_opendss_sph4_seed101_uk_esqcr.json"
+  }
+ },
+ "seeds": {
+  "scenario_and_verification_seed": 101,
+  "household_technology_assignment_seed": 101,
+  "semantics": "doe_day builds DayScenarios(seed=--seed): the same seed drives the household technology assignment and the scenario/verification draws (as in the original pre-registered runs)"
+ },
+ "model": {
+  "run": "mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee",
+  "description": "GENCO GNS_heterogeneous_lv + linear prior, hidden 12, 12 layers, Hydra job 13326572",
+  "config": "configs/genco_pf_enwl1_lv_prior_v2.yaml"
+ },
+ "calibration": {
+  "dataset": "data_out/datakit_v2_calib (augment 0.5, calib days)",
+  "four_wire_truth": "data_out/datakit_v2_calib/enwl1_fluvius/four_wire_truth.parquet (constant-PQ loads)"
+ },
+ "expected_voltage_limits": {
+  "jurisdiction": "uk_esqcr",
+  "vbase_volts": 240.17771198288432,
+  "vmin_volts": 216.2,
+  "vmax_volts": 253.0,
+  "vmin_pu": 0.9001667898951713,
+  "vmax_pu": 1.0533866690262643
+ },
+ "outputs": "data_out/doe/<day>_certified_4w_<method>_sph4_seed101_uk_esqcr.json on Hydra",
+ "note": "result files written by this commit record voltage_limits but not code_commit/seeds; those are documented here"
+}

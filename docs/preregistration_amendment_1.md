@@ -53,3 +53,20 @@ The conformal residuals and the trained surrogate stay frozen, because they esti
 - Tests:
   - boundary tests just above and below both limits, for the balanced and four-wire checks;
   - a consistency test that all modules use the same constants.
+
+## Erratum (15 Oct 2026, 16:10, after Codex review; corrected-limit outputs not yet opened)
+
+**Seeds.** The statement above, "scenario seed 101; households seed 0", is wrong.
+
+`gencodoe.doe_day` builds the household technology assignment with the run's `--seed`. The pre-registered runs, both original and corrected, therefore use:
+- household technology assignment seed = 101;
+- scenario and verification draw seed = 101.
+
+The corrected jobs preserve the original assignment, so the runs themselves are correct; only this document was wrong. The seed is now an explicit option (`--household-seed`, defaulting to `--seed`) and is recorded in every DOE result.
+
+**Winter diagnosis.** The winter baseline diagnosis reported in the experiment log (63% / 15.8% / 7.2% violation shares) used household seed 0, i.e. a different technology-to-household and phase allocation than the pre-registered runs.
+- It is kept as an **exploratory** result in `results/superseded_wrong_voltage_base/`.
+- It must not be used to explain the pre-registered result.
+- It is rerun with `--household-seed 101` under the amended limits.
+
+**Reporting.** The reporting formulas were frozen in `docs/reporting_plan.md` and implemented in `gencodoe.report_final`. Both were committed before the corrected outputs were opened.
