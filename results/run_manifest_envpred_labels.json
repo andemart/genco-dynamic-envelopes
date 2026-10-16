@@ -1,0 +1,26 @@
+{
+ "purpose": "envelope-prediction B labels (docs/envpred_protocol.md, amendment 2)",
+ "code_commit": "28ed289b429e1c4555fe469afaa092363b213de3",
+ "protocol_commits": [
+  "5bae17f",
+  "538fd95",
+  "28ed289"
+ ],
+ "cluster": "VUB Hydra zen4, 1 CPU/task",
+ "voltage_limits": "uk_esqcr (pinned)",
+ "days_file": "results/envpred_label_days.txt (330 dates)",
+ "jobs": [
+  {
+   "job_id": "13337097",
+   "household_seed": 101,
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=28ed289b429e1c4555fe469afaa092363b213de3 --array=0-329 --job-name=envpred-hh101 scripts/hydra_envpred_labels.slurm 101",
+   "outputs": "data_out/doe/envpred_labels/<day>_b_opendss_exact_sph1_seed101_hh101_uk_esqcr.json"
+  },
+  {
+   "job_id": "13337098",
+   "household_seed": 202,
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=28ed289b429e1c4555fe469afaa092363b213de3 --array=0-329 --job-name=envpred-hh202 scripts/hydra_envpred_labels.slurm 202",
+   "outputs": "data_out/doe/envpred_labels/<day>_b_opendss_exact_sph1_seed101_hh202_uk_esqcr.json"
+  }
+ ]
+}
