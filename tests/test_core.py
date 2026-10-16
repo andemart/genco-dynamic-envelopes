@@ -166,3 +166,20 @@ def test_spatial_envelope_zero_sentinel():
     never = lambda p, q, direction=None: np.zeros(len(p), bool)
     env, solo, lam = envelopes.spatial_envelope(never, fd.n_bus, cust, np.zeros(len(cust), int), p0, q0, "export")
     assert lam == 0 and not env.limit.any() and not solo.any()
+
+
+def test_envpred_stats_proxy_and_split():
+    import json
+    from pathlib import Path
+    from gencodoe import envpred
+    from gencodoe.report_annual import season
+    x = np.arange(200.0)[:, None] * np.ones((1, 3))
+    s = envpred.stats(x)
+    assert s.shape == (21,) and s[3] == 0 and s[-1] == 199          # mean | min ... max blocks of 3
+    L_B = np.array([1.0, 2.0, 0.0])
+    assert envpred.proxy_retention(np.array([0.5, 2.5, 0.0]), L_B, np.array(["export"] * 3)) == 0.5 / 3
+    sp = json.loads(Path("results/envpred_split.json").read_text())
+    days = [d for k in ("train", "val", "calib", "test") for d in sp[k]]
+    assert len(days) == len(set(days)) == 36
+    for k, n in (("train", 4), ("val", 1), ("calib", 2), ("test", 2)):
+        assert all(sum(season(d) == s_ for d in sp[k]) == n for s_ in ("winter", "spring", "summer", "autumn"))
