@@ -100,7 +100,12 @@ class GencoEmbed:
         finally:
             hook.remove()
         import torch
-        h = torch.cat(captured).reshape(len(p), feeder.n_bus, -1)
+        # the bus head runs after every layer (physics feedback); keep the final layer of each forward chunk
+        n_chunks = -(-len(p) // self.oracle.batch_size)
+        per = len(captured) // n_chunks
+        h = torch.cat(captured[per - 1::per]).reshape(len(p), feeder.n_bus, -1)
+        if h.shape[-1] != EMB:
+            raise AssertionError(f"embedding width {h.shape[-1]} != {EMB}")
         pooled = torch.cat([h.mean(1), h.amax(1)], dim=1).cpu().numpy().astype(float)
         return pr, pooled
 

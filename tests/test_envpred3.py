@@ -146,3 +146,19 @@ def test_cached_exact_counts_counterfactual_calls():
     c.reset()
     c.share(p, p, 1.0, "export")
     assert c.physical == 400
+
+
+def test_genco_embed_keeps_final_layer_only():
+    if not e3.RUN_LOCAL.exists():
+        pytest.skip("frozen GENCO checkpoint not available")
+    from gencodoe.enwl import load_enwl1
+    oracle, embed = e3.load_genco("cpu", e3.RUN_LOCAL)
+    fd = load_enwl1().to_feeder()
+    p = np.full((300, fd.n_bus), -0.001)
+    p[:, 0] = 0
+    oracle.batch_size = 128                                   # three forward chunks, the last one partial
+    _, pooled = embed(fd, p, np.zeros_like(p))
+    assert pooled.shape == (300, 192)
+    oracle.batch_size = 1024
+    _, one = embed(fd, p, np.zeros_like(p))
+    assert np.allclose(pooled, one, atol=1e-3)
