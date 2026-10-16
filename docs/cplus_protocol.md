@@ -72,3 +72,32 @@ C+ takes each stored C result (one interval and direction) and does the followin
 - **Repairs:** about 2,400–2,600 exact solves each (observed in the exploratory run).
 - **Wall-clock:** at ~30 ms per solve on a Hydra zen4 core, about 1.8 core-hours for the annual gates, run in parallel per day; about 15 minutes for summer.
 - **Exact-call saving vs B (annual):** falls from 14.65% (C) to at most 10.44% (C+) before repairs.
+
+## Amendment 1 (before the formal launch, no C+ result produced under this protocol yet)
+
+1. **The diagnostic covers every gate failure.**
+   - The primary gate and repair stay B-compatible.
+   - The canonical reset-from-no-load re-solve of the 200 design scenarios at L_C is now run for **every** gate failure, not only when C ≈ B.
+   - Classification: **solver-history noise** if the canonical share ≥ threshold, otherwise **screen error**.
+   - It is diagnostic only and never changes a C+ envelope. When the matching B result is available, |L_C − L_B| is recorded alongside.
+2. **What "identical to B" means.**
+   - C+ matches B's OpenDSS **configuration** (model build, constant-PQ loads, tolerance, retry rule) and its **scenario order within each gate or repair evaluation**.
+   - It does **not** reproduce B's complete solve history: OpenDSS starts each solve from the previous solution, and B's search visited different levels in a different sequence. This is why a borderline state can flip, and why the canonical diagnostic exists.
+3. **Accounting is separate per category:** gate calls and seconds, repair calls and seconds, verification calls and seconds, diagnostic calls and seconds.
+   - Search cost = C's exact calls and time + gate + repair.
+   - Verification and diagnostic are reported, never counted as search cost.
+4. **Every four-wire metric is recomputed after a repair**, on the run's fresh draws at the new level:
+   - `prob_ok_unbalanced`, `unbalanced_v_min`, `unbalanced_v_max`, `unbalanced_line_loading_max`, `unbalanced_draws`;
+   - the balanced held-out `prob_ok_ac_fresh` on the run's balanced fresh draws;
+   - the design-set share at the final level, as `prob_ok_oracle`, from the exact repair.
+5. **Zero results are classified explicitly.**
+   - `zero_infeasible_sentinel`: the final level is 0 and the design share at 0 is below the threshold, i.e. no feasible non-negative optional envelope.
+   - `zero_feasible`: the final level is 0 but 0 passes.
+   - For zeros that C produced itself (not gated), the class is taken from C's own design share (`prob_ok_oracle`) and labelled as C-screened, not exact.
+6. **Inputs are protected by hash.**
+   - Every source C file, and every B file used for the diagnostic, is hashed (SHA-256) before and after processing. The run fails if any hash changes.
+   - The hashes are written into each C+ output and into the run manifest.
+7. **The B/C report schema is preserved.**
+   - `gencodoe.report_final` and `report_annual` keep their existing keys and values for B and C exactly.
+   - C+ appears only as new rows (method "C+") and new keys with a `_cplus` suffix.
+   - Consistency tests check this.
