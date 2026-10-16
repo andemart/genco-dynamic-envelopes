@@ -116,3 +116,16 @@ All four arms are reported in full whatever the outcome, including the compariso
 3. Extract features for all 180 files, then fit the heads, the shrink and the validation selection.
 4. Run the gate on the test dates (all four arms), then the report.
 5. Log the result in `docs/experiment_log.md`, whichever way it goes.
+
+## Amendment 1 (before any feature extraction or result)
+
+**Problem.** The summary statistics above (mean, 90th and 98th percentile, max) capture only the upper tail over scenarios. Several binding quantities live in the lower tail: minimum voltage for imports, and the most negative net consumption (PV export) for exports.
+
+**Change.** Every quantity is summarised by **7 statistics**: mean, min, 2nd, 10th, 90th and 98th percentile, and max over the 200 scenarios.
+
+**Feature counts become:**
+- P: 32 × 7 = 224;
+- C: 1 + 4 × 7 = 29;
+- G: 4 × 7 + 192 = 220.
+
+No feature had been computed and no data inspected when this was written. Everything else is unchanged.
