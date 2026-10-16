@@ -40,7 +40,11 @@ def voltage_flags(v_pn: np.ndarray) -> tuple[bool, bool]:
 
 
 class UnbalancedENWL1:
-    def __init__(self, folder: Path = ENWL1_DIR):
+    """four-wire ENWL1. three_phase: optional bool mask over customers (Loads.dss order); those
+    customers are connected three-phase wye (balanced, same total kW/kvar) and the worst of their
+    three phase-neutral voltages counts -- the W2 idealised multi-phase sensitivity."""
+
+    def __init__(self, folder: Path = ENWL1_DIR, three_phase: np.ndarray | None = None):
         import opendssdirect as dss
 
         self.dss = dss
@@ -67,6 +71,14 @@ class UnbalancedENWL1:
                 m = re.search(r"New Load\.(\w+).*?Bus1=(\S+)", line, re.I)
                 self.load_names.append(m.group(1))
                 self.load_bus.append(m.group(2).lower())
+        self.three_phase = (np.zeros(len(self.load_names), bool) if three_phase is None
+                            else np.asarray(three_phase, bool))
+        if len(self.three_phase) != len(self.load_names):
+            raise ValueError("three_phase mask must have one entry per customer")
+        for name, b, tp in zip(self.load_names, self.load_bus, self.three_phase):
+            if tp:
+                dss.Text.Command(f"Edit Load.{name} Phases=3 Bus1={b.split('.')[0]}.1.2.3.4 kV=0.416 Conn=wye "
+                                 "Vminpu=0.5 Vmaxpu=1.5")
         dss.Text.Command("Set VoltageBases=[11, 0.416]")
         dss.Text.Command("CalcVoltageBases")
         dss.Text.Command("Set mode=snapshot")
@@ -80,6 +92,14 @@ class UnbalancedENWL1:
             self.cust_phase.append(self.node_idx[f"{bus}.{phase}"])
             self.cust_neutral.append(self.node_idx[f"{bus}.{neutral}"])
         self.cust_phase, self.cust_neutral = np.array(self.cust_phase), np.array(self.cust_neutral)
+        # monitored (phase, neutral) node pairs: one per single-phase customer, three per three-phase one
+        vp, vn = [], []
+        for b, tp in zip(self.load_bus, self.three_phase):
+            bus, phase, neutral = b.split(".")[:3]
+            for ph in ((1, 2, 3) if tp else (int(phase),)):
+                vp.append(self.node_idx[f"{bus}.{ph}"])
+                vn.append(self.node_idx[f"{bus}.{neutral}"])
+        self.mon_phase, self.mon_neutral = np.array(vp), np.array(vn)
         self.line_amps = {}
         dss.Lines.First()
         while True:
@@ -118,7 +138,7 @@ class UnbalancedENWL1:
             dss.Solution.Solve()
         v = np.array(dss.Circuit.AllBusVolts())
         v = v[0::2] + 1j * v[1::2]
-        v_pn = np.abs(v[self.cust_phase] - v[self.cust_neutral]) / V_PN
+        v_pn = np.abs(v[self.mon_phase] - v[self.mon_neutral]) / V_PN
         worst_line = 0.0
         dss.Lines.First()
         while True:

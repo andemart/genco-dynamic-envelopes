@@ -144,3 +144,25 @@ def test_export_envelope_ignores_base_case_undervoltage():
     assert not envelopes.is_feasible(fd, feeder.sweep_pf(fd, heavy, q0)).any()
     env = envelopes.scalar_envelope(envelopes.exact(feeder.sweep_pf, fd), fd.n_bus, cust, heavy, q0, "export")
     assert env.level > 0
+
+
+def test_spatial_envelope_is_jointly_certified_and_not_below_uniform_total():
+    fd, p0, q0, cust = _setup()
+    feas = envelopes.exact(feeder.sweep_pf, fd)
+    groups = (np.arange(len(cust)) >= len(cust) // 2).astype(int)
+    env, solo, lam = envelopes.spatial_envelope(feas, fd.n_bus, cust, groups, p0, q0, "export", eps=0.05,
+                                                levels_per_round=3, beta=0.05)
+    uni = envelopes.scalar_envelope(feas, fd.n_bus, cust, p0, q0, "export", eps=0.05, levels_per_round=3, beta=0.05)
+    target = envelopes.acceptance_threshold(len(p0), 0.05, 0.05)
+    assert len(solo) == 2 and 0 <= lam <= 1
+    assert np.allclose(env.limit, lam * solo[groups], atol=1e-12)
+    assert feas(p0 + env.limit @ cust.incidence(fd.n_bus), q0, "export").mean() >= target
+    assert solo.min() >= uni.level - 1e-3 * 0.3            # each group alone gets at least the uniform level
+    assert env.limit.sum() >= uni.limit.sum() * (1 - 1e-2)
+
+
+def test_spatial_envelope_zero_sentinel():
+    fd, p0, q0, cust = _setup()
+    never = lambda p, q, direction=None: np.zeros(len(p), bool)
+    env, solo, lam = envelopes.spatial_envelope(never, fd.n_bus, cust, np.zeros(len(cust), int), p0, q0, "export")
+    assert lam == 0 and not env.limit.any() and not solo.any()

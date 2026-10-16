@@ -121,10 +121,21 @@ def run_day(day: str, feeder, customers, scen: DayScenarios, methods: dict, n_s:
         pv, qv = scen.sample(step, n_verify or n_s, rng, feeder.base_mva)   # fresh draws for verification
         for direction in ("export", "import"):
             for name, make in methods.items():
-                feas, counter = make()
+                made = make()
+                feas, counter = made[0], made[1]
+                groups = made[2] if len(made) > 2 else None             # spatial (W3)
                 t = time.perf_counter()
-                env = envelopes.scalar_envelope(feas, feeder.n_bus, customers, p, q, direction, "uniform", eps,
-                                                levels_per_round, beta=beta)
+                spatial = {}
+                if groups is None:
+                    env = envelopes.scalar_envelope(feas, feeder.n_bus, customers, p, q, direction, "uniform", eps,
+                                                    levels_per_round, beta=beta)
+                    limit_kw = float(env.level * 1e3 * feeder.base_mva)
+                else:
+                    env, solo, lam = envelopes.spatial_envelope(feas, feeder.n_bus, customers, groups, p, q, direction,
+                                                                eps, levels_per_round, beta=beta)
+                    limit_kw = float(env.limit.mean() * 1e3 * feeder.base_mva)          # mean per household
+                    spatial = {"lambda": lam, "group_solo_kw": (solo * 1e3 * feeder.base_mva).tolist(),
+                               "customer_limit_kw": (env.limit * 1e3 * feeder.base_mva).round(5).tolist()}
                 dt = time.perf_counter() - t
                 sign = envelopes.DIRECTIONS[direction]
                 inj = sign * env.limit @ customers.incidence(feeder.n_bus)
@@ -142,12 +153,27 @@ def run_day(day: str, feeder, customers, scen: DayScenarios, methods: dict, n_s:
                           "unbalanced_v_max": max(r["v_pn_max"] for r in res),
                           "unbalanced_line_loading_max": max(r["line_loading_max"] for r in res),
                           "unbalanced_draws": len(res)}
-                rows.append({**ub, "step": step, "time": str(scen.time[step]), "direction": direction, "method": name,
-                             "limit_kw": float(env.level * 1e3 * feeder.base_mva),
+                rows.append({**ub, **spatial, "step": step, "time": str(scen.time[step]), "direction": direction,
+                             "method": name, "limit_kw": limit_kw,
                              "total_kw": float(env.limit.sum() * 1e3 * feeder.base_mva),
                              "prob_ok_oracle": env.prob_ok, "prob_ok_ac_fresh": p_ok,
                              "power_flows": env.n_evals, "ac_calls": counter(env), "runtime_s": dt})
     return rows
+
+
+def customer_groups(net, unbalanced) -> np.ndarray:
+    """Group id per customer: main feeder (subtree under a child of the transformer bus) x phase."""
+    fd = net.to_feeder()
+    fid = []
+    for b in net.customer_bus:
+        k = int(b)
+        while fd.parent[k] not in (0, 1, -1):          # climb to the child of the transformer bus
+            k = int(fd.parent[k])
+        fid.append(k)
+    phase = np.array([int(lb.split(".")[1]) for lb in unbalanced.load_bus])
+    _, feeder_id = np.unique(fid, return_inverse=True)
+    _, dense = np.unique(feeder_id * 3 + (phase - 1), return_inverse=True)
+    return dense
 
 
 def _git_commit() -> str | None:
@@ -185,6 +211,12 @@ def main():
                     help="add option C (GENCO + four-wire conformal margins, OpenDSS fallback) and option B "
                          "(exact OpenDSS search); needs --run and four_wire_truth.parquet in --calib")
     ap.add_argument("--methods", nargs="+", default=None, help="run only these methods")
+    ap.add_argument("--exact-four-wire", action="store_true",
+                    help="add option B (exact OpenDSS search) without GENCO or calibration data")
+    ap.add_argument("--spatial", action="store_true",
+                    help="add s_spatial_exact: feeder x phase group envelopes, jointly certified with OpenDSS (W3)")
+    ap.add_argument("--three-phase-hp-ev", action="store_true",
+                    help="idealised multi-phase connection of heat-pump/EV households in the four-wire model (W2)")
     a = ap.parse_args()
 
     net = load_enwl1()
@@ -232,9 +264,28 @@ def main():
         methods["genco_conformal_ac"] = lambda: screened(True)
 
     ub = None
-    if a.unbalanced or a.four_wire:
+    if a.unbalanced or a.four_wire or a.exact_four_wire or a.spatial:
         from .unbalanced import UnbalancedENWL1
-        ub = UnbalancedENWL1()
+        tp = (scen.flags[:, 0] | scen.flags[:, 1]) if a.three_phase_hp_ev else None
+        ub = UnbalancedENWL1(three_phase=tp)
+        meta["three_phase_hp_ev"] = bool(a.three_phase_hp_ev)
+        meta["three_phase_customers"] = int(tp.sum()) if tp is not None else 0
+    if a.exact_four_wire or a.spatial:
+        from .four_wire import FourWireScreened
+
+        def option_b_only():
+            f = FourWireScreened(feeder, net.customer_bus, ub)
+            return f, lambda env: f.n_verified
+        methods["b_opendss_exact"] = option_b_only
+    if a.spatial:
+        groups = customer_groups(net, ub)
+        meta["spatial_groups"] = {"definition": "main feeder x phase", "n_groups": int(len(np.unique(groups))),
+                                  "customers_per_group": np.bincount(groups).tolist()}
+
+        def option_spatial():
+            f = FourWireScreened(feeder, net.customer_bus, ub)
+            return f, lambda env: f.n_verified, groups
+        methods["s_spatial_exact"] = option_spatial
     if a.four_wire:
         import pandas as pd
 

@@ -619,3 +619,22 @@ def test_report_final_seed_fallback_follows_cplus_provenance(tmp_path):
     run.write_text(json.dumps(doc))
     with pytest.raises(SystemExit):
         report_final.load_runs([run], expect)
+
+
+def test_three_phase_mask_and_spatial_groups():
+    pytest.importorskip("opendssdirect")
+    from gencodoe.doe_day import customer_groups
+    from gencodoe.enwl import load_enwl1
+    from gencodoe.unbalanced import UnbalancedENWL1
+    net = load_enwl1()
+    single = UnbalancedENWL1()
+    p = np.full(len(single.load_bus), 1.7)
+    q = np.zeros_like(p)
+    base = single.solve(p, q)
+    same = UnbalancedENWL1(three_phase=np.zeros(len(p), bool)).solve(p, q)
+    assert np.isclose(base["v_pn_min"], same["v_pn_min"]) and np.isclose(base["line_loading_max"],
+                                                                      same["line_loading_max"])
+    three = UnbalancedENWL1(three_phase=np.ones(len(p), bool)).solve(p, q)
+    assert three["line_loading_max"] < base["line_loading_max"] and three["v_pn_min"] > base["v_pn_min"]
+    g = customer_groups(net, single)
+    assert len(np.unique(g)) == 12 and len(g) == len(net.customer_bus)

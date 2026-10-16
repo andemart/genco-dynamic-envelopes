@@ -195,6 +195,47 @@ def scalar_envelope(feasible: Feasibility, n_bus: int, customers: Customers, p0:
     return Envelope(allocate(customers, policy, lo, direction), direction, policy, lo, p_lo, n_evals)
 
 
+def spatial_envelope(feasible: Feasibility, n_bus: int, customers: Customers, groups: np.ndarray, p0: np.ndarray,
+                     q0: np.ndarray, direction: str = "export", eps: float = 0.05, levels_per_round: int = 1,
+                     rel_tol: float = 1e-3, max_rounds: int = 60, beta: float | None = None):
+    """Group-differentiated envelope with joint certification (docs/weekend_protocols.md, W3).
+
+    1. solo: for each group, the uniform envelope of that group's customers with everyone else at
+       zero flexible injection -> w_g;
+    2. joint: one proportional search on lambda in [0, 1] with limit_i = lambda * w_{g(i)}, all
+       groups at their limits simultaneously, same acceptance rule.
+    Returns (Envelope, solo_kw per group in pu, lambda). Zero sentinel -> all zeros.
+    """
+    groups = np.asarray(groups)
+    labels = np.unique(groups)
+    solo = np.zeros(len(labels))
+    target = acceptance_threshold(p0.shape[0], eps, beta)
+    p_zero = float(feasible(p0, q0, direction).mean())          # baseline: shared by every group
+    n_evals = p0.shape[0]
+    if p_zero < target:                                          # zero sentinel, as for B
+        return Envelope(np.zeros(len(customers)), direction, "spatial", 0.0, p_zero, n_evals), solo, 0.0
+    cap = customers.cap(direction)
+    for j, g in enumerate(labels):
+        m = groups == g
+        sub = Customers(bus=customers.bus[m], export_cap=customers.export_cap[m], import_cap=customers.import_cap[m])
+        env = scalar_envelope(feasible, n_bus, sub, p0, q0, direction, "uniform", eps, levels_per_round, rel_tol,
+                              max_rounds, beta)
+        solo[j] = env.level
+        n_evals += env.n_evals
+    w = np.minimum(solo[np.searchsorted(labels, groups)], cap)
+    if not (w > 0).any():
+        return Envelope(np.zeros(len(customers)), direction, "spatial", 0.0, float("nan"), n_evals), solo, 0.0
+    weighted = Customers(bus=customers.bus, export_cap=w if direction == "export" else customers.export_cap,
+                         import_cap=w if direction == "import" else customers.import_cap)
+    keep = w > 0
+    sub = Customers(bus=weighted.bus[keep], export_cap=weighted.export_cap[keep], import_cap=weighted.import_cap[keep])
+    env = scalar_envelope(feasible, n_bus, sub, p0, q0, direction, "proportional", eps, levels_per_round, rel_tol,
+                          max_rounds, beta)
+    limit = np.zeros(len(customers))
+    limit[keep] = env.limit
+    return (Envelope(limit, direction, "spatial", env.level, env.prob_ok, n_evals + env.n_evals), solo, env.level)
+
+
 def max_total_envelope(feeder: Feeder, customers: Customers, base: PFResult, direction: str = "export",
                        eps: float = 0.05, v_margin: float = 0.0, l_margin: float = 0.0,
                        floor: float = 0.0) -> Envelope:
