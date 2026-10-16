@@ -24,7 +24,7 @@ from . import limits
 DT_H = 0.25
 N_HOUSEHOLDS = 200
 CAPS_KW = {"export": 5.0, "import": 7.4}
-METHOD_ALIAS = {"ac": "ac", "b_opendss_exact": "B", "c_genco_4w_opendss": "C"}
+METHOD_ALIAS = {"ac": "ac", "b_opendss_exact": "B", "c_genco_4w_opendss": "C", "cplus_genco_4w_gate": "C+"}
 
 
 def cp_lower(k: int, n: int, conf: float = 0.95) -> float:
@@ -114,7 +114,7 @@ def report(df: pd.DataFrame, dt_h: float = DT_H) -> dict:
             res["capacity"].append({"day": day, "direction": direction, "method": m,
                                     "kwh_per_household": cap, "kwh_feeder": cap * N_HOUSEHOLDS,
                                     "mean_limit_kw": float(gm.limit_kw.mean())})
-            if m in ("B", "C"):
+            if m in ("B", "C", "C+"):
                 rt = gm.runtime_s
                 res["runtime"].append({"day": day, "direction": direction, "method": m,
                                        "search_s_total": float(rt.sum()), "search_s_median": float(rt.median()),
@@ -135,11 +135,21 @@ def report(df: pd.DataFrame, dt_h: float = DT_H) -> dict:
                                      "intervals_c_exceeds_b": int((d > tol).sum()),
                                      "max_c_excess_kw": float(max(d.max(), 0.0)),
                                      "intervals_both_zero": int(((b <= 1e-9) & (c <= 1e-9)).sum())})
+        if "B" in L and "C+" in L:          # post-hoc C+: separate key, B/C schema unchanged
+            b, c = L["B"].align(L["C+"], join="inner")
+            tol = 1e-3 * CAPS_KW[direction]
+            d = (c - b)
+            res.setdefault("agreement_cplus", []).append(
+                {"day": day, "direction": direction, "intervals": int(len(d)),
+                 "mean_abs_diff_kw": float(d.abs().mean()), "max_abs_diff_kw": float(d.abs().max()),
+                 "share_within_tol": float((d.abs() <= tol).mean()), "tol_kw": tol,
+                 "intervals_cplus_exceeds_b": int((d > tol).sum()), "max_cplus_excess_kw": float(max(d.max(), 0.0)),
+                 "intervals_both_zero": int(((b <= 1e-9) & (c <= 1e-9)).sum())})
     # uplift only where the static baseline is positive
     cap = pd.DataFrame(res["capacity"])
     for (day, direction), g in cap.groupby(["day", "direction"]):
         s = g[g.method == "static_from_B"].kwh_per_household.iloc[0]
-        for m in ("B", "C"):
+        for m in ("B", "C", "C+"):
             row = g[g.method == m]
             if len(row) and s > 0:
                 res.setdefault("uplift_vs_static", []).append(
@@ -150,7 +160,7 @@ def report(df: pd.DataFrame, dt_h: float = DT_H) -> dict:
 
 def markdown(res: dict) -> str:
     parts = []
-    for key in ("safety", "capacity", "agreement", "runtime", "uplift_vs_static"):
+    for key in ("safety", "capacity", "agreement", "agreement_cplus", "runtime", "uplift_vs_static"):
         if res.get(key):
             parts.append(f"### {key}\n\n" + pd.DataFrame(res[key]).to_markdown(index=False, floatfmt=".4g"))
     return "\n\n".join(parts) + "\n"

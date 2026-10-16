@@ -75,7 +75,7 @@ def annual(df: pd.DataFrame) -> dict:
             row["share_intervals_lb4_ge_0.95"] = float((sub.lb4 >= 0.95).mean())
             row["share_intervals_p4_ge_0.95"] = float((sub.p4 >= 0.95).mean())
             row["share_intervals_nonzero_envelope"] = float((sub.limit_kw > 1e-9).mean())
-            if m in ("B", "C"):
+            if m in ("B", "C", "C+"):
                 row["exact_calls"] = int(sub.ac_calls.sum())
                 row["search_s"] = float(sub.runtime_s.sum())
             res[m] = row
@@ -94,6 +94,26 @@ def annual(df: pd.DataFrame) -> dict:
             cc = g[(g.method == "C") & g.day.isin(paired_days)]
             res["paired_cost"] = {"exact_calls_B": int(cb.ac_calls.sum()), "exact_calls_C": int(cc.ac_calls.sum()),
                                   "search_s_B": float(cb.runtime_s.sum()), "search_s_C": float(cc.runtime_s.sum())}
+        cp_days = sorted(set(g[g.method == "B"].day) & set(g[g.method == "C+"].day))   # post-hoc C+, new keys only
+        if cp_days:
+            pb2 = g[(g.method == "B") & g.day.isin(cp_days)].set_index(["day", "step"]).limit_kw
+            pp = g[(g.method == "C+") & g.day.isin(cp_days)].set_index(["day", "step"]).limit_kw
+            b, c = pb2.align(pp, join="inner")
+            tol = 1e-3 * {"export": 5.0, "import": 7.4}[direction]
+            d = c - b
+            res["agreement_paired_cplus"] = {"intervals": int(len(d)), "share_within_tol": float((d.abs() <= tol).mean()),
+                                             "mean_abs_diff_kw": float(d.abs().mean()), "max_abs_diff_kw": float(d.abs().max()),
+                                             "intervals_cplus_exceeds_b": int((d > tol).sum()),
+                                             "intervals_both_zero": int(((b <= 1e-9) & (c <= 1e-9)).sum()),
+                                             "intervals_both_nonzero": int(((b > 1e-9) & (c > 1e-9)).sum())}
+            cb = g[(g.method == "B") & g.day.isin(cp_days)]
+            cc = g[(g.method == "C+") & g.day.isin(cp_days)]
+            res["paired_cost_cplus"] = {"exact_calls_B": int(cb.ac_calls.sum()), "exact_calls_Cplus": int(cc.ac_calls.sum()),
+                                        "search_s_B": float(cb.runtime_s.sum()), "search_s_Cplus": float(cc.runtime_s.sum())}
+            for col in ("gate_calls", "repair_calls", "verification_calls", "diagnostic_calls"):
+                if col in cc:
+                    res["paired_cost_cplus"][col] = int(cc[col].fillna(0).sum())
+            res["paired_cost_cplus"]["repaired_intervals"] = int(cc["repaired"].fillna(False).astype(bool).sum()) if "repaired" in cc else 0
         out["by_direction"][direction] = res
     return out
 

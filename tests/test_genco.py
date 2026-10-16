@@ -490,3 +490,108 @@ def test_report_annual_on_synthetic_days(tmp_path):
     assert lo <= 24 * 366 <= hi
     assert exp["agreement_paired"]["share_within_tol"] == 1.0 and exp["agreement_paired"]["intervals_both_zero"] == 24
     assert exp["paired_cost"]["exact_calls_C"] < exp["paired_cost"]["exact_calls_B"]
+
+
+# ----------------------------------------------------------------------------- C+ (post-hoc final gate)
+
+class _MockOracle:
+    """Exact-share stand-in: share(level) from a given function; counts calls like FourWireOracle."""
+
+    def __init__(self, share_fn, canonical_fn=None):
+        self.f, self.g, self.n = share_fn, canonical_fn or share_fn, 0
+
+    def share(self, p, q, level_kw, direction, canonical=False):
+        self.n += len(p)
+        return float((self.g if canonical else self.f)(level_kw)), len(p)
+
+
+def _crow(limit, oracle_share=0.98):
+    return {"limit_kw": limit, "prob_ok_oracle": oracle_share, "ac_calls": 1000, "runtime_s": 5.0}
+
+
+def test_cplus_gate_passes_and_keeps_c_level():
+    from gencodoe import cplus
+    p = q = np.zeros((200, 3))
+    acc = cplus.Counter()
+    out = cplus.gate_interval(_MockOracle(lambda L: 0.99), p, q, _crow(1.0), "import", 0.98, acc)
+    assert out["gated"] and not out["repaired"] and out["limit_kw"] == 1.0
+    assert out["gate_calls"] == 200 and out["repair_calls"] == 0 and out["diagnostic_calls"] == 0
+    assert acc.calls == {"gate": 200}
+
+
+def test_cplus_gate_fails_and_repairs_downward():
+    from gencodoe import cplus
+    p = q = np.zeros((200, 3))
+    acc = cplus.Counter()
+    share = lambda L: 0.99 if L <= 0.4 else 0.97          # largest acceptable level is 0.4
+    out = cplus.gate_interval(_MockOracle(share), p, q, _crow(1.0), "import", 0.98, acc)
+    assert out["repaired"] and out["failure_class"] == "screen_error"
+    assert 0.4 - 1e-3 * 7.4 <= out["limit_kw"] <= 0.4 and out["prob_ok_oracle"] >= 0.98
+    assert out["repair_calls"] > 0 and out["diagnostic_calls"] == 200
+    assert acc.calls["gate"] == 200 and acc.calls["repair"] == out["repair_calls"] and acc.calls["diagnostic"] == 200
+    assert not out["zero_infeasible_sentinel"]
+
+
+def test_cplus_solver_noise_is_diagnostic_only():
+    from gencodoe import cplus
+    p = q = np.zeros((200, 3))
+    out = cplus.gate_interval(_MockOracle(lambda L: 0.975 if L > 0.5 else 0.99, canonical_fn=lambda L: 0.98),
+                              p, q, _crow(1.0), "export", 0.98, cplus.Counter())
+    assert out["failure_class"] == "solver_history_noise" and out["repaired"] and out["limit_kw"] <= 0.5
+
+
+def test_cplus_zero_infeasible_sentinel_and_zero_classes():
+    from gencodoe import cplus
+    p = q = np.zeros((200, 3))
+    out = cplus.gate_interval(_MockOracle(lambda L: 0.90), p, q, _crow(1.0), "import", 0.98, cplus.Counter())
+    assert out["limit_kw"] == 0.0 and out["zero_infeasible_sentinel"] and not out["zero_feasible"]
+    z1 = cplus.gate_interval(_MockOracle(lambda L: 1.0), p, q, _crow(0.0, oracle_share=0.90), "import", 0.98, cplus.Counter())
+    z2 = cplus.gate_interval(_MockOracle(lambda L: 1.0), p, q, _crow(0.0, oracle_share=0.99), "import", 0.98, cplus.Counter())
+    assert not z1["gated"] and z1["zero_infeasible_sentinel"] and z1["zero_class_source"] == "C-screened design share"
+    assert z2["zero_feasible"] and not z2["zero_infeasible_sentinel"]
+
+
+def test_report_schema_for_b_and_c_unchanged_by_cplus(tmp_path):
+    import json
+    from gencodoe import limits, report_final
+    b = _fake_run(tmp_path, "b.json", "b_opendss_exact", 1.0)
+    c = _fake_run(tmp_path, "c.json", "c_genco_4w_opendss", None, limit_c=1.0)
+    expect = {"jurisdiction": limits.JURISDICTION, "vmin_pu": limits.VMIN_PU, "vmax_pu": limits.VMAX_PU, "seed": 101}
+    base = report_final.report(report_final.feasibility(report_final.load_runs([b, c], expect)[0]))
+    doc = json.loads(c.read_text())
+    for r in doc["rows"]:
+        if r["method"] == "c_genco_4w_opendss":
+            r["method"] = "cplus_genco_4w_gate"
+            r["limit_kw"] = 0.9
+    cp = tmp_path / "cp.json"
+    cp.write_text(json.dumps(doc))
+    ext = report_final.report(report_final.feasibility(report_final.load_runs([b, c, cp], expect)[0]))
+    assert ext["agreement"] == base["agreement"]                       # B-C agreement unchanged
+    for key in ("safety", "capacity", "runtime"):
+        old = [r for r in ext[key] if r["method"] in ("B", "C", "ac", "static_from_B")]
+        assert old == base[key]
+    assert "agreement_cplus" in ext and ext["agreement_cplus"][0]["intervals_cplus_exceeds_b"] == 0
+
+
+@pytest.mark.skipif(not (ROOT / "data_out/doe/annual/2024-04-29_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json").exists(),
+                    reason="stored annual C run not present")
+def test_cplus_catches_the_known_false_acceptance(tmp_path):
+    """Integration (exact OpenDSS, ~1-2 min): 2024-04-29 13:00 import, C = 0.3647 kW vs B = 0.0308 kW."""
+    import json
+    from gencodoe import cplus
+    src = ROOT / "data_out/doe/annual/2024-04-29_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json"
+    before = cplus.sha256(src)
+    summary = cplus.gate_run(src, tmp_path, b_dir=ROOT / "data_out/doe/annual")
+    assert cplus.sha256(src) == before
+    rows = [r for r in json.loads(Path(summary["file"]).read_text())["rows"] if r["method"] == "cplus_genco_4w_gate"]
+    bad = [r for r in rows if r["step"] == 11476 and r["direction"] == "import"][0]
+    assert bad["repaired"] and bad["failure_class"] == "screen_error"
+    assert abs(bad["limit_kw"] - bad["b_limit_kw"]) <= 1e-3 * 7.4 and bad["prob_ok_oracle"] >= 0.98
+    for r in rows:                                           # consistency of every C+ row
+        assert r["ac_calls"] == r["c_ac_calls"] + r["gate_calls"] + r["repair_calls"]
+        assert abs(r["runtime_s"] - (r["c_runtime_s"] + r["gate_s"] + r["repair_s"])) < 1e-9
+        assert r["limit_kw"] <= r["c_limit_kw"] + 1e-12
+        if not r["repaired"]:
+            assert r["limit_kw"] == r["c_limit_kw"]
+        if r["gated"]:
+            assert r["gate_calls"] == 200
