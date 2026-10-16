@@ -595,3 +595,27 @@ def test_cplus_catches_the_known_false_acceptance(tmp_path):
             assert r["limit_kw"] == r["c_limit_kw"]
         if r["gated"]:
             assert r["gate_calls"] == 200
+
+
+
+def test_report_final_seed_fallback_follows_cplus_provenance(tmp_path):
+    import json
+    from gencodoe import limits, report_final
+    src_name = "2024-06-28_certified_4w_c_genco_4w_opendss_sph4_seed101_uk_esqcr.json"
+    run = _fake_run(tmp_path, "derived_cplus.json", "b_opendss_exact", 1.0)
+    doc = json.loads(run.read_text())
+    for k in ("scenario_seed", "household_seed"):
+        doc["meta"].pop(k)
+    doc["meta"]["source_run"] = f"data_out/doe/{src_name}"
+    run.write_text(json.dumps(doc))
+    man = tmp_path / "manifest.json"
+    man.write_text(json.dumps({"jobs": {"1": {"command": f"x --out data_out/doe/{src_name}"}},
+                               "seeds": {"scenario_and_verification_seed": 101, "household_technology_assignment_seed": 101}}))
+    expect = {"jurisdiction": limits.JURISDICTION, "vmin_pu": limits.VMIN_PU, "vmax_pu": limits.VMAX_PU,
+              "seed": 101, "manifest": man}
+    _, inputs = report_final.load_runs([run], expect)
+    assert inputs[0]["meta"]["_seed_source"] == "run manifest"
+    doc["meta"]["source_run"] = "data_out/doe/unlisted.json"
+    run.write_text(json.dumps(doc))
+    with pytest.raises(SystemExit):
+        report_final.load_runs([run], expect)

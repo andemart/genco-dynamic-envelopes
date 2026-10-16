@@ -38,7 +38,10 @@ def _seeds_from_manifest(path: Path, manifest: Path | None) -> dict:
     man = json.loads(Path(manifest).read_text())
     listed = {Path(j["command"].split("--out ")[1].split()[0]).name for j in man["jobs"].values()}
     if path.name not in listed:
-        raise SystemExit(f"{path}: no seed metadata and not listed in {manifest}")
+        # a post-hoc derivative (C+) of a listed run inherits that run's seeds (provenance chain)
+        src = json.loads(Path(path).read_text())["meta"].get("source_run")
+        if src is None or Path(src).name not in listed:
+            raise SystemExit(f"{path}: no seed metadata and neither it nor its source_run is listed in {manifest}")
     sd = man["seeds"]
     return {"scenario_seed": sd["scenario_and_verification_seed"],
             "household_seed": sd["household_technology_assignment_seed"]}
