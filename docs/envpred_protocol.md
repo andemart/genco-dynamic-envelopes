@@ -165,3 +165,162 @@ No feature had been computed and no data inspected when this was written. Everyt
 **Disclosure: GENCO in-sample dates.** GENCO was trained on states from the train and val dates. The design scenarios are new draws, but they come from the same days. GENCO features on those dates may therefore be more accurate than on new dates. The shrink is calibrated on calib dates and the test is on test dates; neither was used in GENCO training. The bias, if any, affects only how well the GENCO arms' heads are fitted, not the gate's safety.
 
 Everything else (features incl. amendment 1, arms, head, shrink, gate, fallback, metrics, decision rule) is unchanged.
+
+## Amendment 3 (before any head is fitted, any prediction made, or any result inspected): action-conditioned GENCO features, integrity, strata, frontier
+
+**State when committed.**
+- No head has been fitted.
+- No prediction, gate result or test metric exists.
+- The 660 amendment-2 label jobs are still running; none had finished.
+
+### Why: feature symmetry and action alignment
+
+- The classical block contains the balanced-AC envelope `L_ac`. That is already an *action-conditioned* optimisation result: the outcome of a feasibility search over flexibility levels.
+- The GENCO block contains state predictions and embeddings only at **zero** flexibility. GENCO is therefore asked to infer the response to flexibility from one operating point, while the classical arm gets the directly relevant envelope.
+- This amendment gives GENCO the analogous action-conditioned information. The G block is **augmented**, not tuned after results.
+
+### What is unchanged
+
+- The P and C feature definitions (amendment 1).
+- The exact B labels.
+- The split (amendment 2), the head and its settings, the gate and fallback.
+- The primary operating point (95% shrink).
+- The strict primary decision rule, including criterion 4 as defined above.
+- Every test result is reported, negative results included.
+
+### New block GA (per interval *and direction*, from its 200 design scenarios)
+
+All GA features use the frozen GENCO checkpoint as a **balanced** feasibility oracle (`envelopes.exact(GencoOracle, feeder)`). The balanced, direction-specific feasibility definition, UK limits, uniform policy, signs and caps (5 kW export, 7.4 kW import) are the same as elsewhere. No OpenDSS, no four-wire truth, no four-wire conformal adapter and no B envelope is used.
+
+**A. GENCO balanced envelope proposal `L_G`** (1 feature)
+- `envelopes.scalar_envelope` with GENCO as the oracle: the same 200 scenarios, ε = β = 0.05 (threshold 0.98), 4 levels per round, tolerance 1e-3 × cap.
+- `L_G` is the GENCO analogue of `L_ac`.
+
+**B. GENCO response at the proposal** (85 features)
+- At `L_G`, GENCO's predicted min V, max V, max cable loading and transformer loading, each over the 200 scenarios with the 7 frozen statistics (mean, min, p02, p10, p90, p98, max): 28.
+- Change from zero to `L_G`, per scenario, then the 7 statistics: 28.
+- Headroom at `L_G` relative to the active limits, then the 7 statistics: 28.
+  - Headroom quantities: min V − VMIN, VMAX − max V, 1 − cable loading, 1 − transformer loading.
+  - Disclosure: these are affine transforms of the absolute summaries, so they are redundant for a tree model. They are included as specified.
+- GENCO feasible share at `L_G`: 1.
+- Indicator `L_G` = 0: 1.
+
+**C. Fixed response curve** (117 features)
+- Levels: 0%, 25%, 50%, 75% and 100% of the direction-specific cap. The grid is fixed now.
+- At each level: the GENCO balanced feasible share, and the 7-statistic summaries of the 4 state quantities.
+- At 0% the state summaries are identical to the G block's zero-state summaries and are not duplicated; only the 0% share is added.
+- Count: 5 shares + 4 levels × 28 = 117.
+
+**D. Embeddings at `L_G`** (384 features)
+- The mean-over-scenarios pooled embedding at `L_G` (192), and its difference from the zero-flexibility pooled embedding (192).
+- The existing zero-flexibility embeddings stay in G.
+- No other embedding variant is introduced.
+
+**GA total: 1 + 85 + 117 + 384 = 587 features.**
+
+### Arms (names unchanged)
+
+| Arm | Blocks | Features |
+|---|---|---|
+| P | P | 224 |
+| PC | P + C | 253 |
+| PG | P + G + GA | 224 + 220 + 587 = 1,031 |
+| PCG | P + C + G + GA | 1,060 |
+
+No other GENCO arm is added.
+
+### Extraction (feature version v3)
+
+- New directory `data_out/envpred/features_v3/`. The amendment-2 CPU features in `data_out/envpred/features/` are kept and not overwritten.
+- For device consistency, **all** blocks (P, C, G, GA) of all 840 files (180 test + 660 label) are recomputed in v3. GENCO runs on the Hydra A100s in FP32 with TF32 **off** (deployment-equivalent float32); P and C are deterministic and unchanged in definition.
+- Time is recorded per block: phase, classical, GENCO zero-state, GENCO action features, and the complete total.
+
+### Label integrity before fitting (replaces the amendment-2 completeness rule)
+
+Before any fit, `envpred integrity` writes `results/envpred_label_integrity.json`. It checks:
+- exactly 330 non-test dates × 2 placements, with no duplicate date/placement block and no missing output;
+- 24 hourly intervals × 2 directions per file;
+- scenario seed 101 and the correct household seed;
+- UK limits and acceptance threshold 0.98;
+- methods `ac` and `b_opendss_exact`;
+- the code commit, and the SHA-256 of every file.
+
+Failed or timed-out jobs are **retried**. If a date genuinely cannot be completed, it is dropped for **both** label placements and disclosed before fitting.
+
+**Sample sizes (corrects the earlier "about 33,000 training rows").**
+
+| Split | Rows (combined) | Per direction |
+|---|---|---|
+| train | 21,120 | 10,560 |
+| validation | 7,008 | |
+| calibration | 3,552 | |
+| test | 8,640 | |
+
+That is 31,680 non-test rows in total.
+
+### Placement strata (test)
+
+1. **Familiar placements:** household seeds 101 and 202, which also appear in training.
+2. **Unseen placements:** seeds 303, 404 and 505.
+3. **All five combined.** The frozen combined decision remains primary.
+
+The unseen stratum is an important secondary hypothesis: *do GENCO's bus-level representations help when household technology placement changes?* A GENCO benefit that occurs only on familiar placements is not presented as generalisation.
+
+Uncertainty within each stratum uses the date-block bootstrap (dates resampled within season; placements, intervals and directions of a date kept together).
+
+### Capacity-versus-cost frontier (secondary)
+
+- Shrink quantiles {80%, 90%, 95%, 99%}, fixed now. The 95% point is primary.
+- The exact gate and fallback run on the test set **for every point and every arm**. Every point is reported, including a plot of retained B envelope-hours against exact OpenDSS calls.
+- No quantile is chosen with test outcomes.
+- **Matched-budget comparison.**
+  - For each arm, retention is linearly interpolated along its frontier at two budgets: the exact calls of the best non-GENCO arm at 95%, and those of the best GENCO arm at 95%.
+  - Budgets outside an arm's frontier are reported as "not reached"; there is no extrapolation.
+  - Pairs compared: P vs PG (does GENCO add value beyond phase information?), PC vs PCG (beyond phase-aware classical physics?), and best non-GENCO vs best GENCO arm.
+
+### Safety and cost reporting
+
+- **Wording.** The gate applies the same design-sample rule and OpenDSS configuration as B.
+  - It does not produce unconditional statutory safety.
+  - OpenDSS threshold results have known solve-history non-reproducibility (see C+).
+  - Held-out feasibility is reported separately.
+- **Fresh four-wire feasibility, for the selected G and N arms at 95%, on four sets:**
+  - all issued non-zero envelopes of each arm;
+  - intervals where both issue non-zero (paired);
+  - intervals where only G issues;
+  - intervals where only N issues.
+  - Primary criterion 4 stays as frozen; the paired sets are reported next to it.
+- **Cost, per arm:**
+  - phase-feature time, classical-feature time, GENCO zero-state time, GENCO action-feature time;
+  - head inference;
+  - exact gate calls and time, fallback calls and time;
+  - complete end-to-end runtime.
+  - Devices differ (GENCO on A100, OpenDSS on CPU), and exact-call savings are not automatically wall-clock savings.
+
+### Interpretation tiers (descriptive; the strict primary decision is unchanged)
+
+Differences are in retention at the primary 95% point, combined over directions, with the date-block bootstrap.
+
+1. **Strong GENCO-positive:** the primary decision is positive.
+2. **Useful but non-unique GENCO value:** tier 1 fails, and either
+   - PG − P ≥ 3 percentage points with a bootstrap lower bound > 0, or
+   - PCG − PC has a bootstrap lower bound > 0 and is < 3 percentage points.
+
+   Wording: "GENCO improves the learned proposal relative to phase-only information, but does not outperform the specialised classical baseline." (Or the PCG-over-PC analogue.)
+3. **No measurable GENCO value:** neither tier 1 nor tier 2. Reported directly, and the analysis stops.
+
+### Framing
+
+- **GENCO is described as** "a learned proposal engine for expensive four-wire envelope optimisation, with OpenDSS as the final authority."
+- **GENCO is not described as** a replacement for exact power flow, universally faster than classical methods, certified unconditionally, or superior unless the frozen comparison shows it.
+- **If the result is positive**, the statement takes the form: "GENCO's action-conditioned representation proposed near-optimal dynamic envelopes that retained X% of exact four-wire capacity using Y% fewer OpenDSS evaluations. Every non-zero proposal passed the same exact design-sample gate used by the reference workflow." The classical comparison goes in the same paragraph.
+
+### Order of work
+
+1. Commit this amendment.
+2. Implement v3 extraction, integrity, frontier, strata and tiers, with tests; commit.
+3. Extract v3 features on Hydra A100s, with a manifest.
+4. Integrity report once the labels are complete.
+5. Fit once.
+6. Gate the frontier on the test set.
+7. Report.
