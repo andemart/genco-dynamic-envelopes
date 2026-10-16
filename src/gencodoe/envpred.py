@@ -18,8 +18,9 @@ import pandas as pd
 
 ANNUAL = Path("data_out/doe/annual")
 W1 = Path("data_out/doe/weekend/w1_placement")
+LABELS = Path("data_out/doe/envpred_labels")          # amendment 2
 OUT = Path("data_out/envpred")
-SPLIT = Path("results/envpred_split.json")
+SPLIT = Path("results/envpred_split_v2.json")              # amendment 2
 RUN = Path("mlruns_hydra/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee")
 CONFIG = Path("configs/genco_pf_enwl1_lv_prior_v2.yaml")
 CALIB = Path("data_out/datakit_v2_calib")
@@ -35,7 +36,16 @@ def label_files() -> list[tuple[Path, int]]:
     files = [(p, 101) for p in sorted(ANNUAL.glob(f"*_annual_4w_{B}_sph1_seed101_uk_esqcr.json"))]
     for hh in (202, 303, 404, 505):
         files += [(p, hh) for p in sorted(W1.glob(f"*_{B}_sph1_seed101_hh{hh}_uk_esqcr.json"))]
+    for hh in (101, 202):                                   # train/val/calib labels (amendment 2)
+        files += [(p, hh) for p in sorted(LABELS.glob(f"*_{B}_sph1_seed101_hh{hh}_uk_esqcr.json"))]
     return files
+
+
+def missing_labels() -> list[str]:
+    """Label (date, placement) blocks of amendment 2 without a finished file."""
+    days = [d for d in Path("results/envpred_label_days.txt").read_text().split() if d]
+    return [f"{d}_hh{hh}" for hh in (101, 202) for d in days
+            if not (LABELS / f"{d}_{B}_sph1_seed101_hh{hh}_uk_esqcr.json").exists()]
 
 
 def stats(x: np.ndarray) -> np.ndarray:
@@ -61,21 +71,22 @@ def replay(day: str, hh: int):
 _CTX = {}
 
 
-def _ctx():
+def _ctx(genco: bool = True):
     if not _CTX:
         import torch
         torch.set_num_threads(1)
         from .doe_day import customer_groups
         from .enwl import load_enwl1
-        from .genco import GencoModel, GencoOracle, read_raw
         from .unbalanced import UnbalancedENWL1
         net = load_enwl1()
         ub = UnbalancedENWL1()
+        _CTX.update(net=net, fd=net.to_feeder(), ub=ub, groups=customer_groups(net, ub),
+                    phase=np.array([int(lb.split(".")[1]) for lb in ub.load_bus]))
+    if genco and "oracle" not in _CTX:                     # the gate needs no GENCO
+        from .genco import GencoModel, GencoOracle, read_raw
         model = GencoModel(CONFIG, RUN / "artifacts/model/best_model_state_dict.pt",
                            RUN / "artifacts/stats/normalizer_stats.pt")
-        _CTX.update(net=net, fd=net.to_feeder(), ub=ub, groups=customer_groups(net, ub),
-                    phase=np.array([int(lb.split(".")[1]) for lb in ub.load_bus]),
-                    oracle=GencoOracle(model, read_raw(CALIB / "enwl1_fluvius" / "raw", scenarios=[0])))
+        _CTX["oracle"] = GencoOracle(model, read_raw(CALIB / "enwl1_fluvius" / "raw", scenarios=[0]))
     return _CTX
 
 
@@ -182,6 +193,7 @@ def fit(out_json: Path):
         info["val_proxy_retention"][arm] = proxy_retention(df_out[f"Ls_{arm}"][v].to_numpy(), df.L_B[v].to_numpy(),
                                                            df.direction[v].to_numpy())
     vr = info["val_proxy_retention"]
+    info["missing_label_blocks"] = missing_labels()
     info["selected"] = {fam: max(arms, key=lambda a: (vr[a], -len(ARMS[a]))) for fam, arms in FAMILY.items()}
     df_out.to_parquet(OUT / "predictions.parquet")
     out_json.parent.mkdir(parents=True, exist_ok=True)
@@ -197,7 +209,7 @@ def gate_file(path_str: str) -> Path:
     out = OUT / "gate" / (path.stem + ".json")
     if out.exists():
         return out
-    c = _ctx()
+    c = _ctx(genco=False)
     pr = pd.read_parquet(OUT / "predictions.parquet")
     pr = pr[pr.file == path_str]
     hh = int(pr.hh.iloc[0])
@@ -277,7 +289,7 @@ def report(out_json: Path):
     g["kept"] = np.minimum(g.issued, g.L_B)
     g["excess"] = np.maximum(g.issued - g.L_B, 0)
     g["calls"] = g.gate_calls + g.fallback_calls
-    out = {"protocol": "docs/envpred_protocol.md (incl. amendment 1)", "status": "post-hoc, exploratory",
+    out = {"protocol": "docs/envpred_protocol.md (incl. amendments 1 and 2)", "missing_label_blocks": missing_labels(), "status": "post-hoc, exploratory",
            "split": json.loads(SPLIT.read_text()), "fit": info, "arms": {},
            "inputs_sha256": {str(p): sha256(p) for p, _ in label_files() if Path(p).name[:10] in set(g.day)}}
     for arm, ga in g.groupby("arm"):
@@ -337,6 +349,7 @@ def main():
     ap.add_argument("cmd", choices=["features", "fit", "gate", "report"])
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--out", type=Path, default=Path("results/envpred_report.json"))
+    ap.add_argument("--file-index", type=int, default=None, help="gate: only this test file (Hydra array task)")
     a = ap.parse_args()
     if a.cmd == "features":
         _pool(file_features, label_files(), a.workers)
@@ -345,7 +358,12 @@ def main():
     elif a.cmd == "gate":
         split = json.loads(SPLIT.read_text())
         files = [str(p) for p, _ in label_files() if p.name[:10] in split["test"]]
-        _pool(gate_file, files, a.workers)
+        if len(files) != 180:
+            raise SystemExit(f"{len(files)} test files, expected 180")
+        if a.file_index is not None:
+            print(gate_file(files[a.file_index]))
+        else:
+            _pool(gate_file, files, a.workers)
     else:
         report(a.out)
 

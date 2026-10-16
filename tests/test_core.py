@@ -183,3 +183,13 @@ def test_envpred_stats_proxy_and_split():
     assert len(days) == len(set(days)) == 36
     for k, n in (("train", 4), ("val", 1), ("calib", 2), ("test", 2)):
         assert all(sum(season(d) == s_ for d in sp[k]) == n for s_ in ("winter", "spring", "summer", "autumn"))
+
+
+def test_envpred_split_v2_test_is_annual():
+    import json
+    from pathlib import Path
+    sp = json.loads(Path("results/envpred_split_v2.json").read_text())
+    annual = Path("results/annual_test_days.txt").read_text().split()
+    assert sorted(sp["test"]) == sorted(annual)
+    assert not set(sp["test"]) & set(sp["train"] + sp["val"] + sp["calib"])
+    assert sorted(sp["train"] + sp["val"] + sp["calib"]) == Path("results/envpred_label_days.txt").read_text().split()
