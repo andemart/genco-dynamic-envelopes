@@ -1,0 +1,36 @@
+{
+ "purpose": "envelope prediction v3 feature extraction (docs/envpred_protocol.md, amendments 3/3a)",
+ "code_commit": "cff548b552c3862064022802f27cab19b0ef8235",
+ "protocol_commits": [
+  "12a5f37",
+  "99507c3"
+ ],
+ "sha256": {
+  "checkpoint best_model_state_dict.pt": "cf9dc7b8f5acccaeaf1f071ad3394d248089da78e83da53ebc88e00559b664d5",
+  "normalizer_stats.pt": "4ec62682c05b8c052dda3690bea12b21e90ec1bd31a54cf6a1c67bc2d5351745",
+  "src/gencodoe/envpred3.py": "c7442fffb5c9a2dadfe8182b06c9cf1f35627e26baeef0d5181d0cdf6676b8b2",
+  "configs/genco_pf_enwl1_lv_prior_v2.yaml": "e1d77403065642995235ea930b27704ce8d7e70b1c4f4518677797421ca7ffa4",
+  "feature_schema": "e7dfa1b76bb31a4cb4adb110a2c826198a45cbcb88359c2e520070f314962e9d"
+ },
+ "device": "VUB Hydra ampere_gpu, NVIDIA A100-PCIE-40GB, FP32 with TF32 off",
+ "smoke_tests": [
+  {
+   "job_id": "13337362",
+   "commit": "20c58a5",
+   "outcome": "failed schema check: hook kept all 12 layers (embedding width 2304); GA all NaN by design; fixed in cff548b"
+  },
+  {
+   "job_id": "13337383",
+   "commit": "cff548b552c3862064022802f27cab19b0ef8235",
+   "outcome": "passed: results/envpred3_smoke.json"
+  }
+ ],
+ "jobs": [
+  {
+   "job_id": "13337441",
+   "array": "0-15",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=cff548b552c3862064022802f27cab19b0ef8235 --array=0-15 --time=06:00:00 --job-name=envpred3-feat scripts/hydra_envpred3_gpu.slurm features 16",
+   "outputs": "data_out/envpred/features_v3/<date>_hh<seed>.npz (840 blocks)"
+  }
+ ]
+}
