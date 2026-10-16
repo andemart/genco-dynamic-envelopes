@@ -71,3 +71,7 @@ If the baseline is infeasible (the zero sentinel), every w_g and λ are 0, exact
 - Batch 1,000 states; 3 repetitions; median and spread.
 
 **Not claimed:** any accuracy on these networks. This is speed only.
+
+## Amendment (2026-10-16): W4 dropped before any run
+
+W4 is dropped. GENCO inference, the radial sweep and sparse fixed-point solvers all scale linearly in the number of buses; only the dense Z-bus scales worse. A comparison against the dense solver would therefore be a straw man, and the submission already states that GENCO has no speed advantage over specialised radial solvers here. No W4 job was submitted.
