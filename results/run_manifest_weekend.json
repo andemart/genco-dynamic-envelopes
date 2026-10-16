@@ -90,5 +90,15 @@
    "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=48:00:00 --job-name=w3-spatial scripts/hydra_doe_weekend.slurm w3_spatial 101 s_spatial_exact --spatial",
    "outputs": "data_out/doe/weekend/w3_spatial/<day>_s_spatial_exact_sph1_seed101_hh101_uk_esqcr.json"
   }
- ]
+ ],
+ "priority_changes": {
+  "reason": "cluster full; let the longest track (W3) and W2 seed 101 start first; does not change results",
+  "commands": [
+   "scontrol update jobid=13334384 nice=50",
+   "scontrol update jobid=13334388 nice=50",
+   "scontrol update jobid=13334385 nice=100",
+   "scontrol update jobid=13334386 nice=100",
+   "scontrol update jobid=13334383 nice=10"
+  ]
+ }
 }

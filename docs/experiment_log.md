@@ -566,3 +566,24 @@ Extra exact calls:
 
 - Summer: C+ = B within tolerance, and capacity is unchanged.
 - Winter: no non-zero envelopes, so no gates and C+ = C.
+
+## Option 2: learned four-wire heads (post-hoc, exploratory; docs/option2_protocol.md)
+
+Implementation committed (`gencodoe.option2`) before the result was computed. Regenerate with
+`python -m gencodoe.option2 --run <GENCO run> --config configs/genco_pf_enwl1_lv_prior_v2.yaml --out results/option2_screen.json`.
+Train 14,648 / val 5,066 / calib 2,953 / test 2,968 states; UK limits; α = 0.01 over 4 criteria. The test days were also used in earlier development.
+
+| Arm (test states) | Import: safe / to OpenDSS / false-safe | Export: safe / to OpenDSS / false-safe |
+|---|---|---|
+| Frozen adapter, GENCO summary (reference) | 2.2% / 78.0% / 0 | 0.0% / 80.1% / 0 |
+| Head, phase-only features | 25.8% / 50.1% / 2 | 21.0% / 55.0% / 0 |
+| Head, + exact balanced summary (classical) | 26.4% / 49.7% / 1 | 20.6% / 55.9% / 0 |
+| Head, + GENCO summary + pooled embeddings | 23.9% / 52.0% / 1 | 16.7% / 59.4% / 0 |
+
+- The reference row reproduces `results/screen_comparison_genco_vs_classical.json` exactly.
+- **A learned four-wire head helps a lot:** states cleared without OpenDSS go from ~2% to ~21–26%; states sent to OpenDSS drop from ~79% to ~50–56%.
+- **The gain comes from phase-composition information, not from GENCO.** Phase-only features alone reach it. Adding the exact balanced summary changes little. The GENCO arm is *worse* than both (−2.5 pp import, −3.9 pp export vs classical).
+- **The pre-specified evidence criterion for GENCO (≥ 5 pp more safe than classical) is not met.** Reported as is.
+- False-safe states: 1–2 out of 2,968 per arm. That is within what α = 0.01 per state allows (pointwise guarantee). It is not zero, unlike the frozen adapter, which cleared almost nothing.
+- Head test MAE (converged states): v_pn_min ≈ 0.011 pu, v_pn_max ≈ 0.005 pu, line loading ≈ 0.04, transformer ≈ 0.002–0.003, similar across arms.
+- Per the protocol, DOE-level integration would follow only if the screen supported GENCO. It does not support GENCO over classical. A phase-feature head could be integrated as a non-GENCO screen, but that is outside the GENCO claim.

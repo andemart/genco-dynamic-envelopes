@@ -1,0 +1,152 @@
+{
+ "note": "post-hoc, exploratory (docs/option2_protocol.md); test days were also used in earlier development",
+ "voltage_limits": {
+  "jurisdiction": "uk_esqcr",
+  "vbase_volts": 240.17771198288432,
+  "vmin_volts": 216.2,
+  "vmax_volts": 253.0,
+  "vmin_pu": 0.9001667898951713,
+  "vmax_pu": 1.0533866690262643
+ },
+ "alpha": 0.01,
+ "run": "mlruns_hydra/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee",
+ "states": {
+  "train": 14648,
+  "val": 5066,
+  "calib": 2953,
+  "test": 2968
+ },
+ "rows": [
+  {
+   "arm": "frozen_adapter_genco (reference)",
+   "direction": "import",
+   "safe": 0.0215633423180593,
+   "certainly_violated": 0.19878706199460916,
+   "sent_to_opendss": 0.7796495956873315,
+   "false_safe": 0,
+   "false_violated": 0,
+   "violating": 1382,
+   "feasible_not_cleared": 0.9596469104665826
+  },
+  {
+   "arm": "frozen_adapter_genco (reference)",
+   "direction": "export",
+   "safe": 0.0,
+   "certainly_violated": 0.19878706199460916,
+   "sent_to_opendss": 0.8012129380053908,
+   "false_safe": 0,
+   "false_violated": 0,
+   "violating": 1483,
+   "feasible_not_cleared": 1.0
+  },
+  {
+   "arm": "phase_only",
+   "direction": "import",
+   "safe": 0.2580862533692722,
+   "certainly_violated": 0.24090296495956873,
+   "sent_to_opendss": 0.501010781671159,
+   "false_safe": 2,
+   "false_violated": 0,
+   "violating": 1382,
+   "feasible_not_cleared": 0.5182849936948297
+  },
+  {
+   "arm": "phase_only",
+   "direction": "export",
+   "safe": 0.21024258760107817,
+   "certainly_violated": 0.23955525606469003,
+   "sent_to_opendss": 0.5502021563342318,
+   "false_safe": 0,
+   "false_violated": 0,
+   "violating": 1483,
+   "feasible_not_cleared": 0.5797979797979798
+  },
+  {
+   "arm": "classical",
+   "direction": "import",
+   "safe": 0.2638140161725067,
+   "certainly_violated": 0.23955525606469003,
+   "sent_to_opendss": 0.49663072776280326,
+   "false_safe": 1,
+   "false_violated": 0,
+   "violating": 1382,
+   "feasible_not_cleared": 0.5069356872635561
+  },
+  {
+   "arm": "classical",
+   "direction": "export",
+   "safe": 0.2055256064690027,
+   "certainly_violated": 0.2358490566037736,
+   "sent_to_opendss": 0.5586253369272237,
+   "false_safe": 0,
+   "false_violated": 0,
+   "violating": 1483,
+   "feasible_not_cleared": 0.5892255892255892
+  },
+  {
+   "arm": "genco",
+   "direction": "import",
+   "safe": 0.23921832884097036,
+   "certainly_violated": 0.24123989218328842,
+   "sent_to_opendss": 0.5195417789757413,
+   "false_safe": 1,
+   "false_violated": 0,
+   "violating": 1382,
+   "feasible_not_cleared": 0.5529634300126103
+  },
+  {
+   "arm": "genco",
+   "direction": "export",
+   "safe": 0.1667789757412399,
+   "certainly_violated": 0.23888140161725066,
+   "sent_to_opendss": 0.5943396226415094,
+   "false_safe": 0,
+   "false_violated": 0,
+   "violating": 1483,
+   "feasible_not_cleared": 0.6666666666666667
+  }
+ ],
+ "head_mae_test": {
+  "phase_only": {
+   "v_pn_min": 0.01132397251100609,
+   "v_pn_max": 0.005256540109316085,
+   "line_loading_max": 0.040276791153738147,
+   "transformer_loading": 0.0030946183204499313,
+   "iterations": [
+    226,
+    216,
+    500,
+    169
+   ]
+  },
+  "classical": {
+   "v_pn_min": 0.010662137301102478,
+   "v_pn_max": 0.005261292853277364,
+   "line_loading_max": 0.04028397771069349,
+   "transformer_loading": 0.0019005467855082126,
+   "iterations": [
+    238,
+    185,
+    500,
+    152
+   ]
+  },
+  "genco": {
+   "v_pn_min": 0.010681296461145181,
+   "v_pn_max": 0.005263111431630595,
+   "line_loading_max": 0.04237332753888243,
+   "transformer_loading": 0.0018930305646866568,
+   "iterations": [
+    249,
+    180,
+    500,
+    147
+   ]
+  }
+ },
+ "n_features": {
+  "phase_only": 32,
+  "classical": 36,
+  "genco": 228
+ }
+}
