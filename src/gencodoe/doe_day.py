@@ -106,12 +106,13 @@ def conformal_margins(model, feeder: fdr.Feeder, calib_dir: Path, alpha: float, 
 
 def run_day(day: str, feeder, customers, scen: DayScenarios, methods: dict, n_s: int, eps: float,
             levels_per_round: int, seed: int, steps_per_hour: int = 4, unbalanced=None,
-            n_unbalanced: int = 0, beta: float | None = None, n_verify: int | None = None) -> list[dict]:
+            n_unbalanced: int = 0, beta: float | None = None, n_verify: int | None = None,
+            any_split: bool = False) -> list[dict]:
     """Envelopes for every interval of `day` with every method; AC-verified on fresh draws."""
     rng = np.random.default_rng(seed)
     # days are indexed by row position (96 steps per local day; file timestamps are UTC)
     t0 = int((np.datetime64(day) - np.datetime64("2024-01-01")).astype(int)) * 96
-    if day_split(t0) != "test":
+    if day_split(t0) != "test" and not any_split:
         raise ValueError(f"{day} is a {day_split(t0)} day, not a test day")
     ac_feas = envelopes.exact(fdr.sweep_pf, feeder)
     rows = []
@@ -215,6 +216,8 @@ def main():
                     help="add option B (exact OpenDSS search) without GENCO or calibration data")
     ap.add_argument("--spatial", action="store_true",
                     help="add s_spatial_exact: feeder x phase group envelopes, jointly certified with OpenDSS (W3)")
+    ap.add_argument("--any-split", action="store_true",
+                    help="allow train/val/calib days (envelope-prediction labels, docs/envpred_protocol.md)")
     ap.add_argument("--three-phase-hp-ev", action="store_true",
                     help="idealised multi-phase connection of heat-pump/EV households in the four-wire model (W2)")
     a = ap.parse_args()
@@ -235,7 +238,7 @@ def main():
     meta = {"voltage_limits": limits_record(), "code_commit": _git_commit(), "scenario_seed": a.seed,
             "household_seed": household_seed, "steps_per_hour": a.steps_per_hour,
             "levels_per_round": a.levels_per_round, "verify_draws": a.verify_draws, "unbalanced_draws": a.unbalanced,
-            "methods_requested": a.methods, "day": a.day, "scenarios": a.scenarios, "eps": a.eps, "beta": a.beta, "verify_draws": a.verify_draws,
+            "methods_requested": a.methods, "day": a.day, "any_split": a.any_split, "scenarios": a.scenarios, "eps": a.eps, "beta": a.beta, "verify_draws": a.verify_draws,
             "acceptance_threshold": envelopes.acceptance_threshold(a.scenarios, a.eps, a.beta), "mix": MIX, "alpha": a.alpha,
             "export_cap_kw": FLEX_EXPORT_KW, "import_cap_kw": FLEX_IMPORT_KW}
     fp_bin, fp_qb, _, fp_ql, n_cal = conformal_margins(None, feeder, a.calib, a.alpha)
@@ -317,7 +320,7 @@ def main():
     if a.methods:
         methods = {k: v for k, v in methods.items() if k in a.methods}
     rows = run_day(a.day, feeder, customers, scen, methods, a.scenarios, a.eps, a.levels_per_round, a.seed,
-                   a.steps_per_hour, ub, a.unbalanced, a.beta, a.verify_draws)
+                   a.steps_per_hour, ub, a.unbalanced, a.beta, a.verify_draws, a.any_split)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps({"meta": meta, "rows": rows}, indent=1))
     import pandas as pd

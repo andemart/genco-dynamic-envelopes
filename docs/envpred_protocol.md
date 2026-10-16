@@ -129,3 +129,39 @@ All four arms are reported in full whatever the outcome, including the compariso
 - G: 4 × 7 + 192 = 220.
 
 No feature had been computed and no data inspected when this was written. Everything else is unchanged.
+
+## Amendment 2 (before any head is fitted or any result computed): more labels, full-year test
+
+**Why.** To get the best-powered answer, the user decided to use Hydra for new B labels. At the time of writing:
+- the features of the 180 existing files have been computed (only their shapes and timings were checked);
+- no head has been fitted;
+- no prediction, gate or metric exists.
+
+**New split** (`results/envpred_split_v2.json`; supersedes `results/envpred_split.json`, which is kept). It is the global calendar-day split already used for GENCO (`datakit_fluvius.day_split`):
+
+| Role | Dates | Placements | Labels |
+|---|---|---|---|
+| train | 220 (day % 5 ∈ {0, 1, 2}) | 101, 202 | new B runs |
+| val (early stopping, family selection) | 73 (day % 5 = 3) | 101, 202 | new B runs |
+| calib (shrink δ) | 37 (held-out, (day // 5) even) | 101, 202 | new B runs |
+| **test** | **all 36 annual test dates** | 101, 202, 303, 404, 505 | the existing 180 files |
+
+**New labels.**
+- Command identical to the annual / W1 B runs: `doe_day`, hourly, 200 scenarios, β = 0.05, scenario seed 101, `--verify-draws 1000`, methods `ac` and `b_opendss_exact`, UK limits.
+- Two differences only:
+  - `--any-split`, which lets the runner process non-test dates;
+  - `--unbalanced 0`: no four-wire fresh verification, which labels do not need.
+- The random stream, and so the design scenarios, are unchanged.
+- Script: `scripts/hydra_envpred_labels.slurm`; list of dates: `results/envpred_label_days.txt`.
+
+**Completeness rule (fixed now).**
+- Heads are fitted only after every label task has finished.
+- A task that fails twice is excluded, listed in the report, and its date is dropped for that placement.
+
+**Bootstrap.** Over the 36 test dates, resampled within season (9 per season).
+
+**The test gate** runs on Hydra, one task per test file, with the same code.
+
+**Disclosure: GENCO in-sample dates.** GENCO was trained on states from the train and val dates. The design scenarios are new draws, but they come from the same days. GENCO features on those dates may therefore be more accurate than on new dates. The shrink is calibrated on calib dates and the test is on test dates; neither was used in GENCO training. The bias, if any, affects only how well the GENCO arms' heads are fitted, not the gate's safety.
+
+Everything else (features incl. amendment 1, arms, head, shrink, gate, fallback, metrics, decision rule) is unchanged.
