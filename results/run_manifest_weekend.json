@@ -1,0 +1,94 @@
+{
+ "purpose": "weekend analyses W1-W3 (docs/weekend_protocols.md; post-hoc, exploratory)",
+ "protocol_commit": "5a73c4d",
+ "implementation_commit": "4632aa8",
+ "code_commit": "dd0fd498c0fb637925b058875c807a60379e77e1",
+ "cluster": "VUB Hydra zen4, 2 CPUs/task",
+ "voltage_limits": "uk_esqcr (pinned)",
+ "days_file": "results/annual_test_days.txt",
+ "scenario_seed": 101,
+ "cancelled_before_output": {
+  "job_ids": [
+   "13334366",
+   "13334367",
+   "13334368",
+   "13334369",
+   "13334370",
+   "13334371",
+   "13334372"
+  ],
+  "reason": "GENCODOE_COMMIT not propagated to the jobs; cancelled after ~1 min, logs and partial outputs deleted, resubmitted with --export"
+ },
+ "jobs": [
+  {
+   "job_id": "13334383",
+   "track": "W1",
+   "tag": "w1_placement",
+   "household_seed": 202,
+   "method": "b_opendss_exact",
+   "flags": "",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=10:00:00 --job-name=w1-hh202 scripts/hydra_doe_weekend.slurm w1_placement 202 b_opendss_exact",
+   "outputs": "data_out/doe/weekend/w1_placement/<day>_b_opendss_exact_sph1_seed101_hh202_uk_esqcr.json"
+  },
+  {
+   "job_id": "13334384",
+   "track": "W1",
+   "tag": "w1_placement",
+   "household_seed": 303,
+   "method": "b_opendss_exact",
+   "flags": "",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=10:00:00 --job-name=w1-hh303 scripts/hydra_doe_weekend.slurm w1_placement 303 b_opendss_exact",
+   "outputs": "data_out/doe/weekend/w1_placement/<day>_b_opendss_exact_sph1_seed101_hh303_uk_esqcr.json"
+  },
+  {
+   "job_id": "13334385",
+   "track": "W1",
+   "tag": "w1_placement",
+   "household_seed": 404,
+   "method": "b_opendss_exact",
+   "flags": "",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=10:00:00 --job-name=w1-hh404 scripts/hydra_doe_weekend.slurm w1_placement 404 b_opendss_exact",
+   "outputs": "data_out/doe/weekend/w1_placement/<day>_b_opendss_exact_sph1_seed101_hh404_uk_esqcr.json"
+  },
+  {
+   "job_id": "13334386",
+   "track": "W1",
+   "tag": "w1_placement",
+   "household_seed": 505,
+   "method": "b_opendss_exact",
+   "flags": "",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=10:00:00 --job-name=w1-hh505 scripts/hydra_doe_weekend.slurm w1_placement 505 b_opendss_exact",
+   "outputs": "data_out/doe/weekend/w1_placement/<day>_b_opendss_exact_sph1_seed101_hh505_uk_esqcr.json"
+  },
+  {
+   "job_id": "13334387",
+   "track": "W2",
+   "tag": "w2_three_phase",
+   "household_seed": 101,
+   "method": "b_opendss_exact",
+   "flags": "--three-phase-hp-ev",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=12:00:00 --job-name=w2-hh101 scripts/hydra_doe_weekend.slurm w2_three_phase 101 b_opendss_exact --three-phase-hp-ev",
+   "outputs": "data_out/doe/weekend/w2_three_phase/<day>_b_opendss_exact_sph1_seed101_hh101_uk_esqcr.json"
+  },
+  {
+   "job_id": "13334388",
+   "track": "W2",
+   "tag": "w2_three_phase",
+   "household_seed": 202,
+   "method": "b_opendss_exact",
+   "flags": "--three-phase-hp-ev",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=12:00:00 --job-name=w2-hh202 scripts/hydra_doe_weekend.slurm w2_three_phase 202 b_opendss_exact --three-phase-hp-ev",
+   "outputs": "data_out/doe/weekend/w2_three_phase/<day>_b_opendss_exact_sph1_seed101_hh202_uk_esqcr.json"
+  },
+  {
+   "job_id": "13334389",
+   "track": "W3",
+   "tag": "w3_spatial",
+   "household_seed": 101,
+   "method": "s_spatial_exact",
+   "flags": "--spatial",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=dd0fd498c0fb637925b058875c807a60379e77e1 --array=0-35 --time=48:00:00 --job-name=w3-spatial scripts/hydra_doe_weekend.slurm w3_spatial 101 s_spatial_exact --spatial",
+   "outputs": "data_out/doe/weekend/w3_spatial/<day>_s_spatial_exact_sph1_seed101_hh101_uk_esqcr.json"
+  }
+ ]
+}
