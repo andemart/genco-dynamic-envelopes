@@ -1,0 +1,73 @@
+{
+ "note": "exploratory: v2 calib -> v2 test (test set used in development); frozen four-wire screen, alpha 0.01/4 criteria",
+ "voltage_limits": {
+  "jurisdiction": "uk_esqcr",
+  "vbase_volts": 240.17771198288432,
+  "vmin_volts": 216.2,
+  "vmax_volts": 253.0,
+  "vmin_pu": 0.9001667898951713,
+  "vmax_pu": 1.0533866690262643
+ },
+ "rows": [
+  {
+   "predictor": "GENCO hybrid",
+   "direction": "import",
+   "safe": 0.0215633423180593,
+   "certainly_violated": 0.19878706199460916,
+   "sent_to_opendss": 0.7796495956873315,
+   "false_safe": 0,
+   "violating": 1382,
+   "feasible_not_cleared": 0.9596469104665826
+  },
+  {
+   "predictor": "GENCO hybrid",
+   "direction": "export",
+   "safe": 0.0,
+   "certainly_violated": 0.19878706199460916,
+   "sent_to_opendss": 0.8012129380053908,
+   "false_safe": 0,
+   "violating": 1483,
+   "feasible_not_cleared": 1.0
+  },
+  {
+   "predictor": "exact balanced (Z-bus/sweep)",
+   "direction": "import",
+   "safe": 0.018867924528301886,
+   "certainly_violated": 0.19912398921832883,
+   "sent_to_opendss": 0.7820080862533693,
+   "false_safe": 0,
+   "violating": 1382,
+   "feasible_not_cleared": 0.9646910466582598
+  },
+  {
+   "predictor": "exact balanced (Z-bus/sweep)",
+   "direction": "export",
+   "safe": 0.0,
+   "certainly_violated": 0.19912398921832883,
+   "sent_to_opendss": 0.8008760107816711,
+   "false_safe": 0,
+   "violating": 1483,
+   "feasible_not_cleared": 1.0
+  },
+  {
+   "predictor": "fixed point x1 (GENCO prior)",
+   "direction": "import",
+   "safe": 0.018867924528301886,
+   "certainly_violated": 0.1971024258760108,
+   "sent_to_opendss": 0.7840296495956873,
+   "false_safe": 0,
+   "violating": 1382,
+   "feasible_not_cleared": 0.9646910466582598
+  },
+  {
+   "predictor": "fixed point x1 (GENCO prior)",
+   "direction": "export",
+   "safe": 0.0,
+   "certainly_violated": 0.1971024258760108,
+   "sent_to_opendss": 0.8028975741239892,
+   "false_safe": 0,
+   "violating": 1483,
+   "feasible_not_cleared": 1.0
+  }
+ ]
+}
