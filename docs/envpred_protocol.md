@@ -324,3 +324,124 @@ Differences are in retention at the primary 95% point, combined over directions,
 5. Fit once.
 6. Gate the frontier on the test set.
 7. Report.
+
+## Amendment 3a (before any head is fitted, any prediction made, or full extraction launched): corrections and tightening
+
+### 1. Feature arithmetic, corrected
+
+The "response at the proposal" block has 28 + 28 + 28 + 1 + 1 = **86** features, not 85.
+
+| Block | Features |
+|---|---|
+| GA | 1 + 86 + 117 + 384 = **588** |
+| PG | 224 + 220 + 588 = **1,032** |
+| PCG | 224 + 29 + 220 + 588 = **1,061** |
+
+A schema test asserts the exact names, order and number of features of every arm (`gencodoe.envpred.feature_names`).
+
+### 2. Interpretation tiers, made symmetric (replaces the amendment-3 tiers)
+
+**Strong GENCO-positive** is governed **exclusively** by the frozen primary rule (95% shrink, combined, criteria 1–4).
+
+The descriptive findings below each use retention at 95%, combined, with the date-block bootstrap. Held-out feasibility "no worse" means criterion 4 applied to the pair.
+
+- **Additive value beyond phase-only:** PG − P ≥ 3 percentage points, bootstrap lower bound > 0, and held-out feasibility no worse.
+  - Stated explicitly: this does **not** beat the classical baseline.
+- **Additive value beyond classical physics:** PCG − PC ≥ 3 percentage points, bootstrap lower bound > 0, no more exact calls, and held-out feasibility no worse.
+- **A positive lower bound with a difference below 3 points** is "detectable but not practically material". It is not a positive finding.
+- **Otherwise:** "no measurable GENCO value". Reported directly, and the analysis stops.
+
+The four-point frontier is secondary and exploratory. It never overrides the primary 95% result.
+
+### 3. Leakage control
+
+**GA extraction has no access to:**
+- B envelopes;
+- OpenDSS outputs or four-wire feasibility;
+- conformal-screen outputs;
+- labels of any split.
+
+**Extraction is keyed by (date, household seed), not by a label file.** It replays the design scenarios from the seeds and opens no B file.
+- `L_ac` (block C) is read from the label file's `ac` row only when the training table is assembled. It is not used in GA.
+
+**Tests show that:**
+- GA is identical with and without (or with altered) B files;
+- GA can be computed before a B file exists;
+- extraction never calls OpenDSS (it fails the test if it does);
+- extraction uses exactly the 200 design scenarios;
+- import and export signs and caps are correct;
+- `L_G` ∈ [0, cap of the direction].
+
+**Deterministic handling of edge cases:**
+
+| Case | Handling |
+|---|---|
+| Zero sentinel | `L_G` = 0; response = the zero state; changes = 0; indicator = 1 |
+| Non-finite GENCO outputs | kept as NaN (the tree head handles NaN natively); counted |
+| Failed inference (exception) | the whole GA vector is NaN; flagged and counted |
+
+GENCO, a feed-forward network, has no convergence notion; balanced feasibility treats non-finite state values as infeasible.
+
+The extraction manifest records the SHA-256 of the checkpoint, the normalizer statistics, the code commit and the feature schema.
+
+### 4. Smoke test before the full launch (sample fixed now)
+
+Twelve interval-directions on **training** dates, spanning seasons, directions and placements. Their labels are not read:
+
+| Date | Placement | Hour | Direction |
+|---|---|---|---|
+| 2024-01-01 | 101 | 08:00 | import |
+| 2024-01-02 | 202 | 13:00 | export |
+| 2024-02-05 | 101 | 18:00 | import |
+| 2024-03-01 | 202 | 12:00 | export |
+| 2024-04-01 | 101 | 11:00 | export |
+| 2024-04-21 | 202 | 19:00 | import |
+| 2024-05-11 | 101 | 14:00 | export |
+| 2024-06-30 | 202 | 13:00 | export |
+| 2024-07-21 | 101 | 20:00 | import |
+| 2024-08-10 | 202 | 10:00 | import |
+| 2024-10-02 | 101 | 12:00 | export |
+| 2024-11-13 | 202 | 18:00 | import |
+
+It checks only:
+- schema;
+- determinism (two runs);
+- non-finite counts;
+- batching and GPU memory;
+- TF32-off consistency (the flags off; zero-state GENCO outputs, A100 vs CPU float32);
+- end-to-end timing of: data preparation, the `L_G` search, the fixed curve, the `L_G` embeddings, and total GA.
+
+The complete cost of producing `L_ac` is reported next to it: the balanced sweep search, timed on the same intervals.
+
+Prediction quality, and any relation to B, are not inspected.
+
+### 5. Dimensionality
+
+PG and PCG carry about 800 GENCO-derived features. Training has 220 independent dates, i.e. 10,560 *correlated* rows per direction (2 placements × 24 hours × 220 dates). Reports give both the row count and the effective date count.
+
+The head and its regularisation are unchanged and are not tuned after any validation or test comparison. If familiar placements beat unseen placements substantially, overfitting is discussed.
+
+### 6. Caching and call accounting
+
+Identical evaluations are cached:
+- **exact:** the same date, placement, interval, direction and level;
+- **GENCO:** the same scenarios and level.
+
+Per arm, the report gives:
+- the exact gate calls and fallback calls the arm would need **alone** (counterfactual);
+- the physical calls actually made after cross-arm caching, separately;
+- end-to-end runtime by device.
+
+No superiority claim may rest on savings created only by sharing calculations between arms.
+
+Matched-budget values from linear interpolation are descriptive and **marked as interpolated**. They are never presented as observed operating points.
+
+### 7. Status
+
+This analysis is prospective relative to head fitting and to any envelope-prediction result. However, the feeder and the test dates were examined in earlier DOE work (B / C / C+). It is therefore a **frozen prospective analysis within an already explored benchmark**, not a pristine pre-registered test.
+
+### Framing (unchanged)
+
+"GENCO is evaluated as a learned proposal engine for expensive four-wire envelope optimisation; exact OpenDSS remains the final decision authority."
+
+If PCG does not materially beat PC, that is reported directly. If PG beats P but PC remains best, it is framed as useful representation value under reduced physics information, not as superiority over classical distribution-network methods.
