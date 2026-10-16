@@ -1,0 +1,662 @@
+{
+ "plan": "docs/reporting_plan.md",
+ "voltage_limits": {
+  "jurisdiction": "uk_esqcr",
+  "vbase_volts": 240.17771198288432,
+  "vmin_volts": 216.2,
+  "vmax_volts": 253.0,
+  "vmin_pu": 0.9001667898951713,
+  "vmax_pu": 1.0533866690262643
+ },
+ "inputs": [
+  {
+   "file": "data_out/doe/uk/2024-06-28_certified_4w_b_opendss_exact_sph4_seed101_uk_esqcr.json",
+   "sha256": "8b87cff0e3cc41ec2eef850c683319867d1e57e989352c3a1d915fa378bd1e7f",
+   "meta": {
+    "voltage_limits": {
+     "jurisdiction": "uk_esqcr",
+     "vbase_volts": 240.17771198288432,
+     "vmin_volts": 216.2,
+     "vmax_volts": 253.0,
+     "vmin_pu": 0.9001667898951713,
+     "vmax_pu": 1.0533866690262643
+    },
+    "day": "2024-06-28",
+    "scenarios": 200,
+    "eps": 0.05,
+    "beta": 0.05,
+    "verify_draws": 1000,
+    "acceptance_threshold": 0.98,
+    "mix": {
+     "hp": 0.3,
+     "ev": 0.3,
+     "pv": 0.4
+    },
+    "alpha": 0.01,
+    "export_cap_kw": 5.0,
+    "import_cap_kw": 7.4,
+    "fixed_point_q_v_bins": [
+     0.1722135278206498,
+     0.029955272800015087,
+     0.01303210852403447,
+     0.005962413052659765,
+     0.000674173707299941,
+     0.0034087730581848774,
+     0.007448176504791126,
+     0.011982143038592019,
+     0.018496238429712708,
+     0.04305233776534978
+    ],
+    "fixed_point_q_l": 0.008207102212432371,
+    "calib_states": 2953,
+    "run": "mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee",
+    "q_v_global": 0.00593977767096554,
+    "q_v_bins": [
+     0.05603809665024817,
+     0.0041990336442955245,
+     0.0037501608980332612,
+     0.0027793367319011164,
+     0.0018595598495243504,
+     0.002702128015462657,
+     0.0031138606977190175,
+     0.00414975365944148,
+     0.006557028823925837,
+     0.025856335336133407
+    ],
+    "q_l": 0.002060720501637192,
+    "four_wire_alpha": 0.01,
+    "four_wire_vmin_hi": [
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     0.1485735664102228,
+     0.09294240652593322,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_vmax_hi": [
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     0.06330019936614129,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_load_hi": [
+     Infinity,
+     3.3133424888785323,
+     2.764893512078308,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_trafo_hi": [
+     1.6575292396661852,
+     1.0737124515514866,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "_seed_source": "run manifest"
+   }
+  },
+  {
+   "file": "data_out/doe/uk/2024-06-28_certified_4w_c_genco_4w_opendss_sph4_seed101_uk_esqcr.json",
+   "sha256": "6973a87f400f80a2084114aba73f4dd1c294d25c5e0677206131e67157ede168",
+   "meta": {
+    "voltage_limits": {
+     "jurisdiction": "uk_esqcr",
+     "vbase_volts": 240.17771198288432,
+     "vmin_volts": 216.2,
+     "vmax_volts": 253.0,
+     "vmin_pu": 0.9001667898951713,
+     "vmax_pu": 1.0533866690262643
+    },
+    "day": "2024-06-28",
+    "scenarios": 200,
+    "eps": 0.05,
+    "beta": 0.05,
+    "verify_draws": 1000,
+    "acceptance_threshold": 0.98,
+    "mix": {
+     "hp": 0.3,
+     "ev": 0.3,
+     "pv": 0.4
+    },
+    "alpha": 0.01,
+    "export_cap_kw": 5.0,
+    "import_cap_kw": 7.4,
+    "fixed_point_q_v_bins": [
+     0.1722135278206498,
+     0.029955272800015087,
+     0.01303210852403447,
+     0.005962413052659765,
+     0.000674173707299941,
+     0.0034087730581848774,
+     0.007448176504791126,
+     0.011982143038592019,
+     0.018496238429712708,
+     0.04305233776534978
+    ],
+    "fixed_point_q_l": 0.008207102212432371,
+    "calib_states": 2953,
+    "run": "mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee",
+    "q_v_global": 0.00593977767096554,
+    "q_v_bins": [
+     0.05603809665024817,
+     0.0041990336442955245,
+     0.0037501608980332612,
+     0.0027793367319011164,
+     0.0018595598495243504,
+     0.002702128015462657,
+     0.0031138606977190175,
+     0.00414975365944148,
+     0.006557028823925837,
+     0.025856335336133407
+    ],
+    "q_l": 0.002060720501637192,
+    "four_wire_alpha": 0.01,
+    "four_wire_vmin_hi": [
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     0.1485735664102228,
+     0.09294240652593322,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_vmax_hi": [
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     0.06330019936614129,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_load_hi": [
+     Infinity,
+     3.3133424888785323,
+     2.764893512078308,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_trafo_hi": [
+     1.6575292396661852,
+     1.0737124515514866,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "_seed_source": "run manifest"
+   }
+  },
+  {
+   "file": "data_out/doe/cplus_uk/2024-06-28_certified_4w_cplus_genco_4w_gate_sph4_seed101_uk_esqcr.json",
+   "sha256": "a05cd33ee600e9701814e7c6ca01f5fca002b656f20f8f77fdd478470fadc329",
+   "meta": {
+    "voltage_limits": {
+     "jurisdiction": "uk_esqcr",
+     "vbase_volts": 240.17771198288432,
+     "vmin_volts": 216.2,
+     "vmax_volts": 253.0,
+     "vmin_pu": 0.9001667898951713,
+     "vmax_pu": 1.0533866690262643
+    },
+    "day": "2024-06-28",
+    "scenarios": 200,
+    "eps": 0.05,
+    "beta": 0.05,
+    "verify_draws": 1000,
+    "acceptance_threshold": 0.98,
+    "mix": {
+     "hp": 0.3,
+     "ev": 0.3,
+     "pv": 0.4
+    },
+    "alpha": 0.01,
+    "export_cap_kw": 5.0,
+    "import_cap_kw": 7.4,
+    "fixed_point_q_v_bins": [
+     0.1722135278206498,
+     0.029955272800015087,
+     0.01303210852403447,
+     0.005962413052659765,
+     0.000674173707299941,
+     0.0034087730581848774,
+     0.007448176504791126,
+     0.011982143038592019,
+     0.018496238429712708,
+     0.04305233776534978
+    ],
+    "fixed_point_q_l": 0.008207102212432371,
+    "calib_states": 2953,
+    "run": "mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee",
+    "q_v_global": 0.00593977767096554,
+    "q_v_bins": [
+     0.05603809665024817,
+     0.0041990336442955245,
+     0.0037501608980332612,
+     0.0027793367319011164,
+     0.0018595598495243504,
+     0.002702128015462657,
+     0.0031138606977190175,
+     0.00414975365944148,
+     0.006557028823925837,
+     0.025856335336133407
+    ],
+    "q_l": 0.002060720501637192,
+    "four_wire_alpha": 0.01,
+    "four_wire_vmin_hi": [
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     0.1485735664102228,
+     0.09294240652593322,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_vmax_hi": [
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     0.06330019936614129,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_load_hi": [
+     Infinity,
+     3.3133424888785323,
+     2.764893512078308,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "four_wire_trafo_hi": [
+     1.6575292396661852,
+     1.0737124515514866,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity,
+     Infinity
+    ],
+    "methods_requested": [
+     "cplus_genco_4w_gate"
+    ],
+    "post_hoc": "C+ final exact gate (docs/cplus_protocol.md)",
+    "source_run": "data_out/doe/2024-06-28_certified_4w_c_genco_4w_opendss_sph4_seed101_uk_esqcr.json",
+    "source_b_run": "data_out/doe/2024-06-28_certified_4w_b_opendss_exact_sph4_seed101_uk_esqcr.json",
+    "input_sha256": {
+     "data_out/doe/2024-06-28_certified_4w_c_genco_4w_opendss_sph4_seed101_uk_esqcr.json": "6973a87f400f80a2084114aba73f4dd1c294d25c5e0677206131e67157ede168",
+     "data_out/doe/2024-06-28_certified_4w_b_opendss_exact_sph4_seed101_uk_esqcr.json": "8b87cff0e3cc41ec2eef850c683319867d1e57e989352c3a1d915fa378bd1e7f"
+    },
+    "accounting": {
+     "calls": {
+      "gate": 30800,
+      "diagnostic": 1800,
+      "repair": 29000,
+      "verification": 1800
+     },
+     "seconds": {
+      "gate": 517.5007978160866,
+      "diagnostic": 33.92547056172043,
+      "repair": 487.55519982334226,
+      "verification": 31.29587112972513
+     }
+    },
+    "gated_intervals": 154,
+    "repaired_intervals": 9,
+    "screen_errors": 8,
+    "solver_noise": 1,
+    "_seed_source": "run manifest"
+   }
+  }
+ ],
+ "safety": [
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "B",
+   "intervals_lb4_ge_0.95": 31,
+   "intervals_p4_ge_0.95": 59,
+   "min_p4": 0.025,
+   "mean_p4": 0.7667708333333332,
+   "intervals_lbb_ge_0.95": 96,
+   "intervals": 96
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "C",
+   "intervals_lb4_ge_0.95": 31,
+   "intervals_p4_ge_0.95": 59,
+   "min_p4": 0.025,
+   "mean_p4": 0.7667708333333332,
+   "intervals_lbb_ge_0.95": 96,
+   "intervals": 96
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "C+",
+   "intervals_lb4_ge_0.95": 31,
+   "intervals_p4_ge_0.95": 59,
+   "min_p4": 0.025,
+   "mean_p4": 0.7667708333333332,
+   "intervals_lbb_ge_0.95": 96,
+   "intervals": 96
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "ac",
+   "intervals_lb4_ge_0.95": 0,
+   "intervals_p4_ge_0.95": 0,
+   "min_p4": 0.0,
+   "mean_p4": 0.02041666666666667,
+   "intervals_lbb_ge_0.95": 84,
+   "intervals": 96
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "B",
+   "intervals_lb4_ge_0.95": 51,
+   "intervals_p4_ge_0.95": 95,
+   "min_p4": 0.92,
+   "mean_p4": 0.9759895833333333,
+   "intervals_lbb_ge_0.95": 96,
+   "intervals": 96
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "C",
+   "intervals_lb4_ge_0.95": 51,
+   "intervals_p4_ge_0.95": 95,
+   "min_p4": 0.92,
+   "mean_p4": 0.9759895833333333,
+   "intervals_lbb_ge_0.95": 96,
+   "intervals": 96
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "C+",
+   "intervals_lb4_ge_0.95": 51,
+   "intervals_p4_ge_0.95": 95,
+   "min_p4": 0.92,
+   "mean_p4": 0.9760416666666666,
+   "intervals_lbb_ge_0.95": 96,
+   "intervals": 96
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "ac",
+   "intervals_lb4_ge_0.95": 0,
+   "intervals_p4_ge_0.95": 0,
+   "min_p4": 0.055,
+   "mean_p4": 0.24453125,
+   "intervals_lbb_ge_0.95": 87,
+   "intervals": 96
+  }
+ ],
+ "capacity": [
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "B",
+   "kwh_per_household": 14.198,
+   "kwh_feeder": 2839.6,
+   "mean_limit_kw": 0.5915833333333333
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "C",
+   "kwh_per_household": 14.198,
+   "kwh_feeder": 2839.6,
+   "mean_limit_kw": 0.5915833333333333
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "C+",
+   "kwh_per_household": 14.195742720000002,
+   "kwh_feeder": 2839.1485440000006,
+   "mean_limit_kw": 0.5914892800000001
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "ac",
+   "kwh_per_household": 33.3036,
+   "kwh_feeder": 6660.72,
+   "mean_limit_kw": 1.38765
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "static_from_B",
+   "static_limit_kw": 0.0,
+   "kwh_per_household": 0.0,
+   "kwh_feeder": 0.0,
+   "mean_limit_kw": 0.0
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "B",
+   "kwh_per_household": 18.945776,
+   "kwh_feeder": 3789.1551999999997,
+   "mean_limit_kw": 0.7894073333333332
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "C",
+   "kwh_per_household": 18.945776,
+   "kwh_feeder": 3789.1551999999997,
+   "mean_limit_kw": 0.7894073333333332
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "C+",
+   "kwh_per_household": 18.9415268608,
+   "kwh_feeder": 3788.30537216,
+   "mean_limit_kw": 0.7892302858666667
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "ac",
+   "kwh_per_household": 32.402528,
+   "kwh_feeder": 6480.5055999999995,
+   "mean_limit_kw": 1.3501053333333333
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "static_from_B",
+   "static_limit_kw": 0.0,
+   "kwh_per_household": 0.0,
+   "kwh_feeder": 0.0,
+   "mean_limit_kw": 0.0
+  }
+ ],
+ "agreement": [
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "intervals": 96,
+   "mean_abs_diff_kw": 0.0,
+   "max_abs_diff_kw": 0.0,
+   "share_within_tol": 1.0,
+   "tol_kw": 0.005,
+   "intervals_c_exceeds_b": 0,
+   "max_c_excess_kw": 0.0,
+   "intervals_both_zero": 37
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "intervals": 96,
+   "mean_abs_diff_kw": 0.0,
+   "max_abs_diff_kw": 0.0,
+   "share_within_tol": 1.0,
+   "tol_kw": 0.0074,
+   "intervals_c_exceeds_b": 0,
+   "max_c_excess_kw": 0.0,
+   "intervals_both_zero": 1
+  }
+ ],
+ "runtime": [
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "B",
+   "search_s_total": 4827.76279296726,
+   "search_s_median": 76.85140721709467,
+   "search_s_p95": 77.73050199344289,
+   "search_s_max": 78.0019744890742,
+   "exact_calls_total": 274400,
+   "exact_calls_per_interval_median": 4400.0
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "C",
+   "search_s_total": 6619.215620784555,
+   "search_s_median": 106.27335254242644,
+   "search_s_p95": 110.02550037775654,
+   "search_s_max": 119.85347918141633,
+   "exact_calls_total": 247012,
+   "exact_calls_per_interval_median": 4006.0
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "method": "C+",
+   "search_s_total": 7103.155890528578,
+   "search_s_median": 109.64887343929149,
+   "search_s_p95": 133.37051589600742,
+   "search_s_max": 171.1665280177258,
+   "exact_calls_total": 275812,
+   "exact_calls_per_interval_median": 4206.0
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "B",
+   "search_s_total": 11440.144624660723,
+   "search_s_median": 122.27837755391374,
+   "search_s_p95": 126.92258360725828,
+   "search_s_max": 127.46402837987989,
+   "exact_calls_total": 418400,
+   "exact_calls_per_interval_median": 4400.0
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "C",
+   "search_s_total": 9518.408652573358,
+   "search_s_median": 99.85499251191504,
+   "search_s_p95": 103.31118934368715,
+   "search_s_max": 115.09296830790117,
+   "exact_calls_total": 343663,
+   "exact_calls_per_interval_median": 3601.0
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "method": "C+",
+   "search_s_total": 10039.524380468763,
+   "search_s_median": 103.27041277871467,
+   "search_s_p95": 117.41892045468558,
+   "search_s_max": 160.92809342360124,
+   "exact_calls_total": 374663,
+   "exact_calls_per_interval_median": 3803.0
+  }
+ ],
+ "agreement_cplus": [
+  {
+   "day": "2024-06-28",
+   "direction": "export",
+   "intervals": 96,
+   "mean_abs_diff_kw": 9.40533333333322e-05,
+   "max_abs_diff_kw": 0.001943040000000007,
+   "share_within_tol": 1.0,
+   "tol_kw": 0.005,
+   "intervals_cplus_exceeds_b": 0,
+   "max_cplus_excess_kw": 0.0,
+   "intervals_both_zero": 37
+  },
+  {
+   "day": "2024-06-28",
+   "direction": "import",
+   "intervals": 96,
+   "mean_abs_diff_kw": 0.0001770474666666679,
+   "max_abs_diff_kw": 0.007009280000000007,
+   "share_within_tol": 1.0,
+   "tol_kw": 0.0074,
+   "intervals_cplus_exceeds_b": 0,
+   "max_cplus_excess_kw": 0.0,
+   "intervals_both_zero": 1
+  }
+ ]
+}

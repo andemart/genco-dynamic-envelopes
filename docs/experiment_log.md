@@ -502,3 +502,67 @@ Impact:
 - it is 1 of 1,728 paired intervals.
 
 Fix, a post-hoc method change if adopted: re-verify only the final accepted level with OpenDSS (200 exact solves per interval and direction). C would then be certified exactly like B.
+
+## C+ formal run (protocol 2253f1f + amendment 84f1564; implementation 4269211; Hydra job 13333842)
+
+38 stored C runs: 36 annual hourly days plus the two 15-minute days. All completed, with no input-hash changes. Outputs are in `data_out/doe/cplus_annual/` and `cplus_uk/`. Reports:
+- `results/annual_report_with_cplus.json`
+- `results/report_2024-06-28_with_cplus.json`
+- `results/report_2024-12-15_with_cplus.json`
+
+The frozen B/C entries in these reports are byte-identical to the original reports.
+
+### Gate outcomes (all runs)
+
+| | Count |
+|---|---|
+| Non-zero C envelopes gated | 1,070 |
+| Gate failures, repaired | **72** |
+| Pre-specified diagnostic: "screen error" | 58 |
+| Pre-specified diagnostic: "solver-history noise" | 14 |
+| Zero-infeasible sentinels created by repair | 0 |
+
+Extra exact calls:
+
+| Category | Calls | Seconds |
+|---|---|---|
+| Gate | 214,000 | 3,682 |
+| Repair | 220,800 | 3,783 |
+| Diagnostic | 14,400 | 274 |
+| Verification | 14,400 | 258 |
+
+**Factual split, from the recorded |L_C − L_B|:**
+
+- **71 of the 72 failures occurred at L_C = L_B exactly.** B's own exact search had accepted the level at 196/200; the gate's exact re-evaluation of the same replayed scenarios found 195/200.
+  - These are **threshold non-reproducibility of the exact four-wire oracle**: OpenDSS default tolerance plus solve-history dependence. They affect B equally and are not GENCO errors.
+  - About 6.6% (71/1,070) of non-zero exact envelopes are not reproducible at the 0.98 threshold on re-evaluation.
+  - The pre-specified diagnostic labels a failure "screen error" whenever the canonical solve also fails. For these 71 cases that only means the canonical solve agrees with the gate rather than with B's search. **The label does not imply a GENCO error.**
+- **One failure is a genuine screen-driven over-acceptance:** 2024-04-29 13:00, import, C 0.3647 → C+ 0.0321 kW (B 0.0308).
+- **Repair sizes** in the other 71 cases are 0.001–0.007 kW. Repair costs about 3,000 exact solves each, because the protocol's repair re-searches [0, L_C] from zero. It is inefficient for small corrections; this is a cost property of the frozen protocol.
+
+### Annual (36 days, hourly)
+
+| | Export | Import |
+|---|---|---|
+| Envelope-hours per household per year: B / C / C+ | 4,810 / 4,810 / 4,809 | 2,502 / 2,505 / 2,501 |
+| C+ vs B within tolerance | 100% | 100% |
+| C+ > B | 0 intervals | 0 intervals |
+| Exact calls: B / C / C+ | 2.238 M / 2.029 M / 2.261 M | 2.122 M / 1.693 M / 1.835 M |
+| Search time: B / C+ | 39,773 / 64,149 s | 64,283 / 55,420 s |
+| Held-out p̂ ≥ 0.95: B / C+ | 0.610 / 0.610 | 0.587 / 0.588 |
+| One-sided LB ≥ 0.95: B / C+ | 0.304 / 0.304 | 0.259 / 0.259 |
+
+- **Combined exact-call saving vs B: C 14.65%, C+ 6.04%.** For export, C+ uses 1.1% *more* exact calls than B.
+- C+ total search time is 119,569 s vs 104,056 s for B (+15%). This is descriptive, as the runs were on different CPU nodes.
+
+### 15-minute days
+
+| Day | Direction | Exact calls B / C / C+ | Search time B / C / C+ |
+|---|---|---|---|
+| Summer 2024-06-28 | export | 274,400 / 247,012 / 275,812 | 4,828 / 6,619 / 7,103 s |
+| Summer | import | 418,400 / 343,663 / 374,663 | 11,440 / 9,518 / 10,040 s |
+| Winter 2024-12-15 | export | 38,400 / 19,658 / 19,658 | 680 / 639 / 639 s |
+| Winter | import | 38,400 / 19,200 / 19,200 | 2,262 / 629 / 629 s |
+
+- Summer: C+ = B within tolerance, and capacity is unchanged.
+- Winter: no non-zero envelopes, so no gates and C+ = C.
