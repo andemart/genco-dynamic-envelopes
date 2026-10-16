@@ -415,3 +415,90 @@ The pre-registered runs stand as a record under their stated limits.
 **Placement sensitivity.** The same day under household seed 0 (exploratory) gives 15.8% under UK limits. Any penetration study must therefore vary household placement over several seeds.
 
 This is a baseline analysis only. The corrected DOE outputs were not opened when it was produced.
+
+## Results of the amended pre-registered evaluation (UK limits; reports from `gencodoe.report_final` / `report_annual`)
+
+### Winter 2024-12-15, 15-minute (`results/report_winter_2024-12-15.json`)
+
+- B = C = 0 in all 96 intervals, both directions. Both-zero agreement is weak evidence.
+- Static limit 0.
+- Four-wire mean feasibility: 0.73 export, 0.65 import.
+- Balanced envelopes: export 2.18 kW/household with four-wire feasibility 0.067; import 0.26 kW with 0.36.
+
+| | B | C |
+|---|---|---|
+| Exact calls (export / import) | 38,400 / 38,400 | 19,658 / 19,200 |
+| Search time (export / import) | 680 / 2,262 s | 639 / 629 s |
+
+### Summer 2024-06-28, 15-minute (`results/report_summer_2024-06-28.json`)
+
+- **B = C exactly**, including 59 export and 95 import intervals with non-zero envelopes. C never exceeds B.
+- Static limit 0.
+
+| | Capacity (kW·h per household per day) | Mean limit |
+|---|---|---|
+| B = C, export | 14.2 | 0.59 kW |
+| B = C, import | 18.95 | 0.79 kW |
+| Balanced, export | 33.3 | — |
+| Balanced, import | 32.4 | — |
+
+Four-wire safety, pre-registered metric:
+- export: 31 of 96 intervals certified (one-sided lower bound ≥ 0.95), 59 with p̂ ≥ 0.95, mean 0.77;
+- import: 51 certified, 95 with p̂ ≥ 0.95, mean 0.976.
+
+Descriptive split (not pre-registered): where the envelope is > 0, mean four-wire feasibility is 0.976 in both directions, with p̂ ≥ 0.95 in 56/59 export and 94/95 import intervals. The zero-envelope export intervals (37) have baseline violations (mean 0.43). Certification needs about 98% of 200 draws to pass, so the power of the verification sample limits it.
+
+| | B | C |
+|---|---|---|
+| Exact calls, export | 274,400 | 247,012 (−10%) |
+| Exact calls, import | 418,400 | 343,663 (−18%) |
+| Search time, export | 4,828 s | 6,619 s (+37%) |
+| Search time, import | 11,440 s | 9,518 s (−17%) |
+
+### Annual extension, 36 test days, hourly (`results/annual_report.json`)
+
+- Annual static limit: 0 in both directions.
+
+| | Annual capacity (kWh per household per year, 95% CI) | Feeder |
+|---|---|---|
+| B, export | 4,810 (4,346-5,304) | 962 MWh |
+| B, import | 2,502 (2,113-2,875) | 500 MWh |
+| Balanced (unsafe, 0% certified), export | 15,524 | — |
+| Balanced, import | 7,451 | — |
+
+Seasonal means (kWh per household per day; winter / spring / summer / autumn):
+- export: 6.1 / 12.6 / 16.8 / 17.0;
+- import: 0.6 / 6.5 / 15.1 / 5.1.
+
+B-C agreement over 864 intervals per direction:
+- export: 100% (472 both non-zero);
+- import: 99.88% (444 both non-zero), with **one interval where C > B by 0.334 kW**.
+
+| | B | C |
+|---|---|---|
+| Exact calls, export | 2.24 M | 2.03 M (−9%) |
+| Exact calls, import | 2.12 M | 1.69 M (−20%) |
+| Search time, export | 39,773 s | 60,136 s (+51%) |
+| Search time, import | 64,283 s | 52,973 s (−18%) |
+| Search time, total | 104,056 s | 113,109 s (+9%) |
+
+Runtime ratios are descriptive (different CPU nodes).
+
+### The one C > B interval: a false-safe acceptance
+
+Interval: 2024-04-29 13:00, import. B = 0.0308 kW, C = 0.3647 kW.
+
+Replaying the run's random draws reproduces the 200 design scenarios exactly. Exact OpenDSS feasibility of those scenarios is:
+- 0.990 at 0;
+- 0.980 at B's level (accepted at the threshold, so B is reproduced);
+- 0.975 at 0.05-0.25 kW;
+- 0.970 at C's level.
+
+Feasibility is monotone here. C accepted a level whose exact design-set share (0.970) is below the 0.98 rule, so the screen cleared at least 2 of 200 scenarios as safe that OpenDSS rejects. This is within the per-state α budget, but **a per-state screening guarantee does not carry through to the envelope-level acceptance rule**.
+
+Impact:
+- C's issued envelope holds in 97% of fresh four-wire draws (one-sided lower bound 0.942);
+- it adds about 3 kWh per household per year (+0.14%);
+- it is 1 of 1,728 paired intervals.
+
+Fix, a post-hoc method change if adopted: re-verify only the final accepted level with OpenDSS (200 exact solves per interval and direction). C would then be certified exactly like B.

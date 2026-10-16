@@ -1,0 +1,465 @@
+{
+ "plan": "docs/preregistration_annual_extension.md",
+ "voltage_limits": {
+  "jurisdiction": "uk_esqcr",
+  "vbase_volts": 240.17771198288432,
+  "vmin_volts": 216.2,
+  "vmax_volts": 253.0,
+  "vmin_pu": 0.9001667898951713,
+  "vmax_pu": 1.0533866690262643
+ },
+ "n_inputs": 72,
+ "inputs": [
+  {
+   "file": "data_out/doe/annual/2024-01-10_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "029fc3623a7a501f03bbf275e7faadd8fc138cb5910198faae2409b4af37699f"
+  },
+  {
+   "file": "data_out/doe/annual/2024-01-10_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "061ecd3648a22a79d73fcec5154da8c6661eb563a8392dce06b8ead2d76e3dea"
+  },
+  {
+   "file": "data_out/doe/annual/2024-01-20_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "d707f88c7e33b9937ae66bf483fdd8e5caaca1556cbc24449aed5957c50f60df"
+  },
+  {
+   "file": "data_out/doe/annual/2024-01-20_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "07224ec536be86294d852bc69c73a829b0a6a3c2114d60fb862f4912b4283ca4"
+  },
+  {
+   "file": "data_out/doe/annual/2024-01-30_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "de3e8bab74ade78044bd4a72bda61d64f68bb12694b8f9efc4ede8d4da0af096"
+  },
+  {
+   "file": "data_out/doe/annual/2024-01-30_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "4c81e6c123b1b8a855472936eff21bf1fc32fcf6696996aef80599575fc22777"
+  },
+  {
+   "file": "data_out/doe/annual/2024-02-09_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "53ef84bd8dbfcce556b461d9a455b7308be9f16290acbdd53f1750d1018ea3cf"
+  },
+  {
+   "file": "data_out/doe/annual/2024-02-09_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "22343019caad903405206028ca32f83eb19e9d572e662038b4fee0eb1a85f3fb"
+  },
+  {
+   "file": "data_out/doe/annual/2024-02-19_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "6a6548c3e5d3c4cb7cd7f167d9a934a9473fb07bd00e0ac7432c9d0cd3242439"
+  },
+  {
+   "file": "data_out/doe/annual/2024-02-19_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "b5d6764bb952dfe92a086f92d135ca3846540935c4b8437d28610c92e23a6b68"
+  },
+  {
+   "file": "data_out/doe/annual/2024-02-29_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "4710f6bb85d981a0de4d3d1c34e679c326e0f032a47e6ed85133c02c5f1fe46d"
+  },
+  {
+   "file": "data_out/doe/annual/2024-02-29_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "22106ca8b2eb7fa94b0362ec397d43bc533e8c43e5a3b03a72bb9e096e850d0c"
+  },
+  {
+   "file": "data_out/doe/annual/2024-03-10_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "3f45070d2f97b5030e6c8834c55741e2e2a35fd9ceed8e50b825dfcf9712767c"
+  },
+  {
+   "file": "data_out/doe/annual/2024-03-10_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "64a2d9ba85fcf0f39564510e1242aba59db5c87c5f3fcbfa0d48fe43c0018a6d"
+  },
+  {
+   "file": "data_out/doe/annual/2024-03-20_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "d24e01ef0befb5e0897b6437dc1b8d5f2a26d50658f287b99d899b93b57a07c5"
+  },
+  {
+   "file": "data_out/doe/annual/2024-03-20_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "36e64480c8de0cbfb7ad54a635301857ae6448a3b6b290bf90a83b4ed87dd025"
+  },
+  {
+   "file": "data_out/doe/annual/2024-03-30_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "6d69261102736f56f68013d1d45cdb70f98e1c62a9871e450527949e16d8b88a"
+  },
+  {
+   "file": "data_out/doe/annual/2024-03-30_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "1a41d5c98c917b31a28838f86c3f222471efdd842d6865f424e94f4bc72a0f1b"
+  },
+  {
+   "file": "data_out/doe/annual/2024-04-09_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "740cbca0ee7f827be664bd2157f2df62df5cd95324d5033d634181397763a702"
+  },
+  {
+   "file": "data_out/doe/annual/2024-04-09_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "68407ec57ddc430febac0ee26edd6fa03f7ee76160174a6950babccff658ecae"
+  },
+  {
+   "file": "data_out/doe/annual/2024-04-19_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "258195982f84227c54de7abb67db4e7b3260714542441b8d573f5b4f1a6dbbc1"
+  },
+  {
+   "file": "data_out/doe/annual/2024-04-19_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "ef871e623bc0d17140fd27ec66dc524cd6baf51d357576d8a110cf342d3a62a6"
+  },
+  {
+   "file": "data_out/doe/annual/2024-04-29_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "f50f1687fb0ea55237bba822e1aea891e32d2c0cd3c447985035cfbc954aa458"
+  },
+  {
+   "file": "data_out/doe/annual/2024-04-29_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "e7a76f224f86ffc58c1d13e8da7865a4ae719d73a60235439f0c4c24689737d0"
+  },
+  {
+   "file": "data_out/doe/annual/2024-05-09_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "c0b5f9c0200dec1bc97e496a4dd5cb51940f4a2b9f07381ca75d53b7be27920e"
+  },
+  {
+   "file": "data_out/doe/annual/2024-05-09_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "dc479297f4b3e5ac0a459ec70568447bf113750b47588c92957d2a0e37225c2d"
+  },
+  {
+   "file": "data_out/doe/annual/2024-05-19_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "a9843caab2abc9e1e018dba5b080622000c59c2e10358ff3a08eb98c470f281f"
+  },
+  {
+   "file": "data_out/doe/annual/2024-05-19_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "7371241ff093beb7e3c564d87a4c5975da2bdd846b08b731042b83120148bd94"
+  },
+  {
+   "file": "data_out/doe/annual/2024-05-29_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "d91ab068727f589c58c39fd3e07f705dc576c4557af2d2737ba1fb4340c37675"
+  },
+  {
+   "file": "data_out/doe/annual/2024-05-29_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "a8fc55d44da30467c27307eb6397a878a4664b22353107cf8eaa3047d94a1624"
+  },
+  {
+   "file": "data_out/doe/annual/2024-06-08_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "987467a11c6ac9ccbea71933827dc20521ada4f51a996e7e32ab86a8a456b9d9"
+  },
+  {
+   "file": "data_out/doe/annual/2024-06-08_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "47700042a27eebef8a7b029225985659687e8f2733f871c4fa291645961b85b2"
+  },
+  {
+   "file": "data_out/doe/annual/2024-06-18_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "d9ef9d61200d086e86bab3605ae5cf06a3dc3a73150eea245ea21e049f1bcc09"
+  },
+  {
+   "file": "data_out/doe/annual/2024-06-18_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "2682af4a79bad834207b42dee58acf051cc69ddcc092e6af0501d6b578960f28"
+  },
+  {
+   "file": "data_out/doe/annual/2024-06-28_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "108e514ec6146959019466e16d62c168ae3e74d2307a4e3eaab72fc82f5e57d0"
+  },
+  {
+   "file": "data_out/doe/annual/2024-06-28_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "73623a991a54488c024c7eb338f83ab6435993e92bf04991021e21799783073c"
+  },
+  {
+   "file": "data_out/doe/annual/2024-07-08_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "747d8fb6cd29d1db0bc8de6bad32d6dd2b3e9acbbe2519544d2a26a20cc6abe8"
+  },
+  {
+   "file": "data_out/doe/annual/2024-07-08_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "ae0d4073ecdd117df2e919f0b93a3d7dda2398a672660956480a94e1f000bfea"
+  },
+  {
+   "file": "data_out/doe/annual/2024-07-18_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "1ca1036710a27bc9cc95a4577a21bf2162d6edcd784957f4f38e690d64a7441b"
+  },
+  {
+   "file": "data_out/doe/annual/2024-07-18_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "7f70bba823518f3f4bbc4c33ea52b4768d53bcbe29db101d4a75079e09abe583"
+  },
+  {
+   "file": "data_out/doe/annual/2024-07-28_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "9fa707f6f9b645f7926d3ca8fd7c368c303ba6144fa70cb7fc5be10176ef4d06"
+  },
+  {
+   "file": "data_out/doe/annual/2024-07-28_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "c22de1e76f2d0b9575704b4fe179ff100fc288a2ed0d980ef39646a17d5de308"
+  },
+  {
+   "file": "data_out/doe/annual/2024-08-07_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "bf9e508488fced31d54fd1350a9d99e879409d552d49d014976fc1d65de6e306"
+  },
+  {
+   "file": "data_out/doe/annual/2024-08-07_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "b930c8feda6ed2a08253be4a71a4ef24994cd0e1647b120bc2b118a086d84a02"
+  },
+  {
+   "file": "data_out/doe/annual/2024-08-17_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "1366b6c4e3418361546061a9d4c8d401caf4d5ee1b657bae895f14b7ad377ac3"
+  },
+  {
+   "file": "data_out/doe/annual/2024-08-17_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "cfbcae2f3aca7034fc4ea589fbfddf4fdf5926bbb0278450c589772953f21862"
+  },
+  {
+   "file": "data_out/doe/annual/2024-08-27_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "83193e6bac2677671c1f566a940e71b101ceadce581bc8fa06458a79815971f6"
+  },
+  {
+   "file": "data_out/doe/annual/2024-08-27_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "6f7e96aae16128b56dd7c8f8cbd73d5fcf4339e9bbce2dca1e5c3acd490656f6"
+  },
+  {
+   "file": "data_out/doe/annual/2024-09-06_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "b2d7d754ddb5f7562db1a2c7e9e66b2b1a8f4790bcaa434f29db7154ef1aeedb"
+  },
+  {
+   "file": "data_out/doe/annual/2024-09-06_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "c92b6ad22db72e2ccb42e5de31086af8d5a904d385bf7cf07be9bc9c4be5d2ea"
+  },
+  {
+   "file": "data_out/doe/annual/2024-09-16_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "cd450e8ba5694a25a96cdb0921fa504f60e05f24d795a7bd56a5a9abb99ba0b9"
+  },
+  {
+   "file": "data_out/doe/annual/2024-09-16_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "3a0d968aad807419d7e9cc929de183c669ddf9beb93f7ba5d2e48b1c45c7b363"
+  },
+  {
+   "file": "data_out/doe/annual/2024-09-26_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "c4176ab1ef358060b362e00de5896b84aa7d86657ea7236edcca95624f9e90e4"
+  },
+  {
+   "file": "data_out/doe/annual/2024-09-26_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "f856cdcf37478d6604cf055ec585fb3d15304fc5c2b7f52048b59e165dfcd82e"
+  },
+  {
+   "file": "data_out/doe/annual/2024-10-06_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "453bebc38dca0e03834bc2d36482c87435a6be4c5d58e6340c7cc16ef93da3f3"
+  },
+  {
+   "file": "data_out/doe/annual/2024-10-06_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "ca02f77708c1fcbadc03f6774cafda06e7b828c88fee79da4b1c8369f1f4898d"
+  },
+  {
+   "file": "data_out/doe/annual/2024-10-16_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "d9d1996aa26a714fdfa26808bfba46b8fe9e71cdf9d9355ea1812b9319cf9f93"
+  },
+  {
+   "file": "data_out/doe/annual/2024-10-16_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "1ed63e78a320bfefe6a207eee1695421911a0ba9c3fd34c8062f4199c16a1a02"
+  },
+  {
+   "file": "data_out/doe/annual/2024-10-26_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "7921e532dd5402f6759111163cd1dfc77790c75413cbba7677c3716e7cb6d8f6"
+  },
+  {
+   "file": "data_out/doe/annual/2024-10-26_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "d0e318c83068c94d7b6effd3988379dad9fc959a0bf3bc0a931d854be61db95d"
+  },
+  {
+   "file": "data_out/doe/annual/2024-11-05_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "4adda5c046faf33bf7a6800ffc8fdd1c8e6eb09d72ad48e4ae18f39cb3fe1ea0"
+  },
+  {
+   "file": "data_out/doe/annual/2024-11-05_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "f1e882059c7664f46605595099990742e582c1ee00be3aa9f3a2c3f47043d617"
+  },
+  {
+   "file": "data_out/doe/annual/2024-11-15_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "22389982625f3334a92cab41f91123413272a7caa9e9589098b27c59fddbfbc3"
+  },
+  {
+   "file": "data_out/doe/annual/2024-11-15_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "53f25d24fb51bb18e9424ee68304cb5c36f77ec108dad379ce9abf685a87a4bd"
+  },
+  {
+   "file": "data_out/doe/annual/2024-11-25_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "cd7ee482fc721dbc1d7a9b169b393a715128b2014aa99efa1cea943ebb5cbed6"
+  },
+  {
+   "file": "data_out/doe/annual/2024-11-25_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "3a26d71432c5a72dc4fc7eaa10f2665a7de6f2ea609db8f94076c9a3c31390e0"
+  },
+  {
+   "file": "data_out/doe/annual/2024-12-05_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "83445ec753d60a080b0d0b9b1f308f0c48330d963e8e3db4e4de815667a610bc"
+  },
+  {
+   "file": "data_out/doe/annual/2024-12-05_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "75f52148cefdd9740b88f7b71b6286cf0a3cded212f996c536269f755945fe95"
+  },
+  {
+   "file": "data_out/doe/annual/2024-12-15_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "ed68ee03ae0160d4f71a73f47179933eaa0c53b758459430fee58807e6e821c9"
+  },
+  {
+   "file": "data_out/doe/annual/2024-12-15_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "a52ddf4967002505d0476a13d3ac2b44bf171cc3eafd8f1e5fb5ef01230684b6"
+  },
+  {
+   "file": "data_out/doe/annual/2024-12-25_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json",
+   "sha256": "1bfaa6bb6ad60bc15f439a0e70899edce9f02ecdd063be20d0a359673b0252ae"
+  },
+  {
+   "file": "data_out/doe/annual/2024-12-25_annual_4w_c_genco_4w_opendss_sph1_seed101_uk_esqcr.json",
+   "sha256": "0d43e188e7c41df77e8fac7da1d8609c9b120a44b94f5e1b4e013a308a014f67"
+  }
+ ],
+ "days_per_method": {
+  "B": 36,
+  "C": 36,
+  "ac": 36
+ },
+ "by_direction": {
+  "export": {
+   "annual_static_limit_kw": 0.0,
+   "static_kwh_per_household_year": 0.0,
+   "B": {
+    "days": 36,
+    "kwh_per_household_year": 4810.134666666667,
+    "ci95": [
+     4345.617633333333,
+     5304.472973333334
+    ],
+    "kwh_feeder_year": 962026.9333333333,
+    "seasonal_mean_kwh_per_day": {
+     "autumn": 17.0084,
+     "spring": 12.6347,
+     "summer": 16.8332,
+     "winter": 6.0935
+    },
+    "share_intervals_lb4_ge_0.95": 0.30439814814814814,
+    "share_intervals_p4_ge_0.95": 0.6099537037037037,
+    "share_intervals_nonzero_envelope": 0.5462962962962963,
+    "exact_calls": 2237600,
+    "search_s": 39773.13575944025
+   },
+   "C": {
+    "days": 36,
+    "kwh_per_household_year": 4810.134666666667,
+    "ci95": [
+     4345.617633333333,
+     5304.472973333334
+    ],
+    "kwh_feeder_year": 962026.9333333333,
+    "seasonal_mean_kwh_per_day": {
+     "autumn": 17.0084,
+     "spring": 12.6347,
+     "summer": 16.8332,
+     "winter": 6.0935
+    },
+    "share_intervals_lb4_ge_0.95": 0.30439814814814814,
+    "share_intervals_p4_ge_0.95": 0.6099537037037037,
+    "share_intervals_nonzero_envelope": 0.5462962962962963,
+    "exact_calls": 2028025,
+    "search_s": 60136.266716143116
+   },
+   "ac": {
+    "days": 36,
+    "kwh_per_household_year": 15523.914399999998,
+    "ci95": [
+     15180.719453333335,
+     15901.172966666667
+    ],
+    "kwh_feeder_year": 3104782.8799999994,
+    "seasonal_mean_kwh_per_day": {
+     "autumn": 43.0686,
+     "spring": 40.1625,
+     "summer": 36.0391,
+     "winter": 50.39
+    },
+    "share_intervals_lb4_ge_0.95": 0.0,
+    "share_intervals_p4_ge_0.95": 0.0,
+    "share_intervals_nonzero_envelope": 1.0
+   },
+   "agreement_paired": {
+    "intervals": 864,
+    "share_within_tol": 1.0,
+    "mean_abs_diff_kw": 0.0,
+    "max_abs_diff_kw": 0.0,
+    "intervals_c_exceeds_b": 0,
+    "intervals_both_zero": 392,
+    "intervals_both_nonzero": 472
+   },
+   "paired_cost": {
+    "exact_calls_B": 2237600,
+    "exact_calls_C": 2028025,
+    "search_s_B": 39773.13575944025,
+    "search_s_C": 60136.266716143116
+   }
+  },
+  "import": {
+   "annual_static_limit_kw": 0.0,
+   "static_kwh_per_household_year": 0.0,
+   "B": {
+    "days": 36,
+    "kwh_per_household_year": 2501.598613333333,
+    "ci95": [
+     2113.2965090666667,
+     2874.668676
+    ],
+    "kwh_feeder_year": 500319.7226666666,
+    "seasonal_mean_kwh_per_day": {
+     "autumn": 5.0794,
+     "spring": 6.5467,
+     "summer": 15.1057,
+     "winter": 0.608
+    },
+    "share_intervals_lb4_ge_0.95": 0.25925925925925924,
+    "share_intervals_p4_ge_0.95": 0.5868055555555556,
+    "share_intervals_nonzero_envelope": 0.5138888888888888,
+    "exact_calls": 2121600,
+    "search_s": 64282.935655085836
+   },
+   "C": {
+    "days": 36,
+    "kwh_per_household_year": 2504.993141333333,
+    "ci95": [
+     2116.9751181333336,
+     2878.0914917333325
+    ],
+    "kwh_feeder_year": 500998.6282666666,
+    "seasonal_mean_kwh_per_day": {
+     "autumn": 5.0794,
+     "spring": 6.5838,
+     "summer": 15.1057,
+     "winter": 0.608
+    },
+    "share_intervals_lb4_ge_0.95": 0.25810185185185186,
+    "share_intervals_p4_ge_0.95": 0.5868055555555556,
+    "share_intervals_nonzero_envelope": 0.5138888888888888,
+    "exact_calls": 1692702,
+    "search_s": 52973.16261047637
+   },
+   "ac": {
+    "days": 36,
+    "kwh_per_household_year": 7451.157482666665,
+    "ci95": [
+     6969.111033866666,
+     7913.099779199999
+    ],
+    "kwh_feeder_year": 1490231.4965333329,
+    "seasonal_mean_kwh_per_day": {
+     "autumn": 20.2319,
+     "spring": 22.3997,
+     "summer": 29.7176,
+     "winter": 9.0842
+    },
+    "share_intervals_lb4_ge_0.95": 0.0,
+    "share_intervals_p4_ge_0.95": 0.0,
+    "share_intervals_nonzero_envelope": 0.9525462962962963
+   },
+   "agreement_paired": {
+    "intervals": 864,
+    "share_within_tol": 0.9988425925925926,
+    "mean_abs_diff_kw": 0.0003864444444444444,
+    "max_abs_diff_kw": 0.33388799999999996,
+    "intervals_c_exceeds_b": 1,
+    "intervals_both_zero": 420,
+    "intervals_both_nonzero": 444
+   },
+   "paired_cost": {
+    "exact_calls_B": 2121600,
+    "exact_calls_C": 1692702,
+    "search_s_B": 64282.935655085836,
+    "search_s_C": 52973.16261047637
+   }
+  }
+ },
+ "paired_days": 36,
+ "unpaired_days": []
+}
