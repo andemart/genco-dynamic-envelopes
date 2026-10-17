@@ -648,3 +648,66 @@ Job 13338852. Environment: torch 2.11.0+cu126, CUDA 12.6, torch_geometric 2.8.1,
 - Fit 13338884 and its predictions are invalid: they were trained on constant zero labels.
 - The v3 features (job 13337441) are unaffected. They never use labels or OpenDSS, and `L_ac` comes from the valid `ac` rows.
 - Next steps await the user's decision.
+
+## Envelope prediction v3: frozen primary result (q95; `results/envpred3_primary_q95.json`, commit ddef0ae)
+
+**Status.** Frozen prospective analysis within an already explored benchmark.
+- One invalid fit (13338884) is quarantined, and this result comes from the replacement valid fit (13342839).
+- All shrink points were computed in one cached evaluation, but the frozen q95 primary result was reported and committed before the secondary frontier was examined.
+- GENCO is evaluated as a learned proposal engine for expensive four-wire envelope optimisation; exact OpenDSS remains the final decision authority.
+
+**Arms selected on validation dates only:** best non-GENCO arm P; best GENCO-containing arm PCG.
+
+**Test results: 36 dates × 5 placements = 8,640 interval-directions per arm.**
+
+| Arm | Retained B envelope-hours | Exact calls alone (vs B 24.53 M) | Gate pass rate | Fallbacks | Fresh four-wire feasibility, mean / share ≥ 0.95 |
+|---|---|---|---|---|---|
+| P | 79.0% | 1.651 M (6.7%) | 93.4% | 341 | 0.991 / 0.999 |
+| PC | 78.6% | 1.561 M (6.4%) | 94.3% | 291 | 0.991 / 0.999 |
+| PG | 78.8% | 1.688 M (6.9%) | 93.4% | 334 | 0.991 / 0.999 |
+| PCG | 79.0% | 1.662 M (6.8%) | 93.7% | 320 | 0.991 / 0.999 |
+
+**Other figures.**
+- Excess issued above B: 1.3–1.4% of B's envelope-hours, in 135–141 intervals per arm.
+- Predicted zero where B > 0: 385–407 intervals per arm. This is the main source of lost capacity.
+- Physical exact calls across all arms and shrink points, after caching: 57.99 M. These are not credited to any arm.
+
+**Primary decision (PCG vs P): GENCO not positive.**
+
+| Criterion | Result |
+|---|---|
+| Retention difference | −0.06 percentage points; date-block 95% interval [−0.46, +0.32] |
+| ≥ 3 points | no |
+| No more exact calls | no (1.662 M vs 1.651 M) |
+| Bootstrap lower bound > 0 | no |
+| Feasibility not worse | yes |
+
+**Descriptive pairs.**
+- PG − P = −0.21 points, interval [−0.61, +0.17]: no value beyond phase-only information.
+- PCG − PC = +0.39 points, interval [+0.10, +0.68]: **detectable but not practically material** (below 3 points). This is not a positive finding.
+
+**Placement strata.**
+- Familiar placements (101, 202): PCG − P = −0.51 points, interval [−0.81, −0.19]; PG − P = −0.53.
+- Unseen placements (303, 404, 505): PCG − P = +0.22 points, interval [−0.39, +0.79]; PG − P = 0.00; PCG − PC = +0.73, interval [+0.29, +1.14].
+- Retention is 80.0–80.5% on familiar and 77.6–78.3% on unseen placements, for every arm.
+- There is no GENCO-specific generalisation benefit.
+
+**Held-out feasibility, paired.**
+- Both P and PCG issue on 4,884 intervals, with fresh four-wire means of 0.9914 (P) and 0.9914 (PCG).
+- Only PCG issues on 108 intervals (0.985); only P issues on 122 intervals (0.985).
+- The gate applies the same design-sample rule and OpenDSS configuration as B. This does not give unconditional statutory safety.
+
+**Cost.**
+
+| Item | Value |
+|---|---|
+| GENCO action features, test set | 25,350 s on the A100 |
+| `L_ac`, test set | 11,998 s on CPU |
+| Exact search, P alone | ≈ 29,400 s on CPU (1.65 M solves at 17.8 ms) |
+| Exact search, B | 566,789 s on CPU (24.5 M solves) |
+
+GENCO adds proposal cost without improving the proposal.
+
+**Interpretation (frozen rule): no measurable GENCO value.** The PCG − PC difference is detectable but below the 3-point materiality threshold.
+
+**What the experiment does show, independently of GENCO.** A learned proposal followed by one exact gate retains about 79% of the exact envelope-hours with about 6.7% of B's exact OpenDSS calls, roughly 15× fewer. Held-out four-wire feasibility of the issued envelopes is 0.991. This holds for the phase-only arm, so it needs no GENCO.
