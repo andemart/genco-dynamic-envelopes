@@ -1,0 +1,27 @@
+{
+ "purpose": "corrected envelope-prediction label runs (amendment 3c)",
+ "run_commit": "d05474afd792ece2ec54de3ebbb2eb44c0084415",
+ "label_code_commit": "fc1ed19861e7e91b8a46afbbd1e65d8df39aa68a",
+ "recovery_manifest": "results/envpred_label_recovery_manifest.json",
+ "hydra_checkout": "git checkout at run_commit (clean; pin verified in every task)",
+ "slurm_environment": {
+  "partition": "zen4",
+  "cpus_per_task": 1,
+  "mem": "8G",
+  "time": "06:00:00",
+  "modules": "Python/3.12.3-GCCcore-13.3.0",
+  "OMP_NUM_THREADS": 1,
+  "GENCODOE_VOLTAGE_LIMITS": "uk_esqcr"
+ },
+ "guard_test": {
+  "job_id": "13340194",
+  "GENCODOE_COMMIT": "0000000000000000000000000000000000000000",
+  "outcome": "aborted with exit 2 (HEAD mismatch), as intended"
+ },
+ "smoke": {
+  "job_id": "13340193",
+  "array": "0-3",
+  "command": "sbatch --export=ALL,GENCODOE_COMMIT=d05474afd792ece2ec54de3ebbb2eb44c0084415 --array=0-3 scripts/hydra_envpred_labels_recovery.slurm smoke"
+ },
+ "full": []
+}
