@@ -587,3 +587,39 @@ Train 14,648 / val 5,066 / calib 2,953 / test 2,968 states; UK limits; α = 0.01
 - False-safe states: 1–2 out of 2,968 per arm. That is within what α = 0.01 per state allows (pointwise guarantee). It is not zero, unlike the frozen adapter, which cleared almost nothing.
 - Head test MAE (converged states): v_pn_min ≈ 0.011 pu, v_pn_max ≈ 0.005 pu, line loading ≈ 0.04, transformer ≈ 0.002–0.003, similar across arms.
 - Per the protocol, DOE-level integration would follow only if the screen supported GENCO. It does not support GENCO over classical. A phase-feature head could be integrated as a non-GENCO screen, but that is outside the GENCO claim.
+
+## Envelope prediction v3: A100 determinism and device diagnostic (features only, before fitting)
+
+Job 13338852. Environment: torch 2.11.0+cu126, CUDA 12.6, torch_geometric 2.8.1, torch_scatter 2.1.2, driver 610.57.04, NVIDIA A100-PCIE-40GB; TF32 off.
+
+**Five A100 repetitions** of the 12 fixed smoke items, production path:
+
+| What | Max change |
+|---|---|
+| `L_G` | 0 (identical in all 60 runs) |
+| Feasible shares, zero indicator, fixed-grid shares | 0 |
+| Per-scenario feasibility decisions, constraint flags | 0 |
+| Voltage summaries | ≤ 1.0 × 10⁻⁴ pu |
+| Loading summaries | ≤ 6.2 × 10⁻⁵ |
+| Headroom and change summaries | ≤ 1.0 × 10⁻⁴ |
+| Zero-state embeddings | ≤ 4.0 × 10⁻³ (2.1% of the smoke-sample std) |
+| `L_G` embeddings and deltas | ≤ 1.74 × 10⁻² (`GA:embLG_max12`, 2.8% of its std; mean change ≈ 9 × 10⁻⁴) |
+
+- The 0.017 seen in the smoke test is this max-pooled embedding channel. It is continuous and not decision-relevant.
+- Reproducibility is therefore **tolerance-based, not bitwise**.
+- `torch.use_deterministic_algorithms(True)` ran without error. It was not adopted, because no decision-relevant feature changes and adopting it would require re-extraction.
+
+**Uneven chunking** (batch 333 instead of the production single chunk):
+- `L_G` is identical in all 12 items, and every share is identical.
+- On 2024-04-01, one per-scenario feasibility decision during the search flipped.
+- 2 constraint flags changed (2024-04-01 and 2024-07-21), with no effect on any feature.
+- Production extraction used a fixed batching (every call ≤ 800 rows in one 1,024 template), so this does not affect v3.
+
+**CPU float32 vs A100 FP32.** The devices are **not interchangeable**:
+- `L_G` differs in 3 of 12 items, by 0.0016–0.0024 kW (2024-01-01 import, 2024-04-01 export, 2024-05-11 export). This is below the search tolerance (5 W export, 7.4 W import), but the values are not identical.
+- Per-scenario feasibility decisions differ by 0–5 per item, and constraint flags by 0–5.
+- One feasible share differs by 1/200.
+- Zero-state voltage differs by up to 4.5 × 10⁻³ pu (the known float32 input-path jitter).
+- All v3 features, for training and evaluation, use the frozen A100 FP32 path.
+
+**Decision: proceed without re-extraction** (amendment 3b).

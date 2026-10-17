@@ -445,3 +445,18 @@ This analysis is prospective relative to head fitting and to any envelope-predic
 "GENCO is evaluated as a learned proposal engine for expensive four-wire envelope optimisation; exact OpenDSS remains the final decision authority."
 
 If PCG does not materially beat PC, that is reported directly. If PG beats P but PC remains best, it is framed as useful representation value under reduced physics information, not as superiority over classical distribution-network methods.
+
+## Amendment 3b (before fitting): wording, and the outcome of the determinism diagnostic
+
+**Wording.** "Deployment-equivalent float32" is replaced throughout by **"the frozen A100 FP32 inference path used for all v3 training and evaluation"**. CPU and A100 GENCO are not interchangeable; see below.
+
+**Diagnostic** (`results/envpred3_determinism.json`, job 13338852).
+- Setup: the 12 fixed smoke items, 5 repetitions on the A100 with the production path, one uneven-chunking run (batch 333), one CPU float32 run, and one run with `torch.use_deterministic_algorithms(True)`.
+- Features only: no label was opened.
+
+**Proceed decision.** The pre-fit rule is met:
+- `L_G` is identical across the 5 A100 repetitions;
+- every feasible share, grid share and zero indicator is identical;
+- no per-scenario GENCO feasibility decision or constraint classification changed.
+
+The extraction (job 13337441) is kept. Its reproducibility is tolerance-based, not bitwise.

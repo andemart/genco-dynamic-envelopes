@@ -115,7 +115,7 @@ def load_genco(device: str, run: Path):
 
     from .genco import GencoModel, GencoOracle, read_raw
     if device.startswith("cuda"):
-        torch.backends.cuda.matmul.allow_tf32 = False          # deployment-equivalent float32 (amendment 3)
+        torch.backends.cuda.matmul.allow_tf32 = False          # the frozen A100 FP32 inference path (amendment 3b)
         torch.backends.cudnn.allow_tf32 = False
     torch.set_num_threads(1)
     model = GencoModel(CONFIG, run / "artifacts/model/best_model_state_dict.pt",
