@@ -106,6 +106,12 @@ class UnbalancedENWL1:
             self.line_amps[dss.Lines.Name()] = dss.Lines.NormAmps()
             if not dss.Lines.Next():
                 break
+        # prime the engine with the no-load solution: if the very first solve of a fresh engine diverges
+        # (e.g. every customer at the 5 kW export cap), OpenDSS never recovers, not even through _reset,
+        # and every later solve fails (found in the envelope-prediction label runs, docs/experiment_log.md)
+        self._reset()
+        if not dss.Solution.Converged():
+            raise RuntimeError("OpenDSS no-load priming solve did not converge")
 
     def _reset(self):
         """Solve the no-load case so the next solve starts from a flat, feasible point."""

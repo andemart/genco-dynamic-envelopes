@@ -638,3 +638,16 @@ def test_three_phase_mask_and_spatial_groups():
     assert three["line_loading_max"] < base["line_loading_max"] and three["v_pn_min"] > base["v_pn_min"]
     g = customer_groups(net, single)
     assert len(np.unique(g)) == 12 and len(g) == len(net.customer_bus)
+
+
+def test_fresh_four_wire_engine_survives_divergent_first_solve():
+    """Regression: a fresh engine whose first solve diverges used to stay broken (all later solves infeasible)."""
+    pytest.importorskip("opendssdirect")
+    from gencodoe.unbalanced import UnbalancedENWL1
+    u = UnbalancedENWL1()
+    n = len(u.load_names)
+    first = u.solve(np.full(n, -5.0), np.zeros(n))          # every customer exporting 5 kW
+    normal = u.solve(np.full(n, 0.7), np.zeros(n))          # an ordinary evening load
+    assert normal["converged"] and np.isfinite(normal["transformer_loading"])
+    assert 0.9 < normal["v_pn_min"] < 1.06 and normal["line_loading_max"] < 1.0
+    del first

@@ -623,3 +623,28 @@ Job 13338852. Environment: torch 2.11.0+cu126, CUDA 12.6, torch_geometric 2.8.1,
 - All v3 features, for training and evaluation, use the frozen A100 FP32 path.
 
 **Decision: proceed without re-extraction** (amendment 3b).
+
+## Envelope prediction: label defect found after the fit (2026-10-17). Fit invalidated, nothing gated
+
+**What happened.**
+- The single v3 fit (job 13338884) completed, but every head stopped after 10 boosting iterations.
+- Checking why, using training and validation rows only, showed that **all 31,680 B labels in the 660 amendment-2 label files are 0**, with design share exactly 0.0 in 31,626 rows.
+- No test label, test prediction or gate result was examined.
+
+**Cause.** An OpenDSS engine whose very first solve diverges never recovers.
+- In the label runs (`--unbalanced 0`), the first solve of each fresh process was B's top level: every customer at the 5 kW export cap.
+- That solve diverged, and every later solve in the process failed, including the no-load reset.
+- Reproduced locally and on a Hydra node: on a fresh engine the search returns share 0.0 at zero; after one no-load priming solve, 0.9 for the same 40 scenarios.
+- All earlier runs used `--unbalanced 200`. There, the `ac` method's four-wire verification solved ordinary states before B's first search, priming the engine.
+- An audit of every stored run (annual B/C, 15-minute days, C+, W1, W2, W3) finds no failure signature.
+
+**Fix.**
+- `UnbalancedENWL1` now solves the no-load case at construction, and raises if that solve fails.
+- A regression test fails on the old code and passes on the new.
+- The label-integrity check now flags the failure signature (all exact design shares 0). It flags all 660 label files.
+
+**Status.**
+- Label jobs 13337097 and 13337098 are invalid.
+- Fit 13338884 and its predictions are invalid: they were trained on constant zero labels.
+- The v3 features (job 13337441) are unaffected. They never use labels or OpenDSS, and `L_ac` comes from the valid `ac` rows.
+- Next steps await the user's decision.

@@ -285,6 +285,9 @@ def integrity(out_json: Path) -> dict:
                 k = [(r["step"], r["direction"]) for r in rows if r["method"] == meth]
                 if len(k) != 48 or len(set(k)) != 48:
                     prob.append(f"{meth}: {len(k)} rows")
+            # OpenDSS engine-failure signature (found 2026-10-17): every exact design share exactly 0
+            if all(r["prob_ok_oracle"] == 0.0 for r in rows if r["method"] == B):
+                prob.append("engine failure signature: all exact design shares are 0")
             if prob:
                 rep["problems"].append({"block": f"{d}_hh{hh}", "problems": prob})
             rep["files"][str(f)] = sha256(f)
