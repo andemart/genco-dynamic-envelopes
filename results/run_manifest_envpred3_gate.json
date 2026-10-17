@@ -1,0 +1,23 @@
+{
+ "purpose": "envelope prediction v3 combined gate: 4 arms x 4 shrink points x 8,640 test rows (q95 primary)",
+ "code_commit": "ba1ae0b6a9b6e2fb235b3461617277e09cd133a4",
+ "replacement_fit": {
+  "job_id": "13342839",
+  "commit": "9b15fc8970a45a29020dfacea5243a7024f80655",
+  "outputs": "data_out/envpred/fit_v3_valid.json, predictions_v3_valid.parquet"
+ },
+ "predictions_v3_valid_sha256": "cde27b84872419e90ff5077f5993c2173c2f3b5ead687eae5b063c1be24d8292",
+ "invalid_or_aborted_fits": {
+  "13338884": "quarantined (poisoned labels)",
+  "13342788": "aborted in hash guard, no output",
+  "13342832": "aborted in hash guard, no output"
+ },
+ "job": {
+  "job_id": "13342845",
+  "array": "0-179",
+  "command": "sbatch --export=ALL,GENCODOE_COMMIT=ba1ae0b6a9b6e2fb235b3461617277e09cd133a4 --array=0-179 scripts/hydra_envpred3_gate.slurm",
+  "outputs": "data_out/envpred/gate_v3/<date>_hh<seed>.json (180 files, 768 rows each)"
+ },
+ "accounting": "per-row counterfactual gate/fallback calls (arm alone) kept separate from per-file physical calls after cross-arm and cross-quantile caching",
+ "reporting_order": "gate-integrity -> report-primary (q95 only, committed) -> frontier report"
+}
