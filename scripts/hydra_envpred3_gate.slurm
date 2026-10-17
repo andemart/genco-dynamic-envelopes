@@ -11,5 +11,9 @@ set -euo pipefail
 cd "$VSC_DATA/genco-dynamic-envelopes"
 module load Python/3.12.3-GCCcore-13.3.0
 export GENCODOE_VOLTAGE_LIMITS=uk_esqcr OMP_NUM_THREADS=1
-echo "task=$SLURM_ARRAY_TASK_ID commit=${GENCODOE_COMMIT:-unknown}"
+: "${GENCODOE_COMMIT:?GENCODOE_COMMIT must be set}"
+HEAD=$(git rev-parse HEAD)
+[ "$HEAD" = "$GENCODOE_COMMIT" ] || { echo "ABORT: HEAD $HEAD != GENCODOE_COMMIT $GENCODOE_COMMIT"; exit 2; }
+git diff --quiet HEAD -- src scripts || { echo "ABORT: tracked files modified relative to HEAD"; exit 3; }
+echo "task=$SLURM_ARRAY_TASK_ID commit=$HEAD (verified) node=$(hostname)"
 .venv/bin/python -m gencodoe.envpred3 gate --file-index "$SLURM_ARRAY_TASK_ID"
