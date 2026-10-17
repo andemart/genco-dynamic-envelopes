@@ -1,0 +1,107 @@
+{
+ "purpose": "corrected envelope-prediction labels (docs/envpred_protocol.md, amendment 3c)",
+ "label_code_commit": "fc1ed19861e7e91b8a46afbbd1e65d8df39aa68a",
+ "note": "runs execute from the git checkout of the commit that adds this manifest; its production sources are byte-identical to label_code_commit, verified by source_sha256 at run time",
+ "command": "python -m gencodoe.doe_day --day <date> --steps-per-hour 1 --scenarios 200 --beta 0.05 --seed 101 --household-seed <hh> --verify-draws 1000 --unbalanced 0 --exact-four-wire --any-split --methods ac b_opendss_exact --calib data_out/datakit_v2_calib --out <dir>/<date>_b_opendss_exact_sph1_seed101_hh<hh>_uk_esqcr.json",
+ "scenario_seed": 101,
+ "household_placements": [
+  101,
+  202
+ ],
+ "voltage_limits": "uk_esqcr (GENCODOE_VOLTAGE_LIMITS pinned)",
+ "scenarios": 200,
+ "eps": 0.05,
+ "beta": 0.05,
+ "acceptance_threshold": 0.98,
+ "steps_per_hour": 1,
+ "caps_kw": {
+  "export": 5.0,
+  "import": 7.4
+ },
+ "outputs": {
+  "full": "data_out/doe/envpred_labels/",
+  "smoke": "data_out/doe/envpred_labels_recovery_smoke/"
+ },
+ "slurm": "scripts/hydra_envpred_labels_recovery.slurm (zen4, 1 CPU, 8 GB, 6 h, OMP_NUM_THREADS=1)",
+ "smoke": {
+  "blocks": [
+   [
+    "2024-01-02",
+    101
+   ],
+   [
+    "2024-02-05",
+    202
+   ],
+   [
+    "2024-07-01",
+    101
+   ],
+   [
+    "2024-08-10",
+    202
+   ]
+  ],
+  "output_dir": "data_out/doe/envpred_labels_recovery_smoke"
+ },
+ "source_sha256": {
+  "data/feeder_topology/ENWL1/Buscoords.dss": "53e27854052d4c77c7c7afae2623ea95c332119011264e8557acdb14494ace23",
+  "data/feeder_topology/ENWL1/EVLoadShapes.dss": "5e96ed3f57779c7dc99a017c6bb65e55ee403f9f637f6f91a939e06aa903932b",
+  "data/feeder_topology/ENWL1/EVLoads.dss": "51870d7c90acd7dc97a79f7f9e3c32fefc634b047036eebead617952fc7da333",
+  "data/feeder_topology/ENWL1/EVLoads2.dss": "d481486bf199ca4e41b8279feace59d806b5bf95d3be04f80cfa77effd58ba02",
+  "data/feeder_topology/ENWL1/LineCode_3f4w.dss": "77158cb1b55a62efbd2f17a2c60b863cf7d3cd6c0d023cf6c273cb48a168eff3",
+  "data/feeder_topology/ENWL1/Lines.dss": "d7769432070799acba950f4ee122ca5d4fe1b7b9d9903cb2fb0b4c61fd40a0fd",
+  "data/feeder_topology/ENWL1/LoadShapes.dss": "7a51249185113d93b2ea8fa8775136b95dd597749b3ad78bf2a88fde9c9e04cc",
+  "data/feeder_topology/ENWL1/Loads.dss": "9e341a7c761ab2674b0d621f5f53984471bea260c8a9e4402274800e57699dc2",
+  "data/feeder_topology/ENWL1/Master.dss": "f99c014e49613ed7ae0f90471a2e63e3e3275385dd11d0dc00bf427fb193f565",
+  "data/feeder_topology/ENWL1/PVLoadShapes.dss": "f309409e32bfcb40b2b091e48b8c0fd5b53f37bedfb6c19f9f7145f3c9c14004",
+  "data/feeder_topology/ENWL1/PVSystems.dss": "8afe0ba3cc127b6137acb02fc66921f9752200a0d3dd5f462d4961b32974fbc3",
+  "results/envpred_label_days.txt": "2054ef880f4d07929c50ced31e08c5482b06cd5f1c00d9283d4f255b3c24dc87",
+  "results/envpred_label_recovery_smoke_blocks.txt": "330dba7f21c41008be93b412924d090f297558d29c5d0449dc24293e9fa7f050",
+  "results/envpred_split_v2.json": "e9e94a743e5daa5b06075482d58fbf589fcffede1f27f5d5a53ad65c3055719d",
+  "scripts/hydra_envpred_labels_recovery.slurm": "cd50a16786b1e40dca9cb73295aba4246bdf71194315db66adf370af79f29679",
+  "src/gencodoe/__init__.py": "ce1817b525182c3332eca7f30b470dcc7566261aa41dc02356987e42d0f78355",
+  "src/gencodoe/benchmark.py": "8052a6b37ad677181c6fbd3f384c512ef37a14568b7a80c9f4a10e129da5aaa1",
+  "src/gencodoe/checks.py": "dc1d9a1cd588d84aebcc2d4af8f757071af11599131df848e07fc920c883617c",
+  "src/gencodoe/conformal.py": "2ef6b9b948292061dc2b477c20d8056325a27f4bc33f06c235256484d88b74a3",
+  "src/gencodoe/conformal_eval.py": "b364643c31bbbd7d25dd21373c9d90e2fbec6cf882e3474c1269b396be02b637",
+  "src/gencodoe/contracts.py": "3565784a579f94e8cc2bc2f4b61daf3de1437bcf85ccf67a8253234b1f9a61e3",
+  "src/gencodoe/cplus.py": "aff13d837dbd731e31e87908a7235005044dc47de6a7f2a6e622133b3fa9b261",
+  "src/gencodoe/datakit_fluvius.py": "1718ab94abedbf3985b71916dad6302e72564251edd89c0d62f590ba03a4b469",
+  "src/gencodoe/demo.py": "c346f58647876b94e3c0d9a01abb330713de4134e56e9495fcb9730391135de9",
+  "src/gencodoe/diagnose_baseline.py": "8cf1e3214d6dd1bb7f5a383cb4d87031125945dc3247d3abbe0e510f6bdf44da",
+  "src/gencodoe/doe_day.py": "5ad3c2601c04c3a6ab03773e36ca1449b80d2943b587f366b62bca66fe11322d",
+  "src/gencodoe/envelopes.py": "d9a48ac682940ce3dc64cb0b7fe65310cf33c94170a1444d5c52b30b548bc2ce",
+  "src/gencodoe/envpred.py": "6b74bfa44437daaa0978e2028dafb16437f8a21da11d82ef6702ab7326ed48e6",
+  "src/gencodoe/envpred3.py": "99b9573e0a97a5c2daa882a0490ae5661ff894d9a10c51184220717f27c71ed3",
+  "src/gencodoe/envpred3_diag.py": "3c874881f48fe37cd2ea1f8af83a8a042ac5e9ab2ff3da6069802d519df0e604",
+  "src/gencodoe/enwl.py": "423af91b192924be060d68f5ffc3a2f9da7763de9815e873ad40796e9fc6e4e9",
+  "src/gencodoe/evaluate.py": "53c080d45354179928b5a3750a3daa973cb9c1da4deba107b1e896ffa253e5a0",
+  "src/gencodoe/feeder.py": "933e73226fbbea2455192daeac37fbdcaf6bf6f84faf936e61d97e5adee17463",
+  "src/gencodoe/fluvius.py": "3f619c5d46dd9d00bd3f1b6a1b3f30fb322bd2259e6f086452099a8b600b283d",
+  "src/gencodoe/four_wire.py": "2b079be1da7d7d727dad42a496866f9415c47447454d22dfc390e4a0995cc73d",
+  "src/gencodoe/genco.py": "4616d4b0f4f4c1958b1e4752e7a8cacb0575faf91aea42739f700f5096082d34",
+  "src/gencodoe/genco_model.py": "d8d522eec81d4b90c6cdb3af6757153bb92d4fa9b29e6850c23dc142917e4245",
+  "src/gencodoe/graphkit_cli.py": "4dc217ebe6ffc7ddc5cd941ff8a34f67bc3727aff14d036bb14042d388cef2d7",
+  "src/gencodoe/limits.py": "51e7f027dc9bf7fc666e26f529f206baf55e4b83093499dc8a2f8dd47720aa18",
+  "src/gencodoe/metrics.py": "74fd68fbeda08a43a8d887e15bc7ac07480300cdf0cb112a830f5b41692b494c",
+  "src/gencodoe/option2.py": "3ef8930184b37b3f5003595fde174d362302fbbf6f8bfd1974c0e42d97d5bfb3",
+  "src/gencodoe/pin.py": "0fd9937533c190042f4660add5db7c57c93cc1aa9245e1926fa56c66f619b28b",
+  "src/gencodoe/report_annual.py": "f7d61808d3176cf6fb953cb78c362e0cc7b261ad67efe0b71c3b551d4d78b2da",
+  "src/gencodoe/report_final.py": "70c56dc65b2cae7f5ceb3cdcde91b596235eaee9851102638f23ebad036287cb",
+  "src/gencodoe/report_weekend.py": "1e43170d3f83ba74580f9532d3363b1ff6fc652a2027d079bb447c24da93d077",
+  "src/gencodoe/scenarios.py": "36770dca9f2ead94ee096cf9f43da712aefd9ab2ff258f42b82dc119e3884a05",
+  "src/gencodoe/time_accounting.py": "ae08a171ee4e43af1ac7c7afafe8eb4ee76a10da02748bc0d27b42c27f7b0ccd",
+  "src/gencodoe/unbalanced.py": "b276ac90323aa9d857abb1ccb694d8c90fc662017d75b46957dc9f991b3df2e7"
+ },
+ "input_data_sha256": {
+  "data_out/fluvius/EV_geen_ZP.npz": "8993b456b2861e08673e36719474ffc3157848ebb96f3de866c38e9d2b29d9b6",
+  "data_out/fluvius/EV_met_ZP.npz": "5dc1487cdc51cc08b9a84e950b08963ca62f0cc5a06dca33cd6d7a2904ab5206",
+  "data_out/fluvius/WP_EV_geen_ZP.npz": "67082be7eb478e818151f4e3b064e16ac7a9083b2139fd199904eb63c4f9ca3d",
+  "data_out/fluvius/WP_EV_met_ZP.npz": "cfbbccc231badeb3ed82b77bc61e3850c87a0f0bf230ff1593e45ce93be08517",
+  "data_out/fluvius/WP_geen_ZP.npz": "f5b65c910751d8a66c63f228b7ae648088b126d9cda398b52b806096d335601c",
+  "data_out/fluvius/WP_met_ZP.npz": "8fd378b88c7eb294f78e5835ed66df1a76bcff1c658370e6d2fc6486c56e4f81",
+  "data_out/fluvius/enkel_ZP.npz": "2ef6e2037191d892ddb36f79422019f8b2ba99491c1fe9bfcf30fc6662a877ed",
+  "data_out/fluvius/geen_ZP.npz": "c6d1e9b2cbcedfbd2255e2ce00bcc43332234801bbb741dd5e836303f33e4ec3"
+ }
+}
