@@ -1,6 +1,8 @@
 """Envelope prediction v3: schema, leakage and edge-case tests (docs/envpred_protocol.md, amendment 3a)."""
 import json
 
+import pandas as pd
+
 import numpy as np
 import pytest
 
@@ -162,3 +164,60 @@ def test_genco_embed_keeps_final_layer_only():
     oracle.batch_size = 1024
     _, one = embed(fd, p, np.zeros_like(p))
     assert np.allclose(pooled, one, atol=1e-3)
+
+
+def _fake_gate_rows(day="2024-01-10"):
+    rows = []
+    t0 = int((np.datetime64(day) - np.datetime64("2024-01-01")).astype(int)) * 96
+    for k in range(24):
+        for d, cap in (("export", 5.0), ("import", 7.4)):
+            for arm in e3.ARMS:
+                for q in e3.SHRINK_Q:
+                    rows.append({"step": t0 + 4 * k, "direction": d, "arm": arm, "q": q, "L_B": 1.0, "L_s": 0.9,
+                                 "gate_calls": 200, "fallback_calls": 0, "gate_pass": True, "fallback": False,
+                                 "predicted_zero": False, "zero_sentinel": False, "issued": 0.9,
+                                 "search_physical_calls": 0, "search_wall_s": 0.0, "fresh_p4": 0.99, "fresh_ac": 1.0})
+    return rows
+
+
+def test_gate_integrity_detects_problems(tmp_path, monkeypatch):
+    from gencodoe.envelopes import acceptance_threshold
+    from gencodoe.limits import record
+    monkeypatch.setattr(e3, "OUT", tmp_path)
+    monkeypatch.setattr(e3, "GATE", tmp_path / "gate")
+    (tmp_path / "gate").mkdir()
+    (tmp_path / "predictions_v3.parquet").write_bytes(b"x")
+    blocks = e3._test_blocks()
+    assert len(blocks) == 180
+    good = {"scenario_seed": 101, "threshold": acceptance_threshold(200, 0.05, 0.05), "caps_kw": e3.CAPS_KW,
+            "voltage_limits": record(), "code_commit": "abc", "predictions_sha256": e3.sha256(tmp_path / "predictions_v3.parquet"),
+            "physical_calls": 200, "physical_seconds": 1.0}
+    for day, hh in blocks:
+        (tmp_path / "gate" / f"{day}_hh{hh}.json").write_text(json.dumps({"day": day, "hh": hh, **good,
+                                                                           "rows": _fake_gate_rows(day)}))
+    rep = e3.gate_integrity(tmp_path / "gi.json", "abc")
+    assert rep["complete"] and rep["rows"] == 138240 and rep["q95_rows"] == 34560
+    day, hh = blocks[0]
+    bad = _fake_gate_rows(day)[:-1]
+    (tmp_path / "gate" / f"{day}_hh{hh}.json").write_text(json.dumps({"day": day, "hh": hh, **good, "rows": bad}))
+    (tmp_path / "gate" / f"{blocks[1][0]}_hh{blocks[1][1]}.json").unlink()
+    rep = e3.gate_integrity(tmp_path / "gi.json", "abc")
+    assert not rep["complete"] and len(rep["missing"]) == 1 and rep["problems"]
+    assert not e3.gate_integrity(tmp_path / "gi.json", "other-commit")["complete"]
+
+
+def test_primary_statistics_use_capped_retention():
+    g = pd.DataFrame(_fake_gate_rows("2024-01-10") + _fake_gate_rows("2024-04-09"))
+    g["day"] = ["2024-01-10"] * 768 + ["2024-04-09"] * 768
+    g["hh"] = 101
+    g.loc[g.arm == "PG", "issued"] = 1.2                        # above B: retention capped at 100%, excess separate
+    g["tol"] = g.direction.map(e3.CAPS_KW) * 1e-3
+    g["kept"] = np.minimum(g.issued, g.L_B)
+    g["excess"] = np.maximum(g.issued - g.L_B, 0)
+    g["calls"] = g.gate_calls + g.fallback_calls
+    g["b_calls"] = 1000
+    q = g[g.q == 0.95]
+    m = e3._arm_metrics(q[q.arm == "PG"])
+    assert m["retention"] == 1.0 and abs(m["excess_over_B"] - 0.2) < 1e-12 and m["intervals_issued_above_B"] == 96
+    lo, hi = e3._diff_boot(q, "PG", "P")
+    assert abs(lo - 0.1) < 1e-9 and abs(hi - 0.1) < 1e-9

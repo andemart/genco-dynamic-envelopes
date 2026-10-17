@@ -547,10 +547,81 @@ def gate_file(day: str, hh: int) -> Path:
                         v = verify_repaired(ex, fd, net.customer_bus, pv, qv, N_U, issued, d, Counter())
                         r.update(fresh_p4=v["prob_ok_unbalanced"], fresh_ac=v["prob_ok_ac_fresh"])
                     res.append(r)
+    import os
+
+    from .limits import record as limits_record
     GATE.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"day": day, "hh": hh, "threshold": thr, "physical_calls": ex.physical,
-                               "physical_seconds": ex.seconds, "rows": res}, indent=1))
+    tmp = GATE / f".{day}_hh{hh}.partial.json"                    # atomic
+    tmp.write_text(json.dumps({"day": day, "hh": hh, "scenario_seed": SCENARIO_SEED, "threshold": thr,
+                               "caps_kw": CAPS_KW, "voltage_limits": limits_record(),
+                               "code_commit": os.environ.get("GENCODOE_COMMIT"),
+                               "predictions_sha256": sha256(OUT / "predictions_v3.parquet"),
+                               "physical_calls": ex.physical, "physical_seconds": ex.seconds, "rows": res}, indent=1))
+    os.replace(tmp, out)
     return out
+
+
+def _test_blocks():
+    sp = json.loads(SPLIT.read_text())
+    return [(d, h) for d in sp["test"] for h in sp["test_placements"]]
+
+
+def gate_integrity(out_json: Path, commit: str) -> dict:
+    """Structural integrity of the 180 gate files (no performance statistic is computed)."""
+    import os
+    from .envelopes import acceptance_threshold
+    from .limits import record as limits_record
+    pred_sha = sha256(OUT / "predictions_v3.parquet")
+    rep = {"expected_files": 180, "expected_rows_per_file": 768, "expected_rows": 138240, "expected_q95_rows": 34560,
+           "missing": [], "problems": [], "partial_files": [str(x) for x in GATE.glob(".*partial*")],
+           "unexpected": sorted({x.name for x in GATE.glob("*.json")} - {f"{d}_hh{h}.json" for d, h in _test_blocks()}),
+           "rows": 0, "q95_rows": 0, "files": {}}
+    thr = acceptance_threshold(N_S, 0.05, 0.05)
+    lim = limits_record()
+    for day, hh in _test_blocks():
+        f = GATE / f"{day}_hh{hh}.json"
+        if not f.exists():
+            rep["missing"].append(f.name)
+            continue
+        prob = []
+        try:
+            doc = json.loads(f.read_text())
+            r = pd.DataFrame(doc["rows"])
+            if (doc["day"], doc["hh"]) != (day, hh) or doc["scenario_seed"] != SCENARIO_SEED:
+                prob.append("identity/seed")
+            if doc["threshold"] != thr or doc["caps_kw"] != CAPS_KW or doc["voltage_limits"] != lim:
+                prob.append("threshold/caps/limits")
+            if doc["code_commit"] != commit or doc["predictions_sha256"] != pred_sha:
+                prob.append("commit/predictions hash")
+            if len(r) != 768 or r.duplicated(["step", "direction", "arm", "q"]).any():
+                prob.append(f"rows {len(r)}")
+            if sorted(r.groupby(["arm", "q"]).size().unique()) != [48] or r.step.nunique() != 24:
+                prob.append("arm x q x interval grid")
+            cap = r.direction.map(CAPS_KW)
+            if not np.isfinite(r.issued).all() or (r.issued < 0).any() or (r.issued > cap + 1e-9).any():
+                prob.append("issued not finite / out of cap")
+            nz = r.issued > 1e-3 * cap
+            if r.loc[nz, ["fresh_p4", "fresh_ac"]].isna().any().any() or not np.isfinite(r.loc[nz, ["fresh_p4", "fresh_ac"]]).all().all():
+                prob.append("fresh feasibility missing / non-finite")
+            if (r.gate_calls % N_S).any() or (r.fallback_calls % N_S).any() or (r.search_physical_calls > r.gate_calls + r.fallback_calls).any():
+                prob.append("call accounting")
+            if doc["physical_calls"] > (r.gate_calls + r.fallback_calls).sum() + N_U * nz.sum():
+                prob.append("physical > counterfactual + fresh")
+            rep["rows"] += len(r)
+            rep["q95_rows"] += int((r.q == PRIMARY_Q).sum())
+        except Exception as e:
+            prob.append(f"unreadable: {e!r}")
+        if prob:
+            rep["problems"].append({"file": f.name, "problems": prob})
+        rep["files"][f.name] = sha256(f)
+    rep["predictions_sha256"] = pred_sha
+    rep["code_commit"] = commit
+    rep["complete"] = (not rep["missing"] and not rep["problems"] and not rep["partial_files"] and not rep["unexpected"]
+                       and len(rep["files"]) == 180 and rep["rows"] == 138240 and rep["q95_rows"] == 34560)
+    tmp = out_json.with_name("." + out_json.name + ".partial")
+    tmp.write_text(json.dumps(rep, indent=1))
+    os.replace(tmp, out_json)
+    return {k: v for k, v in rep.items() if k != "files"}
 
 
 # ----------------------------------------------------------------------------------------------- report
@@ -608,6 +679,118 @@ def _paired_feasibility(g: pd.DataFrame, A: str, Bm: str) -> dict:
         out[name] = {"intervals": int(m.sum()),
                      f"{A}_fresh_p4_mean": float(a.fresh_p4[m].mean()) if m.any() and ia[m].all() else None,
                      f"{Bm}_fresh_p4_mean": float(b.fresh_p4[m].mean()) if m.any() and ib[m].all() else None}
+    return out
+
+
+def _load_gate(only_q: float | None):
+    rows = []
+    for day, hh in _test_blocks():
+        doc = json.loads((GATE / f"{day}_hh{hh}.json").read_text())
+        rows += [{**r, "day": day, "hh": hh} for r in doc["rows"] if only_q is None or r["q"] == only_q]
+    g = pd.DataFrame(rows)
+    df, _ = load_table()
+    t = df[df.split == "test"][["day", "hh", "step", "direction", "b_calls", "b_p4", "b_runtime_s", "ac_runtime_s"]]
+    g = g.merge(t, on=["day", "hh", "step", "direction"], how="left", validate="many_to_one")
+    g["tol"] = g.direction.map(CAPS_KW) * 1e-3
+    g["kept"] = np.minimum(g.issued, g.L_B)
+    g["excess"] = np.maximum(g.issued - g.L_B, 0)
+    g["calls"] = g.gate_calls + g.fallback_calls
+    return g, df, t
+
+
+def report_primary(out_json: Path, commit: str) -> dict:
+    """Frozen primary result: q = 0.95 rows only; no frontier statistic. Fails unless gate integrity passed."""
+    import os
+    gi = json.loads(Path("results/envpred3_gate_integrity.json").read_text())
+    if not gi["complete"]:
+        raise SystemExit("gate integrity incomplete")
+    for name, h in gi["files"].items():
+        if sha256(GATE / name) != h:
+            raise SystemExit(f"gate file changed since integrity: {name}")
+    info = json.loads((OUT / "fit_v3.json").read_text())
+    g, df, t = _load_gate(PRIMARY_Q)
+    if len(g) != 34560 or g.b_calls.isna().any():
+        raise SystemExit(f"{len(g)} q95 rows (expected 34,560) or unmatched B rows")
+    G, N = info["selected"]["genco"], info["selected"]["non_genco"]
+    out = {"artifact": "frozen primary result (q = 0.95 only)", "protocol": "docs/envpred_protocol.md (amendments 1-3b)",
+           "status": "frozen prospective analysis within an already explored benchmark",
+           "framing": "GENCO is evaluated as a learned proposal engine for expensive four-wire envelope optimisation; "
+                      "exact OpenDSS remains the final decision authority",
+           "computation_note": "All shrink points were computed in one cached evaluation, but the frozen q95 primary "
+                               "result was reported and committed before the secondary frontier was examined.",
+           "code_commit": commit, "expected_q95_rows": 34560, "q95_rows": int(len(g)),
+           "inputs_sha256": {"gate_integrity": sha256(Path("results/envpred3_gate_integrity.json")),
+                             "fit_v3.json": sha256(OUT / "fit_v3.json"),
+                             "predictions_v3.parquet": sha256(OUT / "predictions_v3.parquet"),
+                             "gate_files": gi["files"]},
+           "selected_on_validation": {"genco": G, "non_genco": N, "val_proxy_retention": info["val_proxy_retention"]},
+           "strata": {}}
+    for sname, hhs in STRATA.items():
+        gs = g[g.hh.isin(hhs)]
+        m = {a: {"combined": _arm_metrics(x), **{d: _arm_metrics(y) for d, y in x.groupby("direction")}}
+             for a, x in gs.groupby("arm")}
+        mc = {a: m[a]["combined"] for a in m}
+        dec = {"retention_diff": mc[G]["retention"] - mc[N]["retention"],
+               "c1_retention_ge_3pp": mc[G]["retention"] - mc[N]["retention"] >= 0.03,
+               "c2_exact_calls_not_more": mc[G]["exact_calls_alone"] <= mc[N]["exact_calls_alone"],
+               "bootstrap_ci95": _diff_boot(gs, G, N), "c4_feasibility_not_worse": _feas_ok(mc[G], mc[N])}
+        dec["c3_bootstrap_lower_gt_0"] = dec["bootstrap_ci95"][0] > 0
+        dec["genco_positive"] = bool(dec["c1_retention_ge_3pp"] and dec["c2_exact_calls_not_more"]
+                                     and dec["c3_bootstrap_lower_gt_0"] and dec["c4_feasibility_not_worse"])
+        pairs = {}
+        for A, Bm, calls in (("PG", "P", False), ("PCG", "PC", True)):
+            ci = _diff_boot(gs, A, Bm)
+            diff = mc[A]["retention"] - mc[Bm]["retention"]
+            material = bool(diff >= 0.03 and ci[0] > 0 and _feas_ok(mc[A], mc[Bm])
+                            and (not calls or mc[A]["exact_calls_alone"] <= mc[Bm]["exact_calls_alone"]))
+            pairs[f"{A}_vs_{Bm}"] = {"retention_diff": diff, "bootstrap_ci95": ci, "material": material,
+                                     "detectable_not_material": bool(ci[0] > 0 and diff < 0.03),
+                                     "paired_feasibility": _paired_feasibility(gs, A, Bm)}
+        out["strata"][sname] = {"dates": int(gs.day.nunique()), "placements": list(hhs), "arms": m, "decision": dec,
+                                "pairs": pairs, "selected_paired_feasibility": _paired_feasibility(gs, G, N),
+                                "physical_calls_while_processing_q95_rows": int(gs.search_physical_calls.sum())}
+    dec = out["strata"]["combined"]["decision"]
+    pr = out["strata"]["combined"]["pairs"]
+    out["primary_decision"] = dec
+    out["tier"] = ("strong GENCO-positive" if dec["genco_positive"] else
+                   "additive value beyond classical balanced physics" if pr["PCG_vs_PC"]["material"] else
+                   "additive representation value beyond phase-only information (does not beat the classical baseline)"
+                   if pr["PG_vs_P"]["material"] else
+                   "detectable but not practically material" if (pr["PG_vs_P"]["detectable_not_material"]
+                                                                 or pr["PCG_vs_PC"]["detectable_not_material"])
+                   else "no measurable GENCO value")
+    # cost by hardware (features and stored L_ac are shared by all shrink points)
+    feat = {"prep_cpu": 0.0, "P_cpu": 0.0, "C_sweep_cpu": 0.0, "G_zero_a100": 0.0, "GA_a100": 0.0}
+    for day, hh in _test_blocks():
+        z = np.load(FEAT / f"{day}_hh{hh}.npz")
+        for tm in json.loads(str(z["timing"])):
+            for k, v in tm.items():
+                key = ("GA_a100" if k.split("_")[0] in ("LG", "curve") else "C_sweep_cpu" if k == "C_sweep" else
+                       "G_zero_a100" if k == "G_zero" else "P_cpu" if k == "P" else "prep_cpu")
+                feat[key] += v
+    phys = sum(json.loads((GATE / f"{d}_hh{h}.json").read_text())["physical_calls"] for d, h in _test_blocks())
+    phys_s = sum(json.loads((GATE / f"{d}_hh{h}.json").read_text())["physical_seconds"] for d, h in _test_blocks())
+    sps = phys_s / max(phys, 1)
+    out["cost"] = {"feature_seconds_test": feat, "L_ac_seconds_test_stored_cpu": float(t.ac_runtime_s.sum()),
+                   "head_inference_s_per_interval_cpu": info["inference_s_per_interval"],
+                   "measured_s_per_exact_solve_cpu": sps,
+                   "physical_exact_calls_all_arms_all_shrink_points": int(phys),
+                   "physical_exact_seconds_all_arms_all_shrink_points": phys_s,
+                   "per_arm": {a: {"exact_calls_alone": int(x.calls.sum()), "gate_calls_alone": int(x.gate_calls.sum()),
+                                   "fallback_calls_alone": int(x.fallback_calls.sum()),
+                                   "estimated_exact_seconds_alone_cpu": float(x.calls.sum() * sps),
+                                   "observed_search_wall_s_with_cache": float(x.search_wall_s.sum())}
+                               for a, x in g.groupby("arm")},
+                   "B_exact_calls": int(t.b_calls.sum()), "B_search_seconds_cpu": float(t.b_runtime_s.sum()),
+                   "notes": ["features and L_ac are shared by every shrink point and arm that uses them",
+                             "physical calls were shared across arms and shrink points; no superiority claim rests on caching",
+                             "exact-call savings are not automatically wall-clock savings; GENCO proposal construction "
+                             "(~3 s, A100) and the classical proposal (~3 s, one CPU core) cost about the same"]}
+    out["dimensionality"] = {"train_rows_per_direction": int(((df.split == "train") & (df.direction == "export")).sum()),
+                             "train_dates": int(df[df.split == "train"].day.nunique())}
+    tmp = out_json.with_name("." + out_json.name + ".partial")
+    tmp.write_text(json.dumps(out, indent=1, default=float))
+    os.replace(tmp, out_json)
     return out
 
 
@@ -767,7 +950,7 @@ def smoke(device: str, run: Path, out_json: Path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["smoke", "features", "integrity", "feature-integrity", "fit", "fit-job", "gate",
-                                    "report"])
+                                    "gate-integrity", "report-primary", "report"])
     ap.add_argument("--expect-code", type=Path, default=None, help="fit-job: JSON {file: sha256} pinning the code")
     ap.add_argument("--commit", default=None)
     ap.add_argument("--device", default="cpu")
@@ -802,7 +985,13 @@ def main():
         sp = json.loads(SPLIT.read_text())
         test = [(d, h) for d in sp["test"] for h in sp["test_placements"]]
         print(gate_file(*test[a.file_index]))
-    else:
+    elif a.cmd == "gate-integrity":
+        print(json.dumps(gate_integrity(Path("results/envpred3_gate_integrity.json"), a.commit), indent=1))
+    elif a.cmd == "report-primary":
+        out = report_primary(Path("results/envpred3_primary_q95.json"), a.commit)
+        print(json.dumps({k: out[k] for k in ("selected_on_validation", "primary_decision", "tier")}, indent=1,
+                         default=float))
+    else:                                             # secondary, exploratory frontier (after the primary is committed)
         out = report(a.out or Path("results/envpred3_report.json"))
         print(json.dumps({k: out[k] for k in ("selected", "primary_decision", "tier")}, indent=1, default=float))
 
