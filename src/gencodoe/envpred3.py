@@ -34,7 +34,11 @@ CONFIG = Path("configs/genco_pf_enwl1_lv_prior_v2.yaml")
 CALIB = Path("data_out/datakit_v2_calib")
 RUN_LOCAL = Path("mlruns_hydra/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee")
 RUN_HYDRA = Path("mlruns/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee")
-LABEL_COMMIT = "28ed289b429e1c4555fe469afaa092363b213de3"
+RECOVERY_MANIFEST = Path("results/envpred_label_recovery_manifest.json")     # amendment 3c
+LABEL_RUN_MANIFEST = Path("results/run_manifest_envpred_labels_recovery.json")
+LABEL_INTEGRITY = Path("results/envpred_label_integrity_recovery.json")
+PRED_NAME, FIT_NAME, RUN_NAME = "predictions_v3_valid.parquet", "fit_v3_valid.json", "fit_v3_valid_run.json"
+SENTINEL_MEAN_SHARE = 0.2   # dataset-specific catastrophic engine-failure sentinel (amendment 3c), not a physical rule
 
 STATS = ("mean", "min", "p02", "p10", "p90", "p98", "max")          # order of envpred.stats
 Q4 = ("vmin", "vmax", "load", "trafo")
@@ -256,46 +260,86 @@ def label_path(day: str, hh: int) -> Path:
     return LABELS / f"{day}_{B}_sph1_seed101_hh{hh}_uk_esqcr.json"
 
 
-def integrity(out_json: Path) -> dict:
-    """Amendment 3: label integrity before fitting."""
-    sp = json.loads(SPLIT.read_text())
+def check_label_file(f: Path, day: str, hh: int, run_commit: str) -> tuple[list[str], float]:
+    """Per-file label checks (amendment 3c): structure, configuration, finiteness, engine health, sentinel."""
     from .envelopes import acceptance_threshold
-    days = sorted(sp["train"] + sp["val"] + sp["calib"])
-    rep = {"expected_blocks": len(days) * 2, "files": {}, "missing": [], "problems": [], "label_commit": LABEL_COMMIT}
-    for d in days:
-        for hh in sp["label_placements"]:
-            f = label_path(d, hh)
-            if not f.exists():
-                rep["missing"].append(f"{d}_hh{hh}")
-                continue
-            doc = json.loads(f.read_text())
-            m, rows = doc["meta"], doc["rows"]
-            prob = []
-            if m.get("day") != d:
-                prob.append("day")
-            if m.get("scenario_seed") != SCENARIO_SEED or m.get("household_seed") != hh:
-                prob.append("seeds")
-            if m.get("voltage_limits", {}).get("jurisdiction") != "uk_esqcr":
-                prob.append("limits")
-            if abs(m.get("acceptance_threshold", 0) - acceptance_threshold(200, 0.05, 0.05)) > 1e-12:
-                prob.append("threshold")
-            if m.get("code_commit") != LABEL_COMMIT:
-                prob.append(f"commit {m.get('code_commit')}")
-            for meth in ("ac", B):
-                k = [(r["step"], r["direction"]) for r in rows if r["method"] == meth]
-                if len(k) != 48 or len(set(k)) != 48:
-                    prob.append(f"{meth}: {len(k)} rows")
-            # OpenDSS engine-failure signature (found 2026-10-17): exact design shares collapse towards 0
-            # (no valid annual/W1 run has a file-mean share below 0.2)
-            shares = [r["prob_ok_oracle"] for r in rows if r["method"] == B]
-            if np.mean(shares) < 0.2:
-                prob.append(f"engine failure signature: mean exact design share {np.mean(shares):.3f}")
-            if prob:
-                rep["problems"].append({"block": f"{d}_hh{hh}", "problems": prob})
-            rep["files"][str(f)] = sha256(f)
-    rep["complete"] = not rep["missing"] and not rep["problems"] and len(rep["files"]) == rep["expected_blocks"]
-    out_json.write_text(json.dumps(rep, indent=1))
-    return {k: v for k, v in rep.items() if k != "files"} | {"n_files": len(rep["files"])}
+    from .limits import record as limits_record
+    doc = json.loads(f.read_text())
+    m, rows = doc["meta"], doc["rows"]
+    prob = []
+    lim = limits_record()
+    if m.get("day") != day:
+        prob.append("day")
+    if m.get("scenario_seed") != SCENARIO_SEED or m.get("household_seed") != hh:
+        prob.append("seeds")
+    vl = m.get("voltage_limits", {})
+    if vl.get("jurisdiction") != lim["jurisdiction"] or abs(vl.get("vmin_pu", 0) - lim["vmin_pu"]) > 1e-12 \
+            or abs(vl.get("vmax_pu", 0) - lim["vmax_pu"]) > 1e-12:
+        prob.append("voltage limits")
+    if abs(m.get("acceptance_threshold", 0) - acceptance_threshold(200, 0.05, 0.05)) > 1e-12 or m.get("scenarios") != N_S:
+        prob.append("threshold / scenarios")
+    if m.get("code_commit") != run_commit:
+        prob.append(f"commit {m.get('code_commit')}")
+    eh = m.get("engine_health")
+    if not eh or eh.get("reset_failures", 1) != 0:
+        prob.append(f"engine health {eh}")
+    keys = [(r["step"], r["direction"], r["method"]) for r in rows]
+    if len(keys) != len(set(keys)):
+        prob.append("duplicate keys")
+    for meth in ("ac", B):
+        if sum(r["method"] == meth for r in rows) != 48:
+            prob.append(f"{meth}: not 48 rows")
+    for r in rows:
+        vals = [r["limit_kw"], r["prob_ok_oracle"], r["ac_calls"], r["runtime_s"]]
+        if not np.all(np.isfinite(vals)):
+            prob.append("non-finite value")
+            break
+        if not 0.0 <= r["prob_ok_oracle"] <= 1.0 or not -1e-9 <= r["limit_kw"] <= CAPS_KW[r["direction"]] + 1e-9:
+            prob.append("share / limit out of range")
+            break
+    shares = [r["prob_ok_oracle"] for r in rows if r["method"] == B]
+    mean_share = float(np.mean(shares)) if shares else float("nan")
+    if not mean_share >= SENTINEL_MEAN_SHARE:
+        prob.append(f"catastrophic engine-failure sentinel: file-mean exact design share {mean_share:.3f} < 0.2")
+    return prob, mean_share
+
+
+def integrity(out_json: Path, label_dir: Path | None = None, blocks: list | None = None) -> dict:
+    """Corrected label integrity (amendment 3c). Expected commit from the committed recovery run manifest."""
+    import os
+    run = json.loads(LABEL_RUN_MANIFEST.read_text())
+    rec = json.loads(RECOVERY_MANIFEST.read_text())
+    label_dir = label_dir or LABELS
+    sp = json.loads(SPLIT.read_text())
+    if blocks is None:
+        blocks = [(d, hh) for d in sorted(sp["train"] + sp["val"] + sp["calib"]) for hh in sp["label_placements"]]
+    rep = {"report": "corrected label integrity (amendment 3c); supersedes the quarantined obsolete report",
+           "expected_blocks": len(blocks), "run_commit": run["run_commit"], "label_code_commit": rec["label_code_commit"],
+           "source_sha256": rec["source_sha256"], "missing": [], "problems": [],
+           "partial_files": [str(x) for x in label_dir.glob(".*partial*")], "files": {}, "file_mean_share": {}}
+    for d, hh in blocks:
+        f = label_dir / f"{d}_{B}_sph1_seed101_hh{hh}_uk_esqcr.json"
+        if not f.exists():
+            rep["missing"].append(f.name)
+            continue
+        try:
+            prob, ms = check_label_file(f, d, hh, run["run_commit"])
+        except Exception as e:
+            prob, ms = [f"unreadable: {e!r}"], float("nan")
+        if prob:
+            rep["problems"].append({"block": f"{d}_hh{hh}", "problems": prob})
+        rep["files"][str(f)] = sha256(f)
+        rep["file_mean_share"][f"{d}_hh{hh}"] = ms
+    v = np.array(list(rep["file_mean_share"].values()), float)
+    rep["integrity_diagnostics_file_mean_exact_share"] = (
+        {"min": float(np.nanmin(v)), "median": float(np.nanmedian(v)), "max": float(np.nanmax(v)),
+         "files_below_0.2": int((v < SENTINEL_MEAN_SHARE).sum())} if len(v) else None)
+    rep["complete"] = (not rep["missing"] and not rep["problems"] and not rep["partial_files"]
+                       and len(rep["files"]) == rep["expected_blocks"])
+    tmp = out_json.with_name("." + out_json.name + ".partial")
+    tmp.write_text(json.dumps(rep, indent=1))
+    os.replace(tmp, out_json)
+    return {k: v for k, v in rep.items() if k not in ("files", "file_mean_share")}
 
 
 def feature_integrity(out_json: Path, manifest: Path = Path("results/run_manifest_envpred3_features.json")) -> dict:
@@ -386,7 +430,7 @@ def shrink_delta(L_hat, L_B, q):
 def fit(out_json: Path):
     from .envpred import proxy_retention
     from .option2 import fit_heads, predict
-    integ = json.loads(Path("results/envpred_label_integrity.json").read_text())
+    integ = json.loads(LABEL_INTEGRITY.read_text())
     if not integ["complete"]:
         raise SystemExit("label integrity incomplete: fix before fitting")
     df, X = load_table()
@@ -419,10 +463,10 @@ def fit(out_json: Path):
     vr = info["val_proxy_retention"]
     info["selected"] = {fam: max(arms, key=lambda a: (vr[a], -len(feature_names(a)))) for fam, arms in FAMILY.items()}
     import os
-    tmp = OUT / ".predictions_v3.partial.parquet"
+    tmp = OUT / ("." + PRED_NAME + ".partial")
     out.to_parquet(tmp)
-    os.replace(tmp, OUT / "predictions_v3.parquet")
-    info["predictions_sha256"] = sha256(OUT / "predictions_v3.parquet")
+    os.replace(tmp, OUT / PRED_NAME)
+    info["predictions_sha256"] = sha256(OUT / PRED_NAME)
     tmp = out_json.with_name("." + out_json.name + ".partial")
     tmp.write_text(json.dumps(info, indent=1))
     os.replace(tmp, out_json)
@@ -442,7 +486,7 @@ def fit_job(expect_code: dict, commit: str) -> dict:
         if sha256(Path(f)) != h:
             raise SystemExit(f"code hash mismatch: {f}")
     fi = json.loads(Path("results/envpred3_feature_integrity.json").read_text())
-    li = json.loads(Path("results/envpred_label_integrity.json").read_text())
+    li = json.loads(LABEL_INTEGRITY.read_text())
     if not (fi["complete"] and li["complete"]):
         raise SystemExit("an integrity report is not complete")
     if fi["schema_sha256"] != schema_hash():
@@ -461,20 +505,20 @@ def fit_job(expect_code: dict, commit: str) -> dict:
             if not f.exists():
                 raise SystemExit(f"missing test label file {f}")
             test_hashes[str(f)] = sha256(f)
-    info = fit(OUT / "fit_v3.json")
+    info = fit(OUT / FIT_NAME)
     env = {"code_commit": commit, "code_sha256": expect_code, "python": platform.python_version(),
            "sklearn": sklearn.__version__, "numpy": np.__version__, "platform": platform.platform(),
            "cpu": platform.processor() or platform.machine(),
            "threads_available": len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count(),
            "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS"), "elapsed_s": time.perf_counter() - t0,
            "inputs": {"feature_integrity_sha256": sha256(Path("results/envpred3_feature_integrity.json")),
-                      "label_integrity_sha256": sha256(Path("results/envpred_label_integrity.json")),
+                      "label_integrity_sha256": sha256(LABEL_INTEGRITY),
                       "split_sha256": sha256(SPLIT), "test_label_files_sha256": test_hashes},
-           "outputs": {"predictions_v3.parquet": info["predictions_sha256"],
-                       "fit_v3.json": sha256(OUT / "fit_v3.json")}}
-    tmp = OUT / ".fit_v3_run.partial.json"
+           "outputs": {PRED_NAME: info["predictions_sha256"],
+                       FIT_NAME: sha256(OUT / FIT_NAME)}}
+    tmp = OUT / ("." + RUN_NAME + ".partial")
     tmp.write_text(json.dumps(env, indent=1))
-    os.replace(tmp, OUT / "fit_v3_run.json")
+    os.replace(tmp, OUT / RUN_NAME)
     return env
 
 
@@ -517,7 +561,7 @@ def gate_file(day: str, hh: int) -> Path:
     out = GATE / f"{day}_hh{hh}.json"
     if out.exists():
         return out
-    pr = pd.read_parquet(OUT / "predictions_v3.parquet")
+    pr = pd.read_parquet(OUT / PRED_NAME)
     pr = pr[(pr.day == day) & (pr.hh == hh)]
     net = load_enwl1()
     fd = net.to_feeder()
@@ -560,7 +604,7 @@ def gate_file(day: str, hh: int) -> Path:
     tmp.write_text(json.dumps({"day": day, "hh": hh, "scenario_seed": SCENARIO_SEED, "threshold": thr,
                                "caps_kw": CAPS_KW, "voltage_limits": limits_record(),
                                "code_commit": os.environ.get("GENCODOE_COMMIT"),
-                               "predictions_sha256": sha256(OUT / "predictions_v3.parquet"),
+                               "predictions_sha256": sha256(OUT / PRED_NAME),
                                "physical_calls": ex.physical, "physical_seconds": ex.seconds, "rows": res}, indent=1))
     os.replace(tmp, out)
     return out
@@ -576,7 +620,7 @@ def gate_integrity(out_json: Path, commit: str) -> dict:
     import os
     from .envelopes import acceptance_threshold
     from .limits import record as limits_record
-    pred_sha = sha256(OUT / "predictions_v3.parquet")
+    pred_sha = sha256(OUT / PRED_NAME)
     rep = {"expected_files": 180, "expected_rows_per_file": 768, "expected_rows": 138240, "expected_q95_rows": 34560,
            "missing": [], "problems": [], "partial_files": [str(x) for x in GATE.glob(".*partial*")],
            "unexpected": sorted({x.name for x in GATE.glob("*.json")} - {f"{d}_hh{h}.json" for d, h in _test_blocks()}),
@@ -712,7 +756,7 @@ def report_primary(out_json: Path, commit: str) -> dict:
     for name, h in gi["files"].items():
         if sha256(GATE / name) != h:
             raise SystemExit(f"gate file changed since integrity: {name}")
-    info = json.loads((OUT / "fit_v3.json").read_text())
+    info = json.loads((OUT / FIT_NAME).read_text())
     g, df, t = _load_gate(PRIMARY_Q)
     if len(g) != 34560 or g.b_calls.isna().any():
         raise SystemExit(f"{len(g)} q95 rows (expected 34,560) or unmatched B rows")
@@ -725,8 +769,8 @@ def report_primary(out_json: Path, commit: str) -> dict:
                                "result was reported and committed before the secondary frontier was examined.",
            "code_commit": commit, "expected_q95_rows": 34560, "q95_rows": int(len(g)),
            "inputs_sha256": {"gate_integrity": sha256(Path("results/envpred3_gate_integrity.json")),
-                             "fit_v3.json": sha256(OUT / "fit_v3.json"),
-                             "predictions_v3.parquet": sha256(OUT / "predictions_v3.parquet"),
+                             FIT_NAME: sha256(OUT / FIT_NAME),
+                             PRED_NAME: sha256(OUT / PRED_NAME),
                              "gate_files": gi["files"]},
            "selected_on_validation": {"genco": G, "non_genco": N, "val_proxy_retention": info["val_proxy_retention"]},
            "strata": {}}
@@ -800,7 +844,7 @@ def report_primary(out_json: Path, commit: str) -> dict:
 
 
 def report(out_json: Path):
-    info = json.loads((OUT / "fit_v3.json").read_text())
+    info = json.loads((OUT / FIT_NAME).read_text())
     rows = []
     for day, hh in [(d, h) for d, h in blocks_list() if d in json.loads(SPLIT.read_text())["test"]]:
         doc = json.loads((GATE / f"{day}_hh{hh}.json").read_text())
@@ -955,7 +999,7 @@ def smoke(device: str, run: Path, out_json: Path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["smoke", "features", "integrity", "feature-integrity", "fit", "fit-job", "gate",
-                                    "gate-integrity", "report-primary", "report"])
+                                    "gate-integrity", "report-primary", "report", "label-smoke-check"])
     ap.add_argument("--expect-code", type=Path, default=None, help="fit-job: JSON {file: sha256} pinning the code")
     ap.add_argument("--commit", default=None)
     ap.add_argument("--device", default="cpu")
@@ -980,12 +1024,16 @@ def main():
     elif a.cmd == "feature-integrity":
         print(json.dumps(feature_integrity(Path("results/envpred3_feature_integrity.json")), indent=1))
     elif a.cmd == "integrity":
-        print(json.dumps(integrity(Path("results/envpred_label_integrity.json")), indent=1))
+        print(json.dumps(integrity(LABEL_INTEGRITY), indent=1))
+    elif a.cmd == "label-smoke-check":
+        sm = json.loads(RECOVERY_MANIFEST.read_text())["smoke"]
+        print(json.dumps(integrity(Path("results/envpred_label_recovery_smoke.json"), Path(sm["output_dir"]),
+                                   [tuple(x) for x in sm["blocks"]]), indent=1))
     elif a.cmd == "fit-job":
         env = fit_job(json.loads(a.expect_code.read_text()), a.commit)
         print(json.dumps({k: v for k, v in env.items() if k != "inputs"}, indent=1))
     elif a.cmd == "fit":
-        print(json.dumps(fit(OUT / "fit_v3.json"), indent=1))
+        print(json.dumps(fit(OUT / FIT_NAME), indent=1))
     elif a.cmd == "gate":
         sp = json.loads(SPLIT.read_text())
         test = [(d, h) for d in sp["test"] for h in sp["test_placements"]]

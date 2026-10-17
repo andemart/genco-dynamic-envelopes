@@ -321,8 +321,13 @@ def main():
         methods = {k: v for k, v in methods.items() if k in a.methods}
     rows = run_day(a.day, feeder, customers, scen, methods, a.scenarios, a.eps, a.levels_per_round, a.seed,
                    a.steps_per_hour, ub, a.unbalanced, a.beta, a.verify_draws, a.any_split)
+    if ub is not None:
+        meta["engine_health"] = ub.health()
     a.out.parent.mkdir(parents=True, exist_ok=True)
-    a.out.write_text(json.dumps({"meta": meta, "rows": rows}, indent=1))
+    import os
+    tmp = a.out.with_name("." + a.out.name + ".partial")       # atomic: a killed task leaves no valid-looking file
+    tmp.write_text(json.dumps({"meta": meta, "rows": rows}, indent=1))
+    os.replace(tmp, a.out)
     import pandas as pd
     df = pd.DataFrame(rows)
     df.to_csv(a.out.with_suffix(".csv"), index=False)

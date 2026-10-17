@@ -186,11 +186,11 @@ def test_gate_integrity_detects_problems(tmp_path, monkeypatch):
     monkeypatch.setattr(e3, "OUT", tmp_path)
     monkeypatch.setattr(e3, "GATE", tmp_path / "gate")
     (tmp_path / "gate").mkdir()
-    (tmp_path / "predictions_v3.parquet").write_bytes(b"x")
+    (tmp_path / e3.PRED_NAME).write_bytes(b"x")
     blocks = e3._test_blocks()
     assert len(blocks) == 180
     good = {"scenario_seed": 101, "threshold": acceptance_threshold(200, 0.05, 0.05), "caps_kw": e3.CAPS_KW,
-            "voltage_limits": record(), "code_commit": "abc", "predictions_sha256": e3.sha256(tmp_path / "predictions_v3.parquet"),
+            "voltage_limits": record(), "code_commit": "abc", "predictions_sha256": e3.sha256(tmp_path / e3.PRED_NAME),
             "physical_calls": 200, "physical_seconds": 1.0}
     for day, hh in blocks:
         (tmp_path / "gate" / f"{day}_hh{hh}.json").write_text(json.dumps({"day": day, "hh": hh, **good,
@@ -221,3 +221,25 @@ def test_primary_statistics_use_capped_retention():
     assert m["retention"] == 1.0 and abs(m["excess_over_B"] - 0.2) < 1e-12 and m["intervals_issued_above_B"] == 96
     lo, hi = e3._diff_boot(q, "PG", "P")
     assert abs(lo - 0.1) < 1e-9 and abs(hi - 0.1) < 1e-9
+
+
+def test_label_file_checks_flag_sentinel_commit_and_health(tmp_path):
+    from gencodoe.envelopes import acceptance_threshold
+    from gencodoe.limits import record
+    day, hh = "2024-01-02", 101
+    t0 = int((np.datetime64(day) - np.datetime64("2024-01-01")).astype(int)) * 96
+
+    def write(share, commit="abc", health=True):
+        rows = [{"step": t0 + 4 * k, "direction": d, "method": m, "limit_kw": 0.5, "prob_ok_oracle": share,
+                 "ac_calls": 400, "runtime_s": 1.0} for k in range(24) for d in ("export", "import") for m in ("ac", e3.B)]
+        meta = {"day": day, "scenario_seed": 101, "household_seed": hh, "voltage_limits": record(),
+                "acceptance_threshold": acceptance_threshold(200, 0.05, 0.05), "scenarios": 200, "code_commit": commit}
+        if health:
+            meta["engine_health"] = {"resets": 3, "nonconverged_returned": 0, "reset_failures": 0}
+        f = tmp_path / "f.json"
+        f.write_text(json.dumps({"meta": meta, "rows": rows}))
+        return f
+    assert e3.check_label_file(write(0.98), day, hh, "abc")[0] == []
+    assert any("sentinel" in x for x in e3.check_label_file(write(0.0), day, hh, "abc")[0])
+    assert any("commit" in x for x in e3.check_label_file(write(0.98), day, hh, "other")[0])
+    assert any("engine health" in x for x in e3.check_label_file(write(0.98, health=False), day, hh, "abc")[0])

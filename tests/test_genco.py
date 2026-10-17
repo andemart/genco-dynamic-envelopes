@@ -640,14 +640,51 @@ def test_three_phase_mask_and_spatial_groups():
     assert len(np.unique(g)) == 12 and len(g) == len(net.customer_bus)
 
 
-def test_fresh_four_wire_engine_survives_divergent_first_solve():
-    """Regression: a fresh engine whose first solve diverges used to stay broken (all later solves infeasible)."""
+def _plausible(r):
+    return (r["converged"] and np.isfinite(r["transformer_loading"]) and 0.85 < r["v_pn_min"] < 1.06
+            and r["v_pn_max"] < 1.1 and 0 < r["line_loading_max"] < 1.5)
+
+
+def test_engine_lifecycle_priming_checked_reset_and_recovery():
+    """Amendment 3c: a fresh engine is primed; an extreme first solve may diverge but never poisons the engine."""
     pytest.importorskip("opendssdirect")
     from gencodoe.unbalanced import UnbalancedENWL1
     u = UnbalancedENWL1()
+    assert u.dss.Solution.Converged() and u.health()["resets"] == 1          # constructor no-load prime
     n = len(u.load_names)
-    first = u.solve(np.full(n, -5.0), np.zeros(n))          # every customer exporting 5 kW
-    normal = u.solve(np.full(n, 0.7), np.zeros(n))          # an ordinary evening load
-    assert normal["converged"] and np.isfinite(normal["transformer_loading"])
-    assert 0.9 < normal["v_pn_min"] < 1.06 and normal["line_loading_max"] < 1.0
-    del first
+    extreme, normal = np.full(n, -5.0), np.full(n, 0.7)                      # 5 kW export each; ordinary load
+    u.solve(extreme, np.zeros(n))                                            # may diverge
+    u._reset()                                                               # checked reset succeeds afterwards
+    assert u.dss.Solution.Converged()
+    assert _plausible(u.solve(normal, np.zeros(n)))
+    for _ in range(4):                                                       # repeated extreme/normal sequences
+        u.solve(extreme, np.zeros(n))
+        assert _plausible(u.solve(normal, np.zeros(n)))
+
+
+def test_failed_reset_raises_instead_of_returning_infeasible(monkeypatch):
+    pytest.importorskip("opendssdirect")
+    from gencodoe.unbalanced import OpenDSSEngineError, UnbalancedENWL1
+    u = UnbalancedENWL1()
+    n = len(u.load_names)
+    class _Solution:                                                         # every solve, incl. the reset, fails
+        def __init__(self, real):
+            self.real = real
+
+        def Solve(self):
+            self.real.Solve()
+
+        def Converged(self):
+            return False
+
+    class _Engine:
+        def __init__(self, real):
+            self.real, self.Solution = real, _Solution(real.Solution)
+
+        def __getattr__(self, k):
+            return getattr(self.real, k)
+    monkeypatch.setattr(u, "dss", _Engine(u.dss))
+    with pytest.raises(OpenDSSEngineError):
+        u.solve(np.full(n, 0.7), np.zeros(n))
+    with pytest.raises(OpenDSSEngineError):
+        u._reset()

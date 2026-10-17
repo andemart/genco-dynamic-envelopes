@@ -39,6 +39,10 @@ def voltage_flags(v_pn: np.ndarray) -> tuple[bool, bool]:
     return bool(np.min(v_pn) < VMIN_PU), bool(np.max(v_pn) > VMAX_PU)
 
 
+class OpenDSSEngineError(RuntimeError):
+    """The OpenDSS engine is unhealthy: a no-load (priming or recovery) solve did not converge."""
+
+
 class UnbalancedENWL1:
     """four-wire ENWL1. three_phase: optional bool mask over customers (Loads.dss order); those
     customers are connected three-phase wye (balanced, same total kW/kvar) and the worst of their
@@ -107,19 +111,25 @@ class UnbalancedENWL1:
             if not dss.Lines.Next():
                 break
         # prime the engine with the no-load solution: if the very first solve of a fresh engine diverges
-        # (e.g. every customer at the 5 kW export cap), OpenDSS never recovers, not even through _reset,
-        # and every later solve fails (found in the envelope-prediction label runs, docs/experiment_log.md)
+        # (e.g. every customer at the 5 kW export cap), OpenDSS never recovers, not even through a reset,
+        # and every later solve fails (envelope-prediction labels; docs/envpred_protocol.md amendment 3c)
+        self.n_resets = self.n_nonconverged = 0
         self._reset()
-        if not dss.Solution.Converged():
-            raise RuntimeError("OpenDSS no-load priming solve did not converge")
+
+    def health(self) -> dict:
+        return {"resets": self.n_resets, "nonconverged_returned": self.n_nonconverged, "reset_failures": 0}
 
     def _reset(self):
-        """Solve the no-load case so the next solve starts from a flat, feasible point."""
+        """Solve the no-load case so the next solve starts from a flat, feasible point. Raises
+        OpenDSSEngineError if it does not converge: an unhealthy engine must never continue silently."""
         for name in self.load_names:
             self.dss.Loads.Name(name)
             self.dss.Loads.kW(0.0)
             self.dss.Loads.kvar(0.0)
         self.dss.Solution.Solve()
+        self.n_resets += 1
+        if not self.dss.Solution.Converged():
+            raise OpenDSSEngineError("OpenDSS no-load solve did not converge: engine unhealthy")
 
     def _run_file(self, path: Path):
         for line in path.read_text().splitlines():
@@ -136,12 +146,14 @@ class UnbalancedENWL1:
             dss.Loads.kvar(float(q))
         dss.Solution.Solve()
         if not dss.Solution.Converged():
-            self._reset()
+            self._reset()                                    # checked: raises if the engine is unhealthy
             for name, p, q in zip(self.load_names, p_kw, q_kvar):
                 dss.Loads.Name(name)
                 dss.Loads.kW(float(p))
                 dss.Loads.kvar(float(q))
             dss.Solution.Solve()
+            if not dss.Solution.Converged():                 # genuinely non-convergent after a healthy reset
+                self.n_nonconverged += 1
         v = np.array(dss.Circuit.AllBusVolts())
         v = v[0::2] + 1j * v[1::2]
         v_pn = np.abs(v[self.mon_phase] - v[self.mon_neutral]) / V_PN
