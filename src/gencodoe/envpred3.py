@@ -239,8 +239,11 @@ def save_block(day, hh, ex, out_dir: Path = FEAT) -> Path:
     f = out_dir / f"{day}_hh{hh}.npz"
     arr = {k: np.array(ex[k]) for k in ("P", "C", "G", "GA_export", "GA_import", "steps")}
     nonfinite = {k: int((~np.isfinite(v)).sum()) for k, v in arr.items() if k not in ("steps", "C")}
-    np.savez(f, **arr, day=day, hh=hh, timing=json.dumps(ex["timing"]), failed=json.dumps(ex["failed"]),
+    tmp = out_dir / f".{day}_hh{hh}.partial.npz"                # atomic: a killed task leaves no valid-looking file
+    np.savez(tmp, **arr, day=day, hh=hh, timing=json.dumps(ex["timing"]), failed=json.dumps(ex["failed"]),
              nonfinite=json.dumps(nonfinite), schema=schema_hash())
+    import os
+    os.replace(tmp, f)
     return f
 
 
@@ -288,6 +291,57 @@ def integrity(out_json: Path) -> dict:
     rep["complete"] = not rep["missing"] and not rep["problems"] and len(rep["files"]) == rep["expected_blocks"]
     out_json.write_text(json.dumps(rep, indent=1))
     return {k: v for k, v in rep.items() if k != "files"} | {"n_files": len(rep["files"])}
+
+
+def feature_integrity(out_json: Path, manifest: Path = Path("results/run_manifest_envpred3_features.json")) -> dict:
+    """Amendment 3a / step 4: structural integrity of features_v3 before fitting (features only)."""
+    sp = json.loads(SPLIT.read_text())
+    expected = blocks_list()
+    files = sorted(FEAT.glob("*.npz"))
+    rep = {"expected_blocks": len(expected), "unique_expected": len(set(expected)), "files_found": len(files),
+           "schema_sha256": schema_hash(), "manifest_sha256": json.loads(manifest.read_text())["sha256"],
+           "partial_files": [str(x) for x in FEAT.glob(".*partial*")], "missing": [], "unexpected": [],
+           "problems": [], "failed_items": 0, "nonfinite_by_block": {}, "L_G_out_of_bounds": 0, "files": {}}
+    exp_names = {f"{d}_hh{h}.npz" for d, h in expected}
+    rep["unexpected"] = sorted({x.name for x in files} - exp_names)
+    caps = {"export": CAPS_KW["export"], "import": CAPS_KW["import"]}
+    for day, hh in expected:
+        f = FEAT / f"{day}_hh{hh}.npz"
+        if not f.exists():
+            rep["missing"].append(f.name)
+            continue
+        prob = []
+        try:
+            z = np.load(f)
+            if str(z["day"]) != day or int(z["hh"]) != hh:
+                prob.append("identity")
+            if str(z["schema"]) != schema_hash():
+                prob.append("schema")
+            t0 = int((np.datetime64(day) - np.datetime64("2024-01-01")).astype(int)) * 96
+            if list(z["steps"]) != [t0 + 4 * k for k in range(24)]:
+                prob.append("steps")
+            for k, n in (("P", 224), ("C", 29), ("G", 220), ("GA_export", 588), ("GA_import", 588)):
+                if z[k].shape != (24, n):
+                    prob.append(f"{k} shape {z[k].shape}")
+                nf = int((~np.isfinite(z[k])).sum()) - (24 if k == "C" else 0)      # C:L_ac is filled at fit time
+                rep["nonfinite_by_block"][k] = rep["nonfinite_by_block"].get(k, 0) + nf
+            for dname in ("export", "import"):
+                L = z[f"GA_{dname}"][:, 0]
+                rep["L_G_out_of_bounds"] += int(((L < 0) | (L > caps[dname] + 1e-9)).sum())
+            rep["failed_items"] += sum(len(x) for x in json.loads(str(z["failed"])))
+            hhs = sp["test_placements"] if day in sp["test"] else sp["label_placements"]
+            if hh not in hhs:
+                prob.append("placement not in split")
+        except Exception as e:
+            prob.append(f"unreadable: {e!r}")
+        if prob:
+            rep["problems"].append({"block": f.name, "problems": prob})
+        rep["files"][f.name] = sha256(f)
+    rep["complete"] = (not rep["missing"] and not rep["unexpected"] and not rep["problems"] and not rep["partial_files"]
+                       and rep["files_found"] == rep["expected_blocks"] == rep["unique_expected"] == 840
+                       and rep["L_G_out_of_bounds"] == 0 and rep["failed_items"] == 0)
+    out_json.write_text(json.dumps(rep, indent=1))
+    return {k: v for k, v in rep.items() if k != "files"}
 
 
 def load_table():
@@ -359,10 +413,64 @@ def fit(out_json: Path):
                                                            df.direction[v].to_numpy())
     vr = info["val_proxy_retention"]
     info["selected"] = {fam: max(arms, key=lambda a: (vr[a], -len(feature_names(a)))) for fam, arms in FAMILY.items()}
-    out.to_parquet(OUT / "predictions_v3.parquet")
+    import os
+    tmp = OUT / ".predictions_v3.partial.parquet"
+    out.to_parquet(tmp)
+    os.replace(tmp, OUT / "predictions_v3.parquet")
     info["predictions_sha256"] = sha256(OUT / "predictions_v3.parquet")
-    out_json.write_text(json.dumps(info, indent=1))
+    tmp = out_json.with_name("." + out_json.name + ".partial")
+    tmp.write_text(json.dumps(info, indent=1))
+    os.replace(tmp, out_json)
     return info
+
+
+CODE_FILES = ("src/gencodoe/envpred3.py", "src/gencodoe/envpred.py", "src/gencodoe/option2.py")
+
+
+def fit_job(expect_code: dict, commit: str) -> dict:
+    """The single v3 fit (Hydra Zen4 CPU). Stops on any missing input, hash or schema mismatch."""
+    import os
+    import platform
+    import sklearn
+    t0 = time.perf_counter()
+    for f, h in expect_code.items():
+        if sha256(Path(f)) != h:
+            raise SystemExit(f"code hash mismatch: {f}")
+    fi = json.loads(Path("results/envpred3_feature_integrity.json").read_text())
+    li = json.loads(Path("results/envpred_label_integrity.json").read_text())
+    if not (fi["complete"] and li["complete"]):
+        raise SystemExit("an integrity report is not complete")
+    if fi["schema_sha256"] != schema_hash():
+        raise SystemExit("feature schema mismatch")
+    for name, h in fi["files"].items():
+        if sha256(FEAT / name) != h:
+            raise SystemExit(f"feature file changed since integrity: {name}")
+    for f, h in li["files"].items():
+        if sha256(Path(f)) != h:
+            raise SystemExit(f"label file changed since integrity: {f}")
+    sp = json.loads(SPLIT.read_text())
+    test_hashes = {}
+    for d in sp["test"]:
+        for hh in sp["test_placements"]:
+            f = label_path(d, hh)
+            if not f.exists():
+                raise SystemExit(f"missing test label file {f}")
+            test_hashes[str(f)] = sha256(f)
+    info = fit(OUT / "fit_v3.json")
+    env = {"code_commit": commit, "code_sha256": expect_code, "python": platform.python_version(),
+           "sklearn": sklearn.__version__, "numpy": np.__version__, "platform": platform.platform(),
+           "cpu": platform.processor() or platform.machine(),
+           "threads_available": len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count(),
+           "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS"), "elapsed_s": time.perf_counter() - t0,
+           "inputs": {"feature_integrity_sha256": sha256(Path("results/envpred3_feature_integrity.json")),
+                      "label_integrity_sha256": sha256(Path("results/envpred_label_integrity.json")),
+                      "split_sha256": sha256(SPLIT), "test_label_files_sha256": test_hashes},
+           "outputs": {"predictions_v3.parquet": info["predictions_sha256"],
+                       "fit_v3.json": sha256(OUT / "fit_v3.json")}}
+    tmp = OUT / ".fit_v3_run.partial.json"
+    tmp.write_text(json.dumps(env, indent=1))
+    os.replace(tmp, OUT / "fit_v3_run.json")
+    return env
 
 
 # ----------------------------------------------------------------------------------------------- gate
@@ -658,7 +766,10 @@ def smoke(device: str, run: Path, out_json: Path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["smoke", "features", "integrity", "fit", "gate", "report"])
+    ap.add_argument("cmd", choices=["smoke", "features", "integrity", "feature-integrity", "fit", "fit-job", "gate",
+                                    "report"])
+    ap.add_argument("--expect-code", type=Path, default=None, help="fit-job: JSON {file: sha256} pinning the code")
+    ap.add_argument("--commit", default=None)
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--run", type=Path, default=None)
     ap.add_argument("--chunk", type=int, default=0)
@@ -678,8 +789,13 @@ def main():
             t = time.perf_counter()
             f = save_block(day, hh, extract_block(day, hh, oracle, embed))
             print(f"[{i + 1}/{len(todo)}] {f} {time.perf_counter() - t:.0f}s", flush=True)
+    elif a.cmd == "feature-integrity":
+        print(json.dumps(feature_integrity(Path("results/envpred3_feature_integrity.json")), indent=1))
     elif a.cmd == "integrity":
         print(json.dumps(integrity(Path("results/envpred_label_integrity.json")), indent=1))
+    elif a.cmd == "fit-job":
+        env = fit_job(json.loads(a.expect_code.read_text()), a.commit)
+        print(json.dumps({k: v for k, v in env.items() if k != "inputs"}, indent=1))
     elif a.cmd == "fit":
         print(json.dumps(fit(OUT / "fit_v3.json"), indent=1))
     elif a.cmd == "gate":
