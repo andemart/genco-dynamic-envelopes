@@ -460,3 +460,74 @@ If PCG does not materially beat PC, that is reported directly. If PG beats P but
 - no per-scenario GENCO feasibility decision or constraint classification changed.
 
 The extraction (job 13337441) is kept. Its reproducibility is tolerance-based, not bitwise.
+
+## Amendment 3c (2026-10-17): OpenDSS engine-lifecycle defect, invalidation and recovery
+
+### What was invalid
+
+- **Labels.** Label jobs **13337097** (placement 101) and **13337098** (placement 202) produced **660 invalid label files**.
+  - Every exact B label in them is 0.
+  - Cause: in each process, the first OpenDSS solve was B's top level (every customer at the 5 kW export cap). That solve diverged, and a fresh engine whose first solve diverges never recovered. Every later solve in the process failed, including the no-load reset. The process was "poisoned".
+- **Fit.** Fit job **13338884** therefore trained on constant-zero labels and is **invalid**.
+  - Its validation-selected arms (P and PG) were observed. They are meaningless and will not influence any choice.
+- **What was not reached:** no gate was launched, and no valid test performance was inspected.
+- **What stays valid:** the v3 features (job 13337441, 840 blocks). Their extraction never reads labels or calls OpenDSS.
+
+### Fits
+
+There will be **one quarantined invalid fit (13338884) and one replacement valid fit.** The replacement is not described as the only fit ever performed.
+
+### Unchanged
+
+All arms, features, splits, seeds, hyperparameters, shrink points, selection rules and interpretation thresholds are unchanged.
+
+The only methodological change is **correcting and detecting the OpenDSS engine-lifecycle defect.**
+
+### Correction
+
+1. The engine solves the no-load state at construction and raises immediately if that fails.
+2. When a requested state fails, the engine resets to no load and verifies that the reset converged; if the reset failed, it raises immediately. Only then does it retry the requested state.
+3. A genuinely non-convergent requested state may be returned as non-convergent after a healthy reset and retry. An unhealthy engine never continues silently.
+4. Engine-health counters (resets, non-converged returns) are recorded in every run's metadata.
+
+### Detection
+
+The label integrity check adds a **dataset-specific catastrophic engine-failure sentinel**, established from the defective files and existing healthy ENWL1 runs: a file whose mean exact design share is below 0.2.
+- 0.2 is not a universal physical-validity threshold.
+- If a corrected file falls below 0.2 while every engine-health check passes, the analysis stops for investigation. The threshold is not changed and the date is not excluded after seeing it.
+
+### Commit pinning
+
+- A committed recovery manifest (`results/envpred_label_recovery_manifest.json`) records the label code commit, the command, and the source and config hashes.
+- The Hydra copy becomes a git checkout. The label script aborts unless `GENCODOE_COMMIT` is given, equals `git rev-parse HEAD`, and the production source and config hashes match the manifest.
+
+### Recovery smoke (fixed now, non-test dates only)
+
+| Date | Placement |
+|---|---|
+| 2024-01-02 (winter, train) | 101 |
+| 2024-02-05 (winter, train) | 202 |
+| 2024-07-01 (summer, train) | 101 |
+| 2024-08-10 (summer, train) | 202 |
+
+It checks only:
+- constructor priming;
+- reset after extreme export;
+- normal-state convergence;
+- output schema and finite values;
+- engine-health counters;
+- the absence of the catastrophic low-share signature.
+
+No prediction quality, head, arm or test label is examined.
+
+### Historical runs
+
+Annual B/C, C+, W1, W2 and W3 do not exhibit the discovered catastrophic low-share failure signature, and they performed ordinary-state OpenDSS solves before the exact envelope search. They remain the reported records under their original solve order.
+
+### Quarantine
+
+The invalid artifacts are moved, never deleted, to `data_out/envpred/quarantine_opendss_poisoned_2026-10-17/`, with a hash manifest. This covers:
+- the label JSON and CSV files;
+- the invalid predictions, fit and fit-run records;
+- the obsolete label-integrity report;
+- the related Slurm logs.
