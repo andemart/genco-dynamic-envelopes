@@ -200,7 +200,8 @@ def test_gate_integrity_detects_problems(tmp_path, monkeypatch):
     day0, hh0 = blocks[2]                                          # a file where no arm issued any envelope
     zero = [{k: v for k, v in r.items() if k not in ("fresh_p4", "fresh_ac")} | {"issued": 0.0, "predicted_zero": True,
              "gate_calls": 0, "gate_pass": None} for r in _fake_gate_rows(day0)]
-    (tmp_path / "gate" / f"{day0}_hh{hh0}.json").write_text(json.dumps({"day": day0, "hh": hh0, **good, "rows": zero}))
+    (tmp_path / "gate" / f"{day0}_hh{hh0}.json").write_text(json.dumps({"day": day0, "hh": hh0, **good, "physical_calls": 0,
+                                                                              "rows": zero}))
     rep = e3.gate_integrity(tmp_path / "gi.json", "abc")
     assert rep["complete"] and rep["rows"] == 138240
     day, hh = blocks[0]
