@@ -650,8 +650,10 @@ def gate_integrity(out_json: Path, commit: str) -> dict:
             if not np.isfinite(r.issued).all() or (r.issued < 0).any() or (r.issued > cap + 1e-9).any():
                 prob.append("issued not finite / out of cap")
             nz = r.issued > 1e-3 * cap
-            if r.loc[nz, ["fresh_p4", "fresh_ac"]].isna().any().any() or not np.isfinite(r.loc[nz, ["fresh_p4", "fresh_ac"]]).all().all():
-                prob.append("fresh feasibility missing / non-finite")
+            if nz.any():                      # fresh feasibility is required exactly where an envelope was issued
+                fr = r.reindex(columns=["fresh_p4", "fresh_ac"]).loc[nz]
+                if fr.isna().any().any() or not np.isfinite(fr.to_numpy(float)).all():
+                    prob.append("fresh feasibility missing / non-finite")
             if (r.gate_calls % N_S).any() or (r.fallback_calls % N_S).any() or (r.search_physical_calls > r.gate_calls + r.fallback_calls).any():
                 prob.append("call accounting")
             if doc["physical_calls"] > (r.gate_calls + r.fallback_calls).sum() + N_U * nz.sum():
