@@ -531,3 +531,20 @@ The invalid artifacts are moved, never deleted, to `data_out/envpred/quarantine_
 - the invalid predictions, fit and fit-run records;
 - the obsolete label-integrity report;
 - the related Slurm logs.
+
+## Amendment 3d (2026-10-17, before the replacement fit produced any output): stale compute-node file caches
+
+**What happened.** The replacement fit (jobs 13342788 and 13342832) aborted twice in its input-hash guard, before fitting anything.
+
+**Cause.**
+- The corrected labels had been written under the **same file names** as the quarantined poisoned files.
+- Hydra compute nodes kept serving the **old file contents** under those reused names.
+- On node600, 5 of the 660 files read with exactly the SHA-256 of the quarantined poisoned versions, reproducibly. The login node read the correct contents.
+
+**Fix.**
+- The corrected labels were copied, on the login node, to a never-used directory `data_out/doe/envpred_labels_corrected/`.
+- On compute nodes node600 and node601, all 660 copies match the integrity hashes.
+- The code now reads labels from that directory. The integrity report was regenerated over the new paths (same contents and hashes), and the fit code pin was regenerated.
+- The original corrected directory `data_out/doe/envpred_labels/` is kept unchanged.
+
+**Nothing else changes.** Failed fit attempts 13342788 and 13342832 produced no outputs.

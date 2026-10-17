@@ -18,7 +18,7 @@ import pandas as pd
 
 ANNUAL = Path("data_out/doe/annual")
 W1 = Path("data_out/doe/weekend/w1_placement")
-LABELS = Path("data_out/doe/envpred_labels")          # amendment 2
+LABELS = Path("data_out/doe/envpred_labels_corrected")   # amendment 3d: fresh paths (stale node caches of reused names)
 OUT = Path("data_out/envpred")
 SPLIT = Path("results/envpred_split_v2.json")              # amendment 2
 RUN = Path("mlruns_hydra/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee")
