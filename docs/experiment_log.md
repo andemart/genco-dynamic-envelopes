@@ -711,3 +711,23 @@ GENCO adds proposal cost without improving the proposal.
 **Interpretation (frozen rule): no measurable GENCO value.** The PCG − PC difference is detectable but below the 3-point materiality threshold.
 
 **What the experiment does show, independently of GENCO.** A learned proposal followed by one exact gate retains about 79% of the exact envelope-hours with about 6.7% of B's exact OpenDSS calls, roughly 15× fewer. Held-out four-wire feasibility of the issued envelopes is 0.991. This holds for the phase-only arm, so it needs no GENCO.
+
+### Secondary frontier (exploratory; `results/envpred3_frontier_report.json`, generated after the primary was committed)
+
+Retained B envelope-hours against the exact calls each arm needs alone (B: 24.53 M), at the shrink quantiles 99 / 95 / 90 / 80%:
+
+| Arm | Retention by shrink quantile, 99 → 80% | Exact calls (M), 99 → 80% |
+|---|---|---|
+| P | 52.3 / 79.0 / 85.6 / 90.4% | 0.95 / 1.65 / 2.93 / 5.19 |
+| PC | 53.3 / 78.6 / 85.5 / 90.3% | 0.98 / 1.56 / 2.82 / 5.01 |
+| PG | 49.0 / 78.8 / 85.9 / 90.5% | 0.97 / 1.69 / 3.27 / 5.59 |
+| PCG | 50.0 / 79.0 / 85.9 / 90.4% | 0.98 / 1.66 / 3.17 / 5.56 |
+
+**Matched budgets** (linear interpolation; descriptive, not observed operating points):
+- At P's q95 budget (1.65 M calls): P 79.0, PC 79.1, PG 77.3, PCG 78.5%.
+- At PCG's q95 budget (1.66 M calls): P 79.1, PC 79.2, PG 77.8, PCG 79.0%.
+- GENCO-containing arms do not retain more at equal exact-call budgets.
+
+**Workflow trade-off.** A learned proposal plus one exact gate retains about 90% of B's envelope-hours with about 21% of its exact calls, or 79% with 6.7%.
+
+**Note.** The frontier script's built-in tier label ("no measurable GENCO value") predates the amendment-3a wording. The committed primary artifact is authoritative: "detectable but not practically material" (PCG − PC = +0.39 points). Both mean that GENCO is not positive.
