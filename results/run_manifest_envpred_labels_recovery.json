@@ -21,7 +21,23 @@
  "smoke": {
   "job_id": "13340193",
   "array": "0-3",
-  "command": "sbatch --export=ALL,GENCODOE_COMMIT=d05474afd792ece2ec54de3ebbb2eb44c0084415 --array=0-3 scripts/hydra_envpred_labels_recovery.slurm smoke"
+  "command": "sbatch --export=ALL,GENCODOE_COMMIT=d05474afd792ece2ec54de3ebbb2eb44c0084415 --array=0-3 scripts/hydra_envpred_labels_recovery.slurm smoke",
+  "outcome": "passed: 4/4 files complete; file-mean exact share 0.83-0.97; reset_failures 0 (results/envpred_label_recovery_smoke.json)"
  },
- "full": []
+ "full": [
+  {
+   "job_id": "",
+   "household_seed": 101,
+   "array": "0-329",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=d05474afd792ece2ec54de3ebbb2eb44c0084415 --array=0-329 --job-name=envpred-labels-fix-hh101 scripts/hydra_envpred_labels_recovery.slurm full 101",
+   "outputs": "data_out/doe/envpred_labels/<date>_b_opendss_exact_sph1_seed101_hh101_uk_esqcr.json"
+  },
+  {
+   "job_id": "13340860",
+   "household_seed": 202,
+   "array": "0-329",
+   "command": "sbatch --export=ALL,GENCODOE_COMMIT=d05474afd792ece2ec54de3ebbb2eb44c0084415 --array=0-329 --job-name=envpred-labels-fix-hh202 scripts/hydra_envpred_labels_recovery.slurm full 202",
+   "outputs": "data_out/doe/envpred_labels/<date>_b_opendss_exact_sph1_seed101_hh202_uk_esqcr.json"
+  }
+ ]
 }
