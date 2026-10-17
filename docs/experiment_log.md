@@ -731,3 +731,22 @@ Retained B envelope-hours against the exact calls each arm needs alone (B: 24.53
 **Workflow trade-off.** A learned proposal plus one exact gate retains about 90% of B's envelope-hours with about 21% of its exact calls, or 79% with 6.7%.
 
 **Note.** The frontier script's built-in tier label ("no measurable GENCO value") predates the amendment-3a wording. The committed primary artifact is authoritative: "detectable but not practically material" (PCG − PC = +0.39 points). Both mean that GENCO is not positive.
+
+## W3: spatial (feeder × phase) envelopes, complete (36 dates, seed 101; `results/weekend_report.json`)
+
+Post-hoc and exploratory. Analysed only after the envelope-prediction primary result was frozen.
+
+| | Export | Import |
+|---|---|---|
+| Envelope-hours per household per day: uniform B → spatial | 13.14 → 14.58 (**+11%**) | 6.83 → 14.64 (**2.14×**) |
+| Joint λ = 1 (every group at its solo headroom) | 99% of non-zero intervals | 9% |
+| Fresh four-wire feasibility of non-zero envelopes, mean / share ≥ 0.95 | 0.998 / 100% | 0.968 / **85.8%** (uniform B on the same dates: ≈ 0.973 / 93.5%) |
+| Customer-intervals worse off than under uniform | 41% | 25% |
+| Exact calls: B → spatial | 2.24 M → 25.35 M (11×) | 2.12 M → 25.41 M (12×) |
+
+**Reading.**
+- Location- and phase-aware envelopes release substantially more import capacity under the same joint design-sample rule.
+- The held-out four-wire robustness of the issued import vectors is lower than for uniform envelopes.
+- They cost about 11–12× the exact solves.
+- Fairness is a real trade-off: up to 41% of customer-intervals receive less than under uniform.
+- No GENCO is involved.
