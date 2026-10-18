@@ -256,3 +256,38 @@ Everything else is secondary. The comparison with U3, when validated, is always 
 4. **Smoke fit** on train/val only. Reported: shapes, memory, epoch time, initial (= U1) metrics, the validation curve, evidence of learning beyond a constant correction (the variance of the predicted residual across states, and residual-versus-target correlation), and the projected cost of the full run.
 
 If any gate fails, stop and diagnose. **No final fit.**
+
+## Amendment 1 (2026-10-18): freeze before the final fits; decision-screen correction
+
+Committed before the final fits and before any test state is opened.
+
+### Frozen training configuration (identical for PhaseGraph and PhaseGENCO)
+
+| Item | Value |
+|---|---|
+| Architecture | hidden 64, 8 TransformerConv layers, 4 heads, global context channel, zero-initialised residual head |
+| Optimiser | AdamW, lr 1e-3, weight decay 1e-4, cosine schedule over 60 epochs |
+| Batch, seed | 32, seed 0 |
+| Early stopping | patience 8 on validation loss; maximum 60 epochs |
+| Checkpoint | the lowest validation loss |
+| Loss weights | V 1.0, V_pn 1.0, current 0.5, KVL 0.1; near-limit states weighted 3 |
+| Input scaling | asinh then standardisation from training statistics, including PhaseGENCO's embeddings (smoke fix 054991b) |
+| Parameters | PhaseGraph 216,840; PhaseGENCO 222,984 (only the input projection differs) |
+
+**Runs.** One final fit per model (`--tag final`). The frozen evaluation is `gencodoe.fourwire_eval`: calibration on calib, then test.
+
+### Decision-screen correction (found in a validation dry run)
+
+- **Dry run.** Before freezing, `fourwire_eval` was run on calib + **validation** states with the smoke checkpoints (`--eval-split val`). Validation decision results were therefore seen. No model, feature or criterion was changed because of them.
+- **Defect found.** The Mondrian (binned) `FourWireMargins` screen gave infinite margins in most bins.
+  - With α/4 = 0.0025, a bin needs about 400 calibration states for a finite margin. With 2,953 calibration states over 13 voltage bins, most bins fall short.
+  - Even the near-exact iterated sweep U3 therefore sent 49% of states to OpenDSS. Criterion 3 could not discriminate between methods.
+- **Correction, applied identically to every method.** One global (unbinned) split-conformal margin per criterion, fitted on **converged** calibration states, with α = 0.01 split over the 4 criteria.
+  - The scores and decision logic are those of `FourWireMargins`.
+  - Non-converged test states still count as violating, so clearing one counts as false-safe.
+  - A method without a finite state defers to OpenDSS.
+- **Effect on the validation dry run** (fallback share, mean of both directions): U3 0.1%, PhaseGraph 26%, PhaseGENCO 28%, U1 36%, balanced models 64%. False-safe 0 for all.
+
+### Unchanged
+
+Every success criterion (section 9 and 9b), its thresholds, the splits and the claim discipline.
