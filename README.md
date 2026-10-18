@@ -6,7 +6,7 @@ An entry for the [GridFM GENCO Challenge](https://huggingface.co/spaces/gridfm/g
 
 A **dynamic operating envelope** (DOE) is a time-varying import/export limit per household that a distribution operator can issue instead of a fixed connection limit.
 - **What we computed:** DOEs on the four-wire **ENWL1** low-voltage benchmark feeder (UK, 800 kVA, 200 single-phase customers), populated with real **Fluvius 2024** smart-meter profiles. Every issued envelope is checked against an exact four-wire OpenDSS model under a frozen finite-sample acceptance rule.
-- **The DOE result:** dynamic envelopes free several MWh of optional import/export capacity per household per year where a single static limit frees none. A balanced (three-phase-averaged) model would issue envelopes that are badly unsafe on the real four-wire feeder.
+- **The DOE result:** dynamic envelopes free several MWh of optional import/export capacity per household per year where a single static limit frees none. A balanced (three-phase-averaged) model would issue envelopes that are badly unsafe on the four-wire benchmark feeder.
 - **What we did with GENCO:**
   - adapted it to LV networks, where the stock model fails;
   - put it inside the verified envelope workflow;
@@ -68,7 +68,7 @@ Fluvius smart-meter profiles ──► forecast scenarios (200 per interval)
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev,feeders,unbalanced,genco]" scikit-learn   # pinned versions: requirements-lock.txt (laptop), requirements-lock-hydra.txt (A100 cluster)
+pip install -e ".[dev,feeders,unbalanced,genco]" scikit-learn   # see env-snapshot-*.txt for the exact versions used
 pytest                                     # 72 tests
 GENCODOE_VOLTAGE_LIMITS=uk_esqcr python scripts/reproduce_check.py
 ```
@@ -77,6 +77,10 @@ GENCODOE_VOLTAGE_LIMITS=uk_esqcr python scripts/reproduce_check.py
 - **Artifacts.** The run outputs (`data_out/`: DOE runs, labels, features, checkpoints) and the 6 GB Fluvius input are not in git, and **are not yet published** for download.
   - Every run is recorded with commits, job IDs and file hashes in `results/run_manifest_*.json`.
   - Raw Fluvius data access follows Fluvius's terms.
+
+**Environment.** `env-snapshot-laptop.txt` (macOS, torch 2.13) and `env-snapshot-hydra.txt` (Linux A100 cluster, torch 2.11+cu126) record the exact package versions used.
+- They are **snapshots, not installable locks**: torch wheels are platform-specific, and the local `gencodoe` package appears in them.
+- To install the cluster versions, use the matching PyTorch wheel index (e.g. `--index-url https://download.pytorch.org/whl/cu126`) and the PyG wheels for that torch/CUDA pair.
 
 ## Repository layout
 
