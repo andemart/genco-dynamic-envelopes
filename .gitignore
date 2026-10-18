@@ -9,3 +9,6 @@ mlruns/
 data/load_profiles/P6269_*/
 grids/*_corrected.m
 mlruns_hydra/
+
+# macOS
+.DS_Store
