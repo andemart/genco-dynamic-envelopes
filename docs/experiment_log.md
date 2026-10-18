@@ -831,3 +831,19 @@ Post-hoc and exploratory. Analysed only after the envelope-prediction primary re
 - **The improvement is attributed to the unbalanced representation, not to GENCO's pretrained balanced embeddings.** Conditioning on node-aligned GENCO embeddings degraded accuracy and fallbacks.
 - **The specialised iterated four-wire sweep is about 80× more accurate (0.1% fallback).** As run in the frozen setup it was about 2.6× slower end to end than PhaseGraph (5.5 vs 2.1 ms per state). That speed gap reflects an unoptimised sweep on CPU against a model on the A100. It is not a claimed advantage over classical solvers.
 - Scope: one feeder, single-feeder training. The test dates' global summaries were seen in earlier work, so this is an exploratory extension.
+
+### Correction to the interpretation above (unbalanced protocol amendment 2, after the external audit)
+
+The sentence "The improvement is attributed to the unbalanced representation…" is **too strong**.
+
+**Why.** U1 is itself phase- and neutral-aware, so PhaseGraph vs U1 shows the value of a **learned GENCO-style residual over a one-step four-wire prior**. It does not isolate the causal value of phase-aware representation. The balanced baselines (63% fallback) support the importance of phase information without isolating it.
+
+**Corrected summary:**
+
+> "A GENCO-style phase-aware GNN can correct a cheap four-wire prior (V_pn MAE −91%, OpenDSS fallbacks 35.8% → 5.8%, zero observed false-safe decisions on the held-out evaluation), but pretrained balanced-GENCO representations add no value here, and a specialised classical four-wire sweep remains the accuracy leader."
+
+**Also disclosed in amendment 2:**
+- The Thevenin root equivalent was a least-squares fit on training labels.
+- The embedding scaler used 2,000 training states.
+- The near-limit mask is a union over boundaries.
+- The original label checker did not check the cable and transformer flags. It is now extended; every split passes, test included.
