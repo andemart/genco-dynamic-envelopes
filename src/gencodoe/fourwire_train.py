@@ -133,6 +133,9 @@ def run_fit(model_kind: str, epochs: int, tag: str, device: str, max_train: int 
     if max_train:
         tr = {k: v[:max_train] for k, v in tr.items()}
     xs = fm.Scaler(tr["x"])                                        # training statistics only
+    # PhaseGENCO embeddings are standardised like every other input (smoke fix): training statistics,
+    # from the first 2,000 training states (memory), asinh then per-channel standardisation
+    ems = fm.Scaler(tr["emb"][:2000].astype(np.float32)) if with_emb else None
     es = fm.Scaler(st.edge_raw)
     rs = residual_scale(tr)
     vpn_tr = fm.Physics(st, torch.device("cpu"))
@@ -156,7 +159,7 @@ def run_fit(model_kind: str, epochs: int, tag: str, device: str, max_train: int 
     def feats(d, idx):
         x = xs(d["x"][idx])
         if with_emb:
-            x = np.concatenate([x, d["emb"][idx].astype(np.float32)], axis=2)
+            x = np.concatenate([x, ems(d["emb"][idx].astype(np.float32))], axis=2)
         return torch.as_tensor(x, device=dev)
 
     def forward(d, idx):
@@ -239,7 +242,7 @@ def run_fit(model_kind: str, epochs: int, tag: str, device: str, max_train: int 
                 break
     meta = {"model": model_kind, "tag": tag, "config": CONFIG, "n_params": n_params, "node_in": node_in,
             "best_epoch": best_ep, "best_val_loss": best, "curve": curve,
-            "scalers": {"x": xs.state(), "edge": es.state(), "residual": rs.tolist(), "vpn": vpn_scale, "kvl": kvl_scale},
+            "scalers": {"x": xs.state(), "edge": es.state(), "emb": ems.state() if ems else None, "residual": rs.tolist(), "vpn": vpn_scale, "kvl": kvl_scale},
             "states": {"train": int(len(tr["x"])), "val": int(len(va["x"])), "train_converged": int(tr["conv"].sum())},
             "thevenin_sha256": sha(OUT / "thevenin.npz"), "code_commit": os.environ.get("GENCODOE_COMMIT"),
             "checkpoint_sha256": sha(ckdir / "best.pt") if (ckdir / "best.pt").exists() else None}
