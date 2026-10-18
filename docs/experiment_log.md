@@ -750,3 +750,30 @@ Post-hoc and exploratory. Analysed only after the envelope-prediction primary re
 - They cost about 11–12× the exact solves.
 - Fairness is a real trade-off: up to 41% of customer-intervals receive less than under uniform.
 - No GENCO is involved.
+
+## Unbalanced GENCO extension: smoke stage (train/val only; branch ander-unbalanced-genco)
+
+**Labels.** 25,635 four-wire states (Hydra jobs 13343323–26; train/val resubmitted as 13343787/88 after out-of-memory at 8 GB). Semantic integrity passes:
+- KCL closes to ≤ 0.16 A;
+- the root neutral is 0;
+- V_pn and the flags match OpenDSS;
+- converged counts match the existing four-wire truth;
+- no reset failures.
+
+**Prior check** (1,500 converged val states):
+
+| Method | V_pn MAE | Max error | Time per state |
+|---|---|---|---|
+| U1 (one sweep iteration) | 3.0e-3 pu | 0.22 pu | 0.08 ms |
+| Iterated sweep U3 | 3.0e-6 pu | 6.2e-4 pu | 2.2 ms (CPU) |
+
+**Smoke fits** (A100, 3 epochs, seed 0, 1,500 converged val states):
+
+| Model | Job | Params | V_pn MAE (U1: 3.04e-3) | p99 | Epoch time | GPU memory |
+|---|---|---|---|---|---|---|
+| PhaseGraph | 13343814 | 216,840 | 9.49e-4 (−69%) | 8.4e-3 | 18 s | 343 MB |
+| PhaseGENCO, before the fix | 13343814 | 222,984 | 1.54e-3 (−49%) | | | |
+| PhaseGENCO, after the fix | 13343821 | 222,984 | 9.31e-4 (−69%) | 7.9e-3 | 35 s | |
+
+- **Smoke defect found and fixed** (commit 054991b): PhaseGENCO's embedding inputs were not standardised. PhaseGENCO was therefore smoke-run twice, a disclosed deviation from "one smoke fit per model". Train/val only.
+- **Learning is real:** the predicted residual varies across states, and its correlation with the true residual is 0.97 (PhaseGraph).
