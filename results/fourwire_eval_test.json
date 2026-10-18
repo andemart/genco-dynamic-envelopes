@@ -1,0 +1,692 @@
+{
+ "protocol": "docs/unbalanced_genco_protocol.md (+ amendment 1)",
+ "status": "exploratory extension",
+ "test_states": 2968,
+ "test_converged": 2699,
+ "test_dates": 36,
+ "checkpoints": {
+  "PhaseGraph": {
+   "sha256": "3fe4153dfed2186e9d0294dea972882db86103146f87c78947af7e5d813d9c26",
+   "best_epoch": 59,
+   "n_params": 216840
+  },
+  "PhaseGENCO": {
+   "sha256": "6c8df72c31a3a599821041cae956828788c2ee911f483bb4c067efbb6aa1ecd5",
+   "best_epoch": 19,
+   "n_params": 222984
+  }
+ },
+ "state": {
+  "U1": {
+   "states": 2699,
+   "vpn_mae": 0.0031977236640882084,
+   "vpn_p95": 0.014270050164813674,
+   "vpn_p99": 0.03806472095447103,
+   "worst_customer_err_mae": 0.01110026180355554,
+   "worst_customer_err_max": 0.2331419838859099,
+   "neutral_v_mae_pu": 0.0015165253187294715,
+   "phase_loading_mae": 0.0008365390965048417,
+   "neutral_current_mae_a": 0.2442195564508438,
+   "transformer_loading_proxy_mae": 0.00277311890386045
+  },
+  "PhaseGraph": {
+   "states": 2699,
+   "vpn_mae": 0.0002913066999263156,
+   "vpn_p95": 0.0009759611576944544,
+   "vpn_p99": 0.002806204360348768,
+   "worst_customer_err_mae": 0.0007030726574463715,
+   "worst_customer_err_max": 0.04675199576537181,
+   "neutral_v_mae_pu": 0.00017493385187902465,
+   "phase_loading_mae": 5.6067879299549605e-05,
+   "neutral_current_mae_a": 0.018613995984196663,
+   "transformer_loading_proxy_mae": 7.829094101907685e-05
+  },
+  "PhaseGENCO": {
+   "states": 2699,
+   "vpn_mae": 0.0004408676979789248,
+   "vpn_p95": 0.0014116162304623253,
+   "vpn_p99": 0.0041304620594772405,
+   "worst_customer_err_mae": 0.0010559451565775786,
+   "worst_customer_err_max": 0.05931094001854709,
+   "neutral_v_mae_pu": 0.0002393290605726735,
+   "phase_loading_mae": 8.665495921450812e-05,
+   "neutral_current_mae_a": 0.028415517881512642,
+   "transformer_loading_proxy_mae": 0.00011476669169496745
+  },
+  "U3": {
+   "states": 2699,
+   "vpn_mae": 3.6215081929682586e-06,
+   "vpn_p95": 1.0400097398283178e-05,
+   "vpn_p99": 6.133331552325794e-05,
+   "worst_customer_err_mae": 1.8683956350722227e-05,
+   "worst_customer_err_max": 0.0029817437158269344,
+   "neutral_v_mae_pu": 2.3118235645437934e-06,
+   "phase_loading_mae": 3.31340820216564e-06,
+   "neutral_current_mae_a": 0.0011692303232848644,
+   "transformer_loading_proxy_mae": 1.8977103763972991e-06
+  }
+ },
+ "classification": {
+  "U1": {
+   "all": {
+    "undervoltage": {
+     "precision": 1.0,
+     "recall": 0.8578680203045685,
+     "positives": 591,
+     "balanced_accuracy": 0.9289340101522843
+    },
+    "overvoltage": {
+     "precision": 0.9770992366412213,
+     "recall": 0.995334370139969,
+     "positives": 643,
+     "balanced_accuracy": 0.9940193251478056
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 0.9845559845559846,
+     "positives": 1036,
+     "balanced_accuracy": 0.9922779922779923
+    },
+    "transformer_overload": {
+     "precision": 1.0,
+     "recall": 0.9428571428571428,
+     "positives": 175,
+     "balanced_accuracy": 0.9714285714285714
+    },
+    "mean_balanced_accuracy": 0.9716649747516635
+   },
+   "near_limit": {
+    "undervoltage": {
+     "precision": 1.0,
+     "recall": 0.6514522821576764,
+     "positives": 241,
+     "balanced_accuracy": 0.8257261410788381
+    },
+    "overvoltage": {
+     "precision": 0.9489795918367347,
+     "recall": 0.9893617021276596,
+     "positives": 282,
+     "balanced_accuracy": 0.9819257490230135
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 0.9553072625698324,
+     "positives": 358,
+     "balanced_accuracy": 0.9776536312849162
+    },
+    "transformer_overload": {
+     "precision": 1.0,
+     "recall": 0.8387096774193549,
+     "positives": 62,
+     "balanced_accuracy": 0.9193548387096775
+    },
+    "mean_balanced_accuracy": 0.9261650900241113
+   }
+  },
+  "PhaseGraph": {
+   "all": {
+    "undervoltage": {
+     "precision": 0.9966216216216216,
+     "recall": 0.9983079526226735,
+     "positives": 591,
+     "balanced_accuracy": 0.9986795930096289
+    },
+    "overvoltage": {
+     "precision": 0.9968944099378882,
+     "recall": 0.9984447900466563,
+     "positives": 643,
+     "balanced_accuracy": 0.9987360137003709
+    },
+    "cable_overload": {
+     "precision": 0.9990356798457087,
+     "recall": 1.0,
+     "positives": 1036,
+     "balanced_accuracy": 0.9996993385447985
+    },
+    "transformer_overload": {
+     "precision": 0.9885057471264368,
+     "recall": 0.9828571428571429,
+     "positives": 175,
+     "balanced_accuracy": 0.9910323749151008
+    },
+    "mean_balanced_accuracy": 0.9970368300424748
+   },
+   "near_limit": {
+    "undervoltage": {
+     "precision": 0.9917355371900827,
+     "recall": 0.995850622406639,
+     "positives": 241,
+     "balanced_accuracy": 0.9963354860840826
+    },
+    "overvoltage": {
+     "precision": 0.9929328621908127,
+     "recall": 0.9964539007092199,
+     "positives": 282,
+     "balanced_accuracy": 0.996526270082501
+    },
+    "cable_overload": {
+     "precision": 0.9972144846796658,
+     "recall": 1.0,
+     "positives": 358,
+     "balanced_accuracy": 0.9990234375
+    },
+    "transformer_overload": {
+     "precision": 0.9672131147540983,
+     "recall": 0.9516129032258065,
+     "positives": 62,
+     "balanced_accuracy": 0.974568827850527
+    },
+    "mean_balanced_accuracy": 0.9916135053792776
+   }
+  },
+  "PhaseGENCO": {
+   "all": {
+    "undervoltage": {
+     "precision": 0.9915824915824916,
+     "recall": 0.9966159052453468,
+     "positives": 591,
+     "balanced_accuracy": 0.997121994368404
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 0.9984447900466563,
+     "positives": 643,
+     "balanced_accuracy": 0.9992223950233281
+    },
+    "cable_overload": {
+     "precision": 0.9990356798457087,
+     "recall": 1.0,
+     "positives": 1036,
+     "balanced_accuracy": 0.9996993385447985
+    },
+    "transformer_overload": {
+     "precision": 0.9885057471264368,
+     "recall": 0.9828571428571429,
+     "positives": 175,
+     "balanced_accuracy": 0.9910323749151008
+    },
+    "mean_balanced_accuracy": 0.9967690257129079
+   },
+   "near_limit": {
+    "undervoltage": {
+     "precision": 0.9795081967213115,
+     "recall": 0.991701244813278,
+     "positives": 241,
+     "balanced_accuracy": 0.9918760596085467
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 0.9964539007092199,
+     "positives": 282,
+     "balanced_accuracy": 0.99822695035461
+    },
+    "cable_overload": {
+     "precision": 0.9972144846796658,
+     "recall": 1.0,
+     "positives": 358,
+     "balanced_accuracy": 0.9990234375
+    },
+    "transformer_overload": {
+     "precision": 0.9672131147540983,
+     "recall": 0.9516129032258065,
+     "positives": 62,
+     "balanced_accuracy": 0.974568827850527
+    },
+    "mean_balanced_accuracy": 0.990923818828421
+   }
+  },
+  "U3": {
+   "all": {
+    "undervoltage": {
+     "precision": 0.9966273187183811,
+     "recall": 1.0,
+     "positives": 591,
+     "balanced_accuracy": 0.9995256166982922
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "positives": 643,
+     "balanced_accuracy": 1.0
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "positives": 1036,
+     "balanced_accuracy": 1.0
+    },
+    "transformer_overload": {
+     "precision": 0.9885057471264368,
+     "recall": 0.9828571428571429,
+     "positives": 175,
+     "balanced_accuracy": 0.9910323749151008
+    },
+    "mean_balanced_accuracy": 0.9976394979033483
+   },
+   "near_limit": {
+    "undervoltage": {
+     "precision": 0.9917695473251029,
+     "recall": 1.0,
+     "positives": 241,
+     "balanced_accuracy": 0.9984101748807631
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "positives": 282,
+     "balanced_accuracy": 1.0
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "positives": 358,
+     "balanced_accuracy": 1.0
+    },
+    "transformer_overload": {
+     "precision": 0.9672131147540983,
+     "recall": 0.9516129032258065,
+     "positives": 62,
+     "balanced_accuracy": 0.974568827850527
+    },
+    "mean_balanced_accuracy": 0.9932447506828225
+   }
+  },
+  "BG": {
+   "all": {
+    "undervoltage": {
+     "precision": 1.0,
+     "recall": 0.467005076142132,
+     "positives": 591,
+     "balanced_accuracy": 0.733502538071066
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 0.7013996889580093,
+     "positives": 643,
+     "balanced_accuracy": 0.8506998444790046
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 0.7876447876447876,
+     "positives": 1036,
+     "balanced_accuracy": 0.8938223938223938
+    },
+    "transformer_overload": {
+     "precision": 0.9882352941176471,
+     "recall": 0.96,
+     "positives": 175,
+     "balanced_accuracy": 0.9796038034865293
+    },
+    "mean_balanced_accuracy": 0.8644071449647485
+   },
+   "near_limit": {
+    "undervoltage": {
+     "precision": 1.0,
+     "recall": 0.25311203319502074,
+     "positives": 241,
+     "balanced_accuracy": 0.6265560165975104
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 0.4432624113475177,
+     "positives": 282,
+     "balanced_accuracy": 0.7216312056737588
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 0.5837988826815642,
+     "positives": 358,
+     "balanced_accuracy": 0.791899441340782
+    },
+    "transformer_overload": {
+     "precision": 0.9649122807017544,
+     "recall": 0.8870967741935484,
+     "positives": 62,
+     "balanced_accuracy": 0.9423107633343979
+    },
+    "mean_balanced_accuracy": 0.7705993567366123
+   }
+  },
+  "BS": {
+   "all": {
+    "undervoltage": {
+     "precision": 1.0,
+     "recall": 0.45516074450084604,
+     "positives": 591,
+     "balanced_accuracy": 0.727580372250423
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 0.6951788491446346,
+     "positives": 643,
+     "balanced_accuracy": 0.8475894245723172
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 0.7876447876447876,
+     "positives": 1036,
+     "balanced_accuracy": 0.8938223938223938
+    },
+    "transformer_overload": {
+     "precision": 0.9880952380952381,
+     "recall": 0.9485714285714286,
+     "positives": 175,
+     "balanced_accuracy": 0.9738895177722436
+    },
+    "mean_balanced_accuracy": 0.8607204271043444
+   },
+   "near_limit": {
+    "undervoltage": {
+     "precision": 1.0,
+     "recall": 0.25311203319502074,
+     "positives": 241,
+     "balanced_accuracy": 0.6265560165975104
+    },
+    "overvoltage": {
+     "precision": 1.0,
+     "recall": 0.43617021276595747,
+     "positives": 282,
+     "balanced_accuracy": 0.7180851063829787
+    },
+    "cable_overload": {
+     "precision": 1.0,
+     "recall": 0.5837988826815642,
+     "positives": 358,
+     "balanced_accuracy": 0.791899441340782
+    },
+    "transformer_overload": {
+     "precision": 0.9636363636363636,
+     "recall": 0.8548387096774194,
+     "positives": 62,
+     "balanced_accuracy": 0.9261817310763334
+    },
+    "mean_balanced_accuracy": 0.7656805738494011
+   }
+  }
+ },
+ "screen": {
+  "U1": {
+   "margins": {
+    "hi": [
+     0.21675431728363037,
+     0.015240192413330078,
+     1.2462530136108398,
+     1.0580992698669434
+    ],
+    "lo": [
+     -0.0032610297203063965,
+     -0.05900120735168457,
+     1.0000367164611816,
+     0.7520144581794739
+    ]
+   },
+   "import": {
+    "safe": 0.0,
+    "violated": 0.4474393530997305,
+    "fallback": 0.5525606469002695,
+    "exact_calls": 1640,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "export": {
+    "safe": 0.40161725067385445,
+    "violated": 0.43497304582210244,
+    "fallback": 0.16340970350404313,
+    "exact_calls": 485,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "fallback_mean": 0.35798517520215634,
+   "false_safe_total": 0
+  },
+  "PhaseGraph": {
+   "margins": {
+    "hi": [
+     0.028134942054748535,
+     0.002751588821411133,
+     1.0286542177200317,
+     1.0379276275634766
+    ],
+    "lo": [
+     -0.00937950611114502,
+     -0.0033887624740600586,
+     0.9875370264053345,
+     0.751720130443573
+    ]
+   },
+   "import": {
+    "safe": 0.45990566037735847,
+    "violated": 0.45181940700808626,
+    "fallback": 0.08827493261455525,
+    "exact_calls": 262,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "export": {
+    "safe": 0.4882075471698113,
+    "violated": 0.4838274932614555,
+    "fallback": 0.027964959568733155,
+    "exact_calls": 83,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "fallback_mean": 0.058119946091644205,
+   "false_safe_total": 0
+  },
+  "PhaseGENCO": {
+   "margins": {
+    "hi": [
+     0.044873833656311035,
+     0.004415452480316162,
+     1.05022394657135,
+     1.0381007194519043
+    ],
+    "lo": [
+     -0.01504659652709961,
+     -0.005932450294494629,
+     0.9827333688735962,
+     0.7516101002693176
+    ]
+   },
+   "import": {
+    "safe": 0.36455525606469,
+    "violated": 0.4450808625336927,
+    "fallback": 0.19036388140161725,
+    "exact_calls": 565,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "export": {
+    "safe": 0.4777628032345013,
+    "violated": 0.47607816711590295,
+    "fallback": 0.04615902964959569,
+    "exact_calls": 137,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "fallback_mean": 0.11826145552560646,
+   "false_safe_total": 0
+  },
+  "U3": {
+   "margins": {
+    "hi": [
+     9.691715240478516e-05,
+     2.8133392333984375e-05,
+     1.0001810789108276,
+     1.037924885749817
+    ],
+    "lo": [
+     -0.0011110901832580566,
+     -7.170438766479492e-05,
+     0.9985356330871582,
+     0.7517511248588562
+    ]
+   },
+   "import": {
+    "safe": 0.5336927223719676,
+    "violated": 0.46495956873315364,
+    "fallback": 0.0013477088948787063,
+    "exact_calls": 4,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "export": {
+    "safe": 0.5,
+    "violated": 0.49932614555256066,
+    "fallback": 0.0006738544474393531,
+    "exact_calls": 2,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "fallback_mean": 0.0010107816711590297,
+   "false_safe_total": 0
+  },
+  "BG": {
+   "margins": {
+    "hi": [
+     0.2665466070175171,
+     0.08565747737884521,
+     3.2900918277480455,
+     1.403494544856867
+    ],
+    "lo": [
+     -0.03056347370147705,
+     -0.034099578857421986,
+     1.0132973223030683,
+     0.9819512993756877
+    ]
+   },
+   "import": {
+    "safe": 0.0,
+    "violated": 0.3696091644204852,
+    "fallback": 0.6303908355795148,
+    "exact_calls": 1871,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "export": {
+    "safe": 0.0,
+    "violated": 0.3696091644204852,
+    "fallback": 0.6303908355795148,
+    "exact_calls": 1871,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "fallback_mean": 0.6303908355795148,
+   "false_safe_total": 0
+  },
+  "BS": {
+   "margins": {
+    "hi": [
+     0.27183466284832425,
+     0.0842180645110211,
+     3.296550711730193,
+     1.4045725376746112
+    ],
+    "lo": [
+     -0.02948043666861566,
+     -0.03445660104330184,
+     1.0129880309013013,
+     0.9829733831479287
+    ]
+   },
+   "import": {
+    "safe": 0.0,
+    "violated": 0.3696091644204852,
+    "fallback": 0.6303908355795148,
+    "exact_calls": 1871,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "export": {
+    "safe": 0.0,
+    "violated": 0.3696091644204852,
+    "fallback": 0.6303908355795148,
+    "exact_calls": 1871,
+    "false_safe": 0,
+    "false_violated": 0
+   },
+   "fallback_mean": 0.6303908355795148,
+   "false_safe_total": 0
+  }
+ },
+ "runtime": {
+  "U1": {
+   "method_s_per_state": 0.0001967063512856447,
+   "model_only_s_per_state": null,
+   "end_to_end_s_per_state": 0.010881108309962254
+  },
+  "U3": {
+   "method_s_per_state": 0.00546168471260418,
+   "model_only_s_per_state": null,
+   "end_to_end_s_per_state": 0.00549185243578162
+  },
+  "BS": {
+   "method_s_per_state": 0.0010607655678192942,
+   "model_only_s_per_state": null,
+   "end_to_end_s_per_state": 0.01987536892281594
+  },
+  "BG": {
+   "method_s_per_state": 0.0006655844885823279,
+   "model_only_s_per_state": null,
+   "end_to_end_s_per_state": 0.019480187843578974
+  },
+  "PhaseGraph": {
+   "method_s_per_state": 0.0003765919644290185,
+   "model_only_s_per_state": 0.00013851811808114747,
+   "end_to_end_s_per_state": 0.002111236047131809
+  },
+  "PhaseGENCO": {
+   "method_s_per_state": 0.001094197824432934,
+   "model_only_s_per_state": 0.00019053948950273488,
+   "end_to_end_s_per_state": 0.004623821436193395
+  },
+  "opendss_s_per_state": 0.029845934130213816,
+  "note": "method time on the hardware used (four-wire learned models: U1 + features on CPU, model on A100; PhaseGENCO adds the balanced GENCO pass, measured as BG); end-to-end adds the mean fallback share x measured OpenDSS seconds per state"
+ },
+ "primary_U2_vs_U1": {
+  "vpn_mae_reduction": 0.9089018531532873,
+  "c1_ge_30pct": true,
+  "near_limit_mean_balanced_accuracy": [
+   0.9261650900241113,
+   0.9916135053792776
+  ],
+  "c2_improved": true,
+  "fallback_reduction_pp": 29.98652291105121,
+  "c3_ge_5pp": true,
+  "false_safe": [
+   0,
+   0
+  ],
+  "c4_not_more_false_safe": true,
+  "c5_runtime_reported": true,
+  "success": true
+ },
+ "genco_9b_PhaseGENCO_minus_PhaseGraph": {
+  "fallback_diff_pp": 6.014150943396226,
+  "bootstrap_ci95_pp": [
+   5.306756471877899,
+   6.732841742722055
+  ],
+  "c_reduces_ge_5pp": false,
+  "c_ci_excludes_zero": true,
+  "false_safe": [
+   0,
+   0
+  ],
+  "c_not_more_false_safe": true,
+  "end_to_end_s_per_state": [
+   0.002111236047131809,
+   0.004623821436193395
+  ],
+  "vpn_mae": [
+   0.0002913066999263156,
+   0.0004408676979789248
+  ],
+  "neutral_current_mae_a": [
+   0.018613995984196663,
+   0.028415517881512642
+  ],
+  "genco_positive": false
+ }
+}
