@@ -1,0 +1,105 @@
+{
+ "purpose": "unbalanced (four-wire) GENCO extension: complete run record (docs/unbalanced_genco_protocol.md + amendments 1-2)",
+ "branch": "ander-unbalanced-genco",
+ "protocol_commits": {
+  "protocol": "01710ea",
+  "amendment_1_freeze": "fad21b0",
+  "amendment_2_disclosures": "see git log"
+ },
+ "stages": [
+  {
+   "stage": "labels",
+   "commit": "4fee548ff715684ea34ce4cf86f133e3d0173bcc",
+   "jobs": {
+    "train": "13343323 (OOM at 8 GB) -> 13343787 (48 GB)",
+    "val": "13343324 (OOM) -> 13343788",
+    "calib": "13343325",
+    "test": "13343326"
+   },
+   "label_shard_sha256": {
+    "train": {
+     "shard_000_of_016.npz": "33aef4f6b901b5b8fa97f6e8b26787d589b84795efa2d1b6c960052c1afd4494",
+     "shard_001_of_016.npz": "7166455cb9975c766ff2d1e977fac66a5187bbe2877cd2bccc81ff862f5fc498",
+     "shard_002_of_016.npz": "cf74db6c0c48b1ea212bc7fdf56dacd20e70fa28593dd5f8013b1a069b9fe959",
+     "shard_003_of_016.npz": "648dcfe9d361a0934c3ef5be680d28e773b6da041f2178b4e4c1a144705c9194",
+     "shard_004_of_016.npz": "e30300559676d5ef1b45cc11c62231d895ffcd61420877176edbdee5515af3e7",
+     "shard_005_of_016.npz": "9bf7eaf67a8f51372b7ac93313ec6f57b69692d3e444d79fb04d74fc62384a45",
+     "shard_006_of_016.npz": "01c794c22a77be8a2969d2b5827ad0cc354339d527bd73c61b8421455fd0ce5f",
+     "shard_007_of_016.npz": "c0f892fc06e21eeb9b6560cb2ecd5a143050620478fd0b6cced6b837ee32c2fe",
+     "shard_008_of_016.npz": "accc7b363e42aca4779e0c825b2f0c4a2c6b77834755afef5601d4a805d2cea9",
+     "shard_009_of_016.npz": "599f506bfc985fa002d197ba90943e0f69bb240790dff7a95182306b5fe20f87",
+     "shard_010_of_016.npz": "14114cb065cdde79ea93b81d72c52f9105ecdfe7d43bcf6fef34d84c53d2a803",
+     "shard_011_of_016.npz": "50312cf0b006119bdd085249c443a74ff3dfd7f23d8bdbce07e124f48eee9368",
+     "shard_012_of_016.npz": "962df140b2a91bb0f78502380b9b51e560962212ec07f0620b2947417f404377",
+     "shard_013_of_016.npz": "abf9a6a9a64540c8ba9b2e078493ef77606d40c302e1c74a52e2000da1a70c29",
+     "shard_014_of_016.npz": "88638b72485028fc125aa1b5900a17ba92003b1152da8f9d78e1ab867f3cf6ef",
+     "shard_015_of_016.npz": "c7f6620fb1979d89ac7bf9b55eaae5bc10e775f9141492a48c40acad867fd507"
+    },
+    "val": {
+     "shard_000_of_006.npz": "aca67cf1f107b25a81338bdf103c73ab45f104294265eb746cc23346d31d5519",
+     "shard_001_of_006.npz": "4b7a2e211ed79a7e67118f78037c148aaa5631f996144c7e7f2a62e1c79d3af5",
+     "shard_002_of_006.npz": "7cde3ca5f4ae3a0110ed288325fc493a54e2c4918d8a9ec69ff07c8ebaa0beb0",
+     "shard_003_of_006.npz": "b216144d61841456e5402e117050a4e2ccd2a6bcf208332df8302bb38074110c",
+     "shard_004_of_006.npz": "4bad31c4b318d85e0c15dbc9520868279f0154c709416b577fdf35d0e49fa4a1",
+     "shard_005_of_006.npz": "96f170f54116039cb839d417a35bbf6df3c43347920f2200b4178bd921bd92c3"
+    },
+    "calib": {
+     "shard_000_of_004.npz": "43328349726f9ab60a5014968389b791736b3a26c2e2037886cee99998daf2de",
+     "shard_001_of_004.npz": "9eb057dbc6f133e2be57946683c7d89e816175f101cfbce09e5709005120783b",
+     "shard_002_of_004.npz": "0dbced3cfaa89662d7855e247daee69db798e9f4b6e9955129dd30a1e78b68a4",
+     "shard_003_of_004.npz": "88ea44ac65bbc4d306f9a76b0498e70b8d171fb029df8642ae19ea38335fc0ae"
+    },
+    "test": {
+     "shard_000_of_004.npz": "f93c6a3dbd943b1d5e3e0dfb6a16a87b9a40f0c0d1c5e5332c6bb1506d92cf50",
+     "shard_001_of_004.npz": "7816e197503951005c76b670a4b63bea01fc0532672e2f11ba686949d6a17795",
+     "shard_002_of_004.npz": "62bbbc4ff562475cf22a79770688a4217066e53aeb5e9935ff63527f04c69414",
+     "shard_003_of_004.npz": "155f1db90dd15db1709d622db31e09fba5b748c821f5886f40af2565fd78ad4e"
+    }
+   }
+  },
+  {
+   "stage": "thevenin (least squares on converged train labels)",
+   "file": "data_out/fourwire/thevenin.npz",
+   "sha256": "991486a4cd4be166887684af0070228699feba1f950c7e3ec5c84470479832a4"
+  },
+  {
+   "stage": "smoke",
+   "jobs": {
+    "13343814": "commit 3524df0 (PhaseGraph + PhaseGENCO, 3 epochs; PhaseGENCO embeddings unscaled)",
+    "13343821": "commit 054991b (PhaseGENCO re-smoke after embedding-scaling fix)"
+   }
+  },
+  {
+   "stage": "final fits",
+   "commit": "49a6045dc7dda863fd80ac5893dfaf2c1b85c470",
+   "jobs": {
+    "PhaseGraph": "13343837",
+    "PhaseGENCO": "13343838"
+   },
+   "artifacts_sha256": {
+    "data_out/fourwire/runs/phasegraph_final/best.pt": "3fe4153dfed2186e9d0294dea972882db86103146f87c78947af7e5d813d9c26",
+    "data_out/fourwire/runs/phasegraph_final/meta.json": "0f2dfee3b9268cc000529802a5d3c15e111c0ee2e3c1adb15bcf2f1ce2596c32",
+    "data_out/fourwire/runs/phasegenco_final/best.pt": "6c8df72c31a3a599821041cae956828788c2ee911f483bb4c067efbb6aa1ecd5",
+    "data_out/fourwire/runs/phasegenco_final/meta.json": "e691b5bcbb68975817367666ef668c3d82029e93ab5a98757f6340d426f8472f"
+   }
+  },
+  {
+   "stage": "embeddings (frozen balanced GENCO, node-aligned, float16)",
+   "sha256": {
+    "data_out/fourwire/embeddings/calib.npz": "da700f790d1c5836c3b3ac7dd4ded73c668f3d52ff997229eb76bfcff3326e9b",
+    "data_out/fourwire/embeddings/test.npz": "c7c4ead6e8fd82684edf7d81fd55bb9d563d9b451abae8259f72ce5bc6ac3c5c",
+    "data_out/fourwire/embeddings/train.npz": "a4cd319c6dccb9b9a585f093909db75a7726510ca6d3bbba5c5567ad1db0f6d0",
+    "data_out/fourwire/embeddings/val.npz": "3966f9397dc202869bb806848b2dc39a58f2cb6dbf17d7d78076d77b91b754e4"
+   }
+  },
+  {
+   "stage": "frozen evaluation",
+   "job": "13343839",
+   "commit": "49a6045dc7dda863fd80ac5893dfaf2c1b85c470",
+   "output": "results/fourwire_eval_test.json",
+   "sha256": "ba685ad513ef3d39642aa98b7ef1cc02c93874b83966c442c9d76fb19849ea17",
+   "committed_unchanged_in": "c20b96b"
+  }
+ ],
+ "storage": "all data_out/ artifacts live on Hydra (and partly locally); not yet published. Test labels only on Hydra."
+}

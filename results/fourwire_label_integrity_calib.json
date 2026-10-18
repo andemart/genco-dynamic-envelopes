@@ -32,6 +32,10 @@
  "semantic": {
   "states": 2953,
   "converged": 2700,
+  "scenarios_unique": true,
+  "line_loading_recomputed_max_abs_diff": 3.1921437315673984e-07,
+  "cable_flag_consistent": true,
+  "transformer_flag_consistent": true,
   "kcl_max_ka": 9.744846079214968e-05,
   "root_neutral_max_v": 3.5703674204039364e-16,
   "vpn_min_recomputed_max_abs_diff": 8.819142016669446e-08,

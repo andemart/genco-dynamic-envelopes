@@ -1,0 +1,48 @@
+{
+ "split": "test",
+ "files": {
+  "shard_000_of_004.npz": "f93c6a3dbd943b1d5e3e0dfb6a16a87b9a40f0c0d1c5e5332c6bb1506d92cf50",
+  "shard_001_of_004.npz": "7816e197503951005c76b670a4b63bea01fc0532672e2f11ba686949d6a17795",
+  "shard_002_of_004.npz": "62bbbc4ff562475cf22a79770688a4217066e53aeb5e9935ff63527f04c69414",
+  "shard_003_of_004.npz": "155f1db90dd15db1709d622db31e09fba5b748c821f5886f40af2565fd78ad4e"
+ },
+ "schema_ok": true,
+ "health": [
+  {
+   "resets": 66,
+   "nonconverged_returned": 65,
+   "reset_failures": 0
+  },
+  {
+   "resets": 74,
+   "nonconverged_returned": 73,
+   "reset_failures": 0
+  },
+  {
+   "resets": 72,
+   "nonconverged_returned": 71,
+   "reset_failures": 0
+  },
+  {
+   "resets": 61,
+   "nonconverged_returned": 60,
+   "reset_failures": 0
+  }
+ ],
+ "semantic": {
+  "states": 2968,
+  "converged": 2699,
+  "scenarios_unique": true,
+  "line_loading_recomputed_max_abs_diff": 3.779098767253686e-07,
+  "cable_flag_consistent": true,
+  "transformer_flag_consistent": true,
+  "kcl_max_ka": 0.00012957510480988914,
+  "root_neutral_max_v": 3.8409282347252383e-16,
+  "vpn_min_recomputed_max_abs_diff": 8.923176664232813e-08,
+  "vpn_max_recomputed_max_abs_diff": 1.181992412835342e-07,
+  "undervoltage_flag_consistent": true,
+  "overvoltage_flag_consistent": true,
+  "finite": true,
+  "ok": true
+ }
+}
