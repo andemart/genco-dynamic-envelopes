@@ -2,6 +2,18 @@
 
 An entry for the [GridFM GENCO Challenge](https://huggingface.co/spaces/gridfm/genco-challenge) (deadline 25 October 2026, AoE).
 
+## Start here
+
+| If you want… | Read |
+|---|---|
+| The story in five minutes | [`docs/hf_post.md`](docs/hf_post.md) (Hugging Face post draft), [`docs/genco_challenge_onepager.pdf`](docs/genco_challenge_onepager.pdf) |
+| What was done, where it is, what is open | [`docs/HANDOFF.md`](docs/HANDOFF.md) |
+| What we claim and do not claim | [`docs/claims.md`](docs/claims.md) |
+| Every experiment, result and incident | [`docs/experiment_log.md`](docs/experiment_log.md) |
+| The figures | [`figures/`](figures/) (made by `scripts/make_figures.py`) |
+
+![Capacity](figures/fig1_capacity.png)
+
 ## In one paragraph
 
 A **dynamic operating envelope** (DOE) is a time-varying import/export limit per household that a distribution operator can issue instead of a fixed connection limit.

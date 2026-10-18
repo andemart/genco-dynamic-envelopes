@@ -1,0 +1,132 @@
+\documentclass[9pt,a4paper]{extarticle}
+\usepackage[margin=9.5mm]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{array}
+\pagestyle{empty}
+
+\definecolor{navy}{HTML}{102A43}
+\definecolor{blue}{HTML}{1769AA}
+\definecolor{cyan}{HTML}{18A1AE}
+\definecolor{pale}{HTML}{EAF4F7}
+\definecolor{ink}{HTML}{243B53}
+\definecolor{muted}{HTML}{627D98}
+\setmainfont{Avenir Next}
+\setsansfont{Avenir Next}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.0pt}
+\setlength{\columnsep}{6mm}
+\setlist[itemize]{leftmargin=3.5mm,itemsep=0.4pt,topsep=1.2pt,parsep=0pt}
+\renewcommand{\arraystretch}{1.06}
+
+\newcommand{\sect}[1]{\vspace{1pt}{\color{navy}\normalsize\bfseries #1}\par\vspace{0.5pt}{\color{cyan}\rule{\linewidth}{0.7pt}}\vspace{0.5pt}}
+\newcommand{\metric}[2]{\begin{minipage}[t]{0.47\linewidth}\centering{\color{blue}\large\bfseries #1}\\[-1pt]{\scriptsize\color{muted}#2}\end{minipage}}
+
+\begin{document}
+
+{\color{navy}\fontsize{17.5}{19}\selectfont\bfseries Four-wire-verified dynamic operating envelopes with GENCO}\par
+\vspace{2pt}
+{\color{blue}\normalsize Where a grid foundation model helps on four-wire LV networks, where it fails, and how we adapted it}\par
+\vspace{3pt}
+
+\colorbox{pale}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
+\textbf{In one sentence.} On a four-wire LV benchmark feeder with real Flemish smart-meter households, dynamic envelopes free several MWh of capacity per household per year where a static limit frees none. We made GENCO work on LV, put it inside an exact four-wire check, extended a GENCO-style model to explicit phase and neutral states, and benchmarked every GENCO role against strong classical methods. We report honestly where it adds value.
+}}
+
+\vspace{3pt}
+\begin{multicols}{2}
+
+\sect{The application}
+
+Operators must host EVs, heat pumps and rooftop PV without reinforcing the grid. A \textbf{dynamic operating envelope} (DOE) gives each household a time-varying import/export limit.
+\begin{itemize}
+  \item \textbf{Feeder:} ENWL1, 800\,kVA, 200 single-phase customers, populated with Fluvius 2024 profiles.
+  \item \textbf{Scenarios:} 200 forecast scenarios per interval.
+  \item \textbf{Acceptance:} every issued envelope must pass an \textbf{exact four-wire OpenDSS check} of a frozen rule ($\geq$98\% of scenarios feasible).
+\end{itemize}
+
+\begin{center}
+\textbf{Scenarios $\rightarrow$ proposal (exact / GENCO-screened / learned)}\\
+\textbf{$\rightarrow$ exact four-wire check $\rightarrow$ envelope}
+\end{center}
+
+\sect{Impact: capacity a static limit cannot free}
+
+\begin{center}
+\metric{4.81 MWh}{export envelope-hours / household / yr}\hfill
+\metric{2.50 MWh}{import envelope-hours / household / yr}\\[6pt]
+\metric{0}{static year-round allowance}\hfill
+\metric{2--3$\times$}{balanced-model envelopes: four-wire unsafe}
+\end{center}
+
+\begin{itemize}
+  \item 36 held-out days; intervals export 4.35--5.30 and import 2.11--2.87\,MWh.
+  \item Robust across 5 household placements. The headline placement is the most conservative.
+  \item Idealised three-phase HP/EV connection lifts capacity 2--2.5$\times$.
+\end{itemize}
+
+\sect{GENCO development: making it work on LV}
+
+Direct transfer to a 398-bus LV feeder failed. Stock GENCO collapsed and lost to predicting the training mean. We diagnosed and fixed three causes:
+\begin{itemize}
+  \item \textbf{Impedance blindness:} the edge encoder's final LayerNorm cancels $|Y|$. Fixed with asinh admittance features.
+  \item \textbf{Physics-loss collapse} at LV scales. Fixed by a linear power-flow prior with a zero-initialised correction head.
+  \item \textbf{Ill-conditioned flows} from voltage differences. Fixed with Kirchhoff-current-law flows.
+\end{itemize}
+Result: voltage MAE \textbf{1.0e-3\,pu}. We also found a graphkit best-model export bug and a datakit 1.5\,pu slack bug.
+
+\columnbreak
+
+\sect{Four-wire GENCO-style extension (exploratory)}
+
+A GNN on the 397-bus \textbf{four-wire} graph (phases a, b, c and neutral, full $4{\times}4$ impedances) corrects a one-step four-wire sweep prior. On 2,968 held-out states:
+
+\begin{center}
+\metric{$-$91\%}{phase-to-neutral voltage error}\hfill
+\metric{35.8\%$\rightarrow$5.8\%}{states sent to OpenDSS}
+\end{center}
+
+There were zero observed false-safe decisions under the exact gate. Balanced models send 63\% to OpenDSS.
+
+\sect{Benchmarks: every GENCO role vs strong baselines}
+
+{\small\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash\bfseries\color{navy}}p{0.27\linewidth} >{\raggedright\arraybackslash}X}
+Screening (C/C+) & GENCO + exact gate matches the exact search on 100\% of intervals, 6\% fewer exact calls. Classical screens do as well.\\
+Learned proposals & 79\% of exact capacity with \textbf{6.7\% of the exact calls}, but phase features alone do the same. GENCO arm: $-$0.06\,pp.\\
+GENCO embeddings & Frozen balanced-GENCO embeddings made the four-wire model \textbf{worse} (+6.0\,pp fallbacks).\\
+Classical physics & An iterated four-wire sweep is 80$\times$ more accurate than any learned model. It remains the accuracy leader.\\
+\end{tabularx}}
+
+\sect{What we do not claim}
+\begin{itemize}
+  \item Unconditional safety. Envelopes pass a finite design-sample rule; only 47\% pass a 95\% lower-bound test on fresh draws.
+  \item A GENCO advantage over specialised classical solvers, or a wall-clock speed-up. We report exact-call reductions.
+  \item Generalisation beyond one benchmark feeder.
+\end{itemize}
+
+\sect{Open science and rigour}
+\begin{itemize}
+  \item Pre-registered core evaluation. Every other study was frozen before its results were seen, with all deviations disclosed as amendments.
+  \item Incidents found and disclosed: wrong voltage base, OpenDSS engine poisoning, stale cluster caches.
+  \item 72 automated tests. \texttt{reproduce\_check.py} regenerates every headline result byte for byte. Run manifests hash every artifact.
+\end{itemize}
+
+\textbf{Next for GENCO here:} four-wire pretraining, MV networks, multi-network generalisation.
+
+\end{multicols}
+
+\vspace{2pt}
+\begin{center}
+\includegraphics[width=0.92\linewidth]{../figures/fig4_fourwire.pdf}
+\end{center}
+
+\vfill
+{\footnotesize\color{muted}\textbf{Project:} Four-wire-verified dynamic operating envelopes with GENCO \hfill \textbf{Team:} EVERGi, Vrije Universiteit Brussel \hfill GridFM GENCO Challenge 2026}
+
+\end{document}
