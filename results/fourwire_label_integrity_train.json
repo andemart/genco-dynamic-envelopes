@@ -1,0 +1,116 @@
+{
+ "split": "train",
+ "files": {
+  "shard_000_of_016.npz": "33aef4f6b901b5b8fa97f6e8b26787d589b84795efa2d1b6c960052c1afd4494",
+  "shard_001_of_016.npz": "7166455cb9975c766ff2d1e977fac66a5187bbe2877cd2bccc81ff862f5fc498",
+  "shard_002_of_016.npz": "cf74db6c0c48b1ea212bc7fdf56dacd20e70fa28593dd5f8013b1a069b9fe959",
+  "shard_003_of_016.npz": "648dcfe9d361a0934c3ef5be680d28e773b6da041f2178b4e4c1a144705c9194",
+  "shard_004_of_016.npz": "e30300559676d5ef1b45cc11c62231d895ffcd61420877176edbdee5515af3e7",
+  "shard_005_of_016.npz": "9bf7eaf67a8f51372b7ac93313ec6f57b69692d3e444d79fb04d74fc62384a45",
+  "shard_006_of_016.npz": "01c794c22a77be8a2969d2b5827ad0cc354339d527bd73c61b8421455fd0ce5f",
+  "shard_007_of_016.npz": "c0f892fc06e21eeb9b6560cb2ecd5a143050620478fd0b6cced6b837ee32c2fe",
+  "shard_008_of_016.npz": "accc7b363e42aca4779e0c825b2f0c4a2c6b77834755afef5601d4a805d2cea9",
+  "shard_009_of_016.npz": "599f506bfc985fa002d197ba90943e0f69bb240790dff7a95182306b5fe20f87",
+  "shard_010_of_016.npz": "14114cb065cdde79ea93b81d72c52f9105ecdfe7d43bcf6fef34d84c53d2a803",
+  "shard_011_of_016.npz": "50312cf0b006119bdd085249c443a74ff3dfd7f23d8bdbce07e124f48eee9368",
+  "shard_012_of_016.npz": "962df140b2a91bb0f78502380b9b51e560962212ec07f0620b2947417f404377",
+  "shard_013_of_016.npz": "abf9a6a9a64540c8ba9b2e078493ef77606d40c302e1c74a52e2000da1a70c29",
+  "shard_014_of_016.npz": "88638b72485028fc125aa1b5900a17ba92003b1152da8f9d78e1ab867f3cf6ef",
+  "shard_015_of_016.npz": "c7f6620fb1979d89ac7bf9b55eaae5bc10e775f9141492a48c40acad867fd507"
+ },
+ "schema_ok": true,
+ "health": [
+  {
+   "resets": 84,
+   "nonconverged_returned": 83,
+   "reset_failures": 0
+  },
+  {
+   "resets": 101,
+   "nonconverged_returned": 100,
+   "reset_failures": 0
+  },
+  {
+   "resets": 66,
+   "nonconverged_returned": 65,
+   "reset_failures": 0
+  },
+  {
+   "resets": 86,
+   "nonconverged_returned": 85,
+   "reset_failures": 0
+  },
+  {
+   "resets": 92,
+   "nonconverged_returned": 91,
+   "reset_failures": 0
+  },
+  {
+   "resets": 84,
+   "nonconverged_returned": 83,
+   "reset_failures": 0
+  },
+  {
+   "resets": 84,
+   "nonconverged_returned": 83,
+   "reset_failures": 0
+  },
+  {
+   "resets": 69,
+   "nonconverged_returned": 67,
+   "reset_failures": 0
+  },
+  {
+   "resets": 93,
+   "nonconverged_returned": 92,
+   "reset_failures": 0
+  },
+  {
+   "resets": 93,
+   "nonconverged_returned": 92,
+   "reset_failures": 0
+  },
+  {
+   "resets": 88,
+   "nonconverged_returned": 87,
+   "reset_failures": 0
+  },
+  {
+   "resets": 101,
+   "nonconverged_returned": 100,
+   "reset_failures": 0
+  },
+  {
+   "resets": 92,
+   "nonconverged_returned": 91,
+   "reset_failures": 0
+  },
+  {
+   "resets": 75,
+   "nonconverged_returned": 74,
+   "reset_failures": 0
+  },
+  {
+   "resets": 70,
+   "nonconverged_returned": 69,
+   "reset_failures": 0
+  },
+  {
+   "resets": 92,
+   "nonconverged_returned": 91,
+   "reset_failures": 0
+  }
+ ],
+ "semantic": {
+  "states": 14648,
+  "converged": 13295,
+  "kcl_max_ka": 0.00016000668164270119,
+  "root_neutral_max_v": 3.542242873449038e-16,
+  "vpn_min_recomputed_max_abs_diff": 9.167416004096651e-08,
+  "vpn_max_recomputed_max_abs_diff": 1.196489189947414e-07,
+  "undervoltage_flag_consistent": true,
+  "overvoltage_flag_consistent": true,
+  "finite": true,
+  "ok": true
+ }
+}

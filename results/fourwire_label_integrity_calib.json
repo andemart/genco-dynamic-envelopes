@@ -1,0 +1,44 @@
+{
+ "split": "calib",
+ "files": {
+  "shard_000_of_004.npz": "43328349726f9ab60a5014968389b791736b3a26c2e2037886cee99998daf2de",
+  "shard_001_of_004.npz": "9eb057dbc6f133e2be57946683c7d89e816175f101cfbce09e5709005120783b",
+  "shard_002_of_004.npz": "0dbced3cfaa89662d7855e247daee69db798e9f4b6e9955129dd30a1e78b68a4",
+  "shard_003_of_004.npz": "88ea44ac65bbc4d306f9a76b0498e70b8d171fb029df8642ae19ea38335fc0ae"
+ },
+ "schema_ok": true,
+ "health": [
+  {
+   "resets": 70,
+   "nonconverged_returned": 69,
+   "reset_failures": 0
+  },
+  {
+   "resets": 61,
+   "nonconverged_returned": 60,
+   "reset_failures": 0
+  },
+  {
+   "resets": 67,
+   "nonconverged_returned": 66,
+   "reset_failures": 0
+  },
+  {
+   "resets": 59,
+   "nonconverged_returned": 58,
+   "reset_failures": 0
+  }
+ ],
+ "semantic": {
+  "states": 2953,
+  "converged": 2700,
+  "kcl_max_ka": 9.744846079214968e-05,
+  "root_neutral_max_v": 3.5703674204039364e-16,
+  "vpn_min_recomputed_max_abs_diff": 8.819142016669446e-08,
+  "vpn_max_recomputed_max_abs_diff": 1.1549433365232176e-07,
+  "undervoltage_flag_consistent": true,
+  "overvoltage_flag_consistent": true,
+  "finite": true,
+  "ok": true
+ }
+}

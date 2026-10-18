@@ -1,0 +1,56 @@
+{
+ "split": "val",
+ "files": {
+  "shard_000_of_006.npz": "aca67cf1f107b25a81338bdf103c73ab45f104294265eb746cc23346d31d5519",
+  "shard_001_of_006.npz": "4b7a2e211ed79a7e67118f78037c148aaa5631f996144c7e7f2a62e1c79d3af5",
+  "shard_002_of_006.npz": "7cde3ca5f4ae3a0110ed288325fc493a54e2c4918d8a9ec69ff07c8ebaa0beb0",
+  "shard_003_of_006.npz": "b216144d61841456e5402e117050a4e2ccd2a6bcf208332df8302bb38074110c",
+  "shard_004_of_006.npz": "4bad31c4b318d85e0c15dbc9520868279f0154c709416b577fdf35d0e49fa4a1",
+  "shard_005_of_006.npz": "96f170f54116039cb839d417a35bbf6df3c43347920f2200b4178bd921bd92c3"
+ },
+ "schema_ok": true,
+ "health": [
+  {
+   "resets": 88,
+   "nonconverged_returned": 87,
+   "reset_failures": 0
+  },
+  {
+   "resets": 81,
+   "nonconverged_returned": 80,
+   "reset_failures": 0
+  },
+  {
+   "resets": 71,
+   "nonconverged_returned": 70,
+   "reset_failures": 0
+  },
+  {
+   "resets": 77,
+   "nonconverged_returned": 76,
+   "reset_failures": 0
+  },
+  {
+   "resets": 75,
+   "nonconverged_returned": 74,
+   "reset_failures": 0
+  },
+  {
+   "resets": 85,
+   "nonconverged_returned": 84,
+   "reset_failures": 0
+  }
+ ],
+ "semantic": {
+  "states": 5066,
+  "converged": 4595,
+  "kcl_max_ka": 0.0001237663582200063,
+  "root_neutral_max_v": 3.449792675503882e-16,
+  "vpn_min_recomputed_max_abs_diff": 8.701151577028554e-08,
+  "vpn_max_recomputed_max_abs_diff": 1.1292339419100017e-07,
+  "undervoltage_flag_consistent": true,
+  "overvoltage_flag_consistent": true,
+  "finite": true,
+  "ok": true
+ }
+}
