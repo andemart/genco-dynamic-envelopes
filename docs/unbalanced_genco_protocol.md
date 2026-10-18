@@ -319,3 +319,25 @@ Written after the result was committed (c20b96b). **It changes no result.** It r
 > "A GENCO-style phase-aware GNN can correct a cheap four-wire prior (V_pn MAE −91%, OpenDSS fallbacks 35.8% → 5.8%, zero observed false-safe decisions on the held-out evaluation), but pretrained balanced-GENCO representations add no value here, and a specialised classical four-wire sweep remains the accuracy leader."
 
 **Runtime.** End-to-end times mix A100 model inference with CPU sweeps and OpenDSS. They are reported as measured, not as a speed-up claim. Use "exact-call reduction", not "speed-up".
+
+## Amendment 3 (2026-10-18): post-hoc per-boundary classification (defined before it is run)
+
+**Status.** Explicitly **post-hoc**. It answers the union-mask disclosure in amendment 2. The primary result (union mask, `results/fourwire_eval_test.json`) is not altered.
+
+**Procedure.**
+- Re-run inference with the **frozen** final checkpoints, on the same frozen A100 FP32 path (TF32 off), on the test states. The calib screen is not involved.
+- For each violation label, use the states near **its own** boundary, judged from OpenDSS truth:
+
+| Label | Near-boundary states |
+|---|---|
+| Undervoltage | \|min V_pn − 0.9002\| < 0.02 pu |
+| Overvoltage | \|max V_pn − 1.0534\| < 0.02 pu |
+| Cable overload | worst cable loading in (0.9, 1.1) |
+| Transformer overload | transformer loading in (0.9, 1.1) |
+
+- Report, for every method (U1, PhaseGraph, PhaseGENCO, U3, balanced GENCO, balanced sweep) and every label: state count, positives, precision, recall and balanced accuracy where both classes are present.
+- **Every boundary is reported regardless of outcome.**
+
+**Consistency check.** The re-run must reproduce the committed union-mask near-limit balanced accuracies to within 1e-3. If not, the discrepancy is reported.
+
+**Output.** `results/fourwire_posthoc_per_boundary.json`.
