@@ -777,3 +777,57 @@ Post-hoc and exploratory. Analysed only after the envelope-prediction primary re
 
 - **Smoke defect found and fixed** (commit 054991b): PhaseGENCO's embedding inputs were not standardised. PhaseGENCO was therefore smoke-run twice, a disclosed deviation from "one smoke fit per model". Train/val only.
 - **Learning is real:** the predicted residual varies across states, and its correlation with the true residual is 0.97 (PhaseGraph).
+
+## Unbalanced GENCO extension: frozen test result (`results/fourwire_eval_test.json`, commit c20b96b)
+
+**Runs.**
+- Final fits: jobs 13343837 (PhaseGraph, best epoch 59 of 60) and 13343838 (PhaseGENCO, early-stopped, best epoch 19).
+- Evaluation: job 13343839. All at commit 49a6045.
+
+**Test set.** 2,968 test states (2,699 converged) on 36 test dates. Calibration on calib only.
+
+**State accuracy** (converged test states):
+
+| Method | V_pn MAE (pu) | p99 | Worst-customer error, max | Neutral current MAE | Phase-loading MAE |
+|---|---|---|---|---|---|
+| U1 (one sweep iteration) | 3.20e-3 | 3.8e-2 | 0.233 | 0.244 A | 8.4e-4 |
+| **PhaseGraph (U2)** | **2.91e-4** | 2.8e-3 | 0.047 | 0.019 A | 5.6e-5 |
+| PhaseGENCO | 4.41e-4 | 4.1e-3 | 0.059 | 0.028 A | 8.7e-5 |
+| Iterated four-wire sweep (U3) | 3.6e-6 | 6.1e-5 | 0.003 | 0.001 A | 3.3e-6 |
+
+**Decision level** (global conformal screen, amendment 1; mean of both directions):
+
+| Method | Sent to OpenDSS | Exact calls | Observed false-safe | Near-limit balanced accuracy | End-to-end time per state |
+|---|---|---|---|---|---|
+| U1 | 35.8% | 2,125 | 0 | 0.926 | 10.9 ms |
+| **PhaseGraph** | **5.8%** | 345 | 0 | 0.992 | **2.1 ms** |
+| PhaseGENCO | 11.8% | 702 | 0 | 0.991 | 4.6 ms |
+| U3 | 0.1% | 6 | 0 | 0.993 | 5.5 ms |
+| Balanced GENCO / balanced sweep | 63.0% | 3,742 | 0 | 0.77 | 19.5 / 19.9 ms |
+
+**Timing.**
+- End-to-end time = method time + fallback share × measured OpenDSS time (29.8 ms per state).
+- Learned models: the U1 prior and features on CPU, the model on the A100 (model only: 0.14 ms per state). PhaseGENCO adds the balanced GENCO pass.
+- U3 ran as frozen (tolerance 1e-8, at most 50 iterations, vectorised numpy on the node's CPU). It was **not optimised**; a looser tolerance or per-state stopping would be faster.
+
+**Primary criterion, PhaseGraph (U2) vs U1: met on every point.**
+
+| Criterion | Result |
+|---|---|
+| V_pn MAE reduction | **−91%** (≥ 30% required) |
+| Near-limit balanced accuracy | 0.926 → 0.992 |
+| OpenDSS fallbacks | **−30.0 points** (35.8% → 5.8%; ≥ 5 required) |
+| False-safe | 0 vs 0 |
+| Runtime | reported |
+
+**GENCO-specific criterion 9b (PhaseGENCO − PhaseGraph): not met. GENCO embeddings made things worse.**
+- Fallback **+6.0 points** for PhaseGENCO, date-bootstrap CI [+5.3, +6.7]. The interval excludes zero, but on the wrong side.
+- V_pn MAE 4.4e-4 vs 2.9e-4.
+- About 2× the end-to-end cost.
+- PhaseGENCO early-stopped at epoch 19, with validation loss 0.073 against PhaseGraph's 0.038.
+
+**Interpretation (claim discipline).**
+- A phase-aware, GENCO-architecture model (edge-conditioned TransformerConv processor, trained from scratch on four-wire states) removed the balanced-model information bottleneck. Relative to its four-wire physics prior it cut voltage error by 91% and exact OpenDSS fallbacks from 35.8% to 5.8%. The exact four-wire gate preserved the frozen acceptance rule and produced zero observed false-safe decisions on the held-out evaluation.
+- **The improvement is attributed to the unbalanced representation, not to GENCO's pretrained balanced embeddings.** Conditioning on node-aligned GENCO embeddings degraded accuracy and fallbacks.
+- **The specialised iterated four-wire sweep is about 80× more accurate (0.1% fallback).** As run in the frozen setup it was about 2.6× slower end to end than PhaseGraph (5.5 vs 2.1 ms per state). That speed gap reflects an unoptimised sweep on CPU against a model on the A100. It is not a claimed advantage over classical solvers.
+- Scope: one feeder, single-feeder training. The test dates' global summaries were seen in earlier work, so this is an exploratory extension.
