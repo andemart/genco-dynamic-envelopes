@@ -1,125 +1,102 @@
-# Probabilistic dynamic operating envelopes with GENCO
+# Four-wire-verified dynamic operating envelopes: where GENCO helps, and where it does not
 
 An entry for the [GridFM GENCO Challenge](https://huggingface.co/spaces/gridfm/genco-challenge) (deadline 25 October 2026, AoE).
 
-**Idea in one sentence:** compute dynamic operating envelopes (time-varying export and import limits
-for every flexible customer on a distribution feeder) that hold under probabilistic load and PV
-forecasts. GENCO's power flow mode evaluates thousands of (scenario × candidate envelope) cases in
-one batch, and a conformal-prediction safety layer sends only the borderline cases to an exact AC
-power flow.
+## In one paragraph
 
-**Update:** The goal is to train GENCO with the fluvius meter data, so we can optimise load voltage forecast towards setting optimal dynamic operating envelopes. These envelopes need to be settled within 3 minutes so the whole community can provide grid flexibility/congestio nservices under a hypothetical non-firm contracts.
+A **dynamic operating envelope** (DOE) is a time-varying import/export limit per household that a distribution operator can issue instead of a fixed connection limit.
+- **What we computed:** DOEs on the four-wire **ENWL1** low-voltage benchmark feeder (UK, 800 kVA, 200 single-phase customers), populated with real **Fluvius 2024** smart-meter profiles. Every issued envelope is checked against an exact four-wire OpenDSS model under a frozen finite-sample acceptance rule.
+- **The DOE result:** dynamic envelopes free several MWh of optional import/export capacity per household per year where a single static limit frees none. A balanced (three-phase-averaged) model would issue envelopes that are badly unsafe on the real four-wire feeder.
+- **What we did with GENCO:**
+  - adapted it to LV networks, where the stock model fails;
+  - put it inside the verified envelope workflow;
+  - extended a GENCO-style model to an explicit four-wire (phase + neutral) representation;
+  - benchmarked every GENCO role against strong classical baselines.
+- **The honest bottom line:** GENCO-style learning helps when it corrects a cheap four-wire physics prior. Pretrained balanced-GENCO representations add no value on this problem, and specialised classical four-wire physics remains the accuracy leader.
 
-## Dynamic operating envelopes in brief
+## Headline results
 
-A distribution network operator publishes, for each interval (say 30 minutes), a limit per connection
-point: "you may export up to *E* kW / import up to *I* kW". If every customer uses its full limit at once,
-voltages must stay within [V<sub>min</sub>, V<sub>max</sub>] and lines within their thermal ratings. The
-limit has to hold across forecast uncertainty in the *passive* load and rooftop PV on the feeder, so we
-treat it as a chance constraint: feasible in at least 1 − ε of the forecast scenarios.
+All numbers regenerate from committed results (`scripts/reproduce_check.py`). Wording follows [`docs/claims.md`](docs/claims.md).
 
-Computing envelopes is a search over power flows: for every interval, every allocation policy and every
-candidate limit you need to know whether all scenarios stay within limits. With 48 intervals,
-1,000 scenarios and around 10 search steps, a single feeder needs about 500,000 power flows per day. That
-batched, repeated workload is where a fast neural solver pays off.
-
-## Why GENCO
-
-GENCO is a unified neural solver for power flow, OPF and state estimation
-([paper](https://arxiv.org/abs/2608.09921)). We use its power flow mode: bus injections in, voltage
-phasors out, branch loadings computed from the predicted voltages. Every query in the envelope search
-is an independent power flow, so they batch on a GPU. A plain surrogate is not enough for a safety
-limit, so its errors are calibrated with split conformal prediction: GENCO decides only when its
-prediction interval is clearly inside or outside the limits, and AC power flow decides the rest.
-
-## Pipeline
-
-```
-probabilistic forecasts ──► scenario sampler ──► passive bus injections (n_s scenarios)
-   (load, rooftop PV)        (Gaussian copula)              │
-                                                            ▼
-              candidate envelope levels ──► rows = scenarios × levels (one batch)
-                                                            │
-                                                GENCO power flow (batched, GPU)
-                                                            │
-                                     conformal screen (|error| quantiles q_v, q_l)
-                                    ┌───────────────────────┼─────────────────────┐
-                                  safe                  uncertain              violated
-                                    │              AC power flow (sweep)          │
-                                    └───────────────────────┼─────────────────────┘
-                                                            ▼
-                      P(feasible) per level ──► k-section search ──► envelope per customer
-                                                            │
-                          AC verification on fresh scenarios · hosting · fairness · AC calls saved
-```
-
-## Allocation policies
-
-| Policy | Rule | Trade-off |
-|---|---|---|
-| `uniform` | same limit for everyone, capped at inverter rating | fair, leaves capacity unused |
-| `proportional` | limit ∝ inverter rating | fair per kW installed |
-| `max_total` | LP on LinDistFlow sensitivities maximising the summed limit | most hosting, favours customers near the substation |
-
-Each direction only checks the constraints it makes worse. Export envelopes check voltage rise and
-reverse-flow loading, and import envelopes check voltage drop and forward-flow loading. A base case that is
-already undervoltage at peak load therefore does not shrink the export envelope.
-
-## Repository layout
-
-| Path | What it holds |
+| What | Result |
 |---|---|
-| `src/gencodoe/feeder.py` | Radial feeder model, exact AC power flow (vectorised backward/forward sweep), LinDistFlow baseline, pandapower import, flows from predicted voltages |
-| `src/gencodoe/scenarios.py` | Correlated load/PV forecast-scenario sampler (Gaussian copula) |
-| `src/gencodoe/envelopes.py` | Feasibility oracles, conformal screen-then-verify oracle, k-section envelope search, max-total LP |
-| `src/gencodoe/conformal.py` | Split-conformal quantiles for voltage and loading errors, directional screening rule |
-| `src/gencodoe/metrics.py` | Hosting, fairness (Jain), gap to the AC envelope, curtailment, screening confusion |
-| `src/gencodoe/genco.py` | `GencoOracle`: graphkit training and inference behind the oracle interface (parquet I/O still TODO) |
-| `src/gencodoe/demo.py` | End-to-end run without GENCO, using an emulated surrogate |
-| `configs/` | `gridfm-datakit` PF config for case33bw and experiment settings |
-| `docs/workplan.md` | Plan to the deadline, open questions, risks |
+| Optional capacity, exact four-wire-verified DOEs (36 held-out days, hourly) | **4.81 MWh export** (4.35–5.30) and **2.50 MWh import** (2.11–2.87) envelope-hours per household per year. A static year-round allowance: **0** |
+| Balanced-model envelopes | about 2–3× larger, and four-wire feasible in only 2% (export) / 24% (import) of draws on a summer day |
+| Robustness to which households own HP/EV/PV (5 placements) | export 4.81–6.18, import 2.50–3.22 MWh. The headline placement is the most conservative |
+| Idealised three-phase connection of HP/EV homes | capacity about 2–2.5× higher |
+| Spatial (feeder × phase) envelopes | import 2.14×, export +11%, at lower held-out robustness and 11–12× the exact calls, with fairness trade-offs |
+| Learned envelope proposal + one exact check | about 79% of exact capacity with about **6.7% of the exact OpenDSS calls** (about 90% with about 21%). An exact-call reduction, not a measured speed-up |
+| Balanced GENCO screen + exact gate (C+) | identical envelopes to the exact search, 6% fewer exact calls. Classical screens do as well |
+| Four-wire GENCO-style GNN (exploratory) | against a one-step four-wire sweep: voltage error **−91%**, OpenDSS fallbacks **35.8% → 5.8%**, zero observed false-safe decisions. Frozen balanced-GENCO embeddings made it **worse** (+6.0 points). An iterated four-wire sweep is about 80× more accurate |
 
-## Status
+**What "verified" means here.** Each envelope passes the exact four-wire check of a frozen design-sample rule (≥ 98% of 200 scenarios).
+- That is not unconditional or 95%-confidence safety.
+- Non-zero envelopes reach 97.4% mean held-out four-wire feasibility, but only 47% pass a one-sided 95% lower-bound test.
 
-The envelope engine, scenarios, conformal layer, metrics and reference solvers are implemented and
-tested. GENCO is not trained yet. The demo stands it in with exact AC power flow plus Gaussian noise
-(σ<sub>V</sub> = 0.002 pu, σ<sub>loading</sub> = 0.01), which exercises the screening logic but says nothing
-about GENCO's real accuracy. See `docs/workplan.md`.
+## GENCO in this project
 
-Demo output, case33bw, noon interval, proportional export envelope, 500 scenarios, ε = 0.05, conformal α = 0.01:
+1. **Development: making GENCO work on LV feeders.**
+   - The stock model cannot see impedance magnitude, because the edge encoder's final LayerNorm cancels |Y|. It collapses on LV.
+   - We added asinh admittance features, a linear physics prior with a zero-initialised correction head, and KCL-based branch flows. Result: voltage MAE 1.0e-3 pu.
+   - We also found a graphkit best-model export bug and a datakit slack-voltage bug.
+2. **Application: inside a verified DOE workflow.** GENCO with a conformal four-wire screen (C), plus a final exact gate (C+), reproduces the exact envelopes.
+3. **Extension: four-wire, phase-aware GENCO-style model.** A GNN on the 397-bus four-wire graph with explicit phase and neutral states corrects a one-step four-wire sweep prior and cuts OpenDSS fallbacks six-fold.
+4. **Honest benchmarks.** In every GENCO-specific comparison, GENCO is neutral or negative on this feeder:
+   - screening against classical screens;
+   - learned four-wire heads;
+   - envelope proposals;
+   - node-aligned GENCO embeddings in the four-wire model.
 
-| Method | Total export (pu) | Gap vs AC | P(ok), AC on fresh scenarios | AC power flows |
-|---|---|---|---|---|
-| AC power flow search | 5.949 | — | 0.958 | 11,000 |
-| LinDistFlow search | 5.923 | −0.4% | 0.970 | 0 |
-| Emulated surrogate + conformal + AC verify | 5.949 | 0.0% | 0.958 | 2,645 |
-| Emulated surrogate + conformal only | 5.751 | −3.3% | 1.000 | 0 |
-| Max-total LP | 6.559 | +10.3% | **0.856** | 500 |
+What GENCO would need here: four-wire pretraining, MV networks, and multi-network generalisation.
 
-Screen-then-verify gives the same envelope as AC power flow with 76% fewer AC power flows. The max-total LP
-breaks the 0.95 target once checked with AC power flow, which is why every envelope gets an AC check.
+## How the workflow fits together
 
-## Quick start
+```
+Fluvius smart-meter profiles ──► forecast scenarios (200 per interval)
+            │
+            ▼
+  candidate envelope levels ──► proposal (exact search | GENCO-screened | learned proposal)
+            │
+            ▼
+  exact four-wire OpenDSS check of the frozen design-sample rule ──► issued envelope
+            │
+            ▼
+  held-out verification on fresh scenarios (reported separately)
+```
+
+## Reproducing
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev,feeders]"
-pytest
-python -m gencodoe.demo --case33bw
-
-# GENCO toolkits (GPU recommended; see their READMEs for torch-scatter)
-pip install -e ".[genco]"
-gridfm_datakit setup_pm
-gridfm_datakit generate configs/datakit_pf_case33bw.yaml
+pip install -e ".[dev,feeders,unbalanced,genco]" scikit-learn   # pinned versions: requirements-lock.txt (laptop), requirements-lock-hydra.txt (A100 cluster)
+pytest                                     # 72 tests
+GENCODOE_VOLTAGE_LIMITS=uk_esqcr python scripts/reproduce_check.py
 ```
 
-## Evaluation (what the write-up will report)
+- `reproduce_check.py` regenerates every headline result file from its recorded inputs and compares it byte for byte with the committed version. The A100-only four-wire evaluation is checked against the SHA-256 in its run manifest.
+- **Artifacts.** The run outputs (`data_out/`: DOE runs, labels, features, checkpoints) and the 6 GB Fluvius input are not in git, and **are not yet published** for download.
+  - Every run is recorded with commits, job IDs and file hashes in `results/run_manifest_*.json`.
+  - Raw Fluvius data access follows Fluvius's terms.
 
-- **Envelope accuracy:** total and per-customer gap between GENCO-based and AC-based envelopes, per policy and direction.
-- **Safety:** out-of-sample violation probability (AC power flow) against the 1 − ε target. For screening, missed-violation rate and share sent to AC.
-- **Power flow accuracy:** voltage MAE near V<sub>max</sub>, loading MAE near 1.0, conformal coverage per bus and branch.
-- **Value:** hosting capacity and curtailed PV export versus a static export limit (e.g. 5 kW per customer) and versus LinDistFlow.
-- **Runtime:** wall-clock per interval for GENCO batched vs AC sweep vs pandapower Newton–Raphson, and AC calls avoided.
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `src/gencodoe/enwl.py`, `unbalanced.py` | ENWL1 balanced reduction; four-wire OpenDSS model (constant-PQ loads, checked engine resets) |
+| `src/gencodoe/doe_day.py`, `envelopes.py` | Envelope search (k-section, design-sample acceptance rule), daily runner |
+| `src/gencodoe/genco*.py`, `four_wire.py`, `cplus.py` | GENCO LV variant, oracle, four-wire conformal screen, final exact gate |
+| `src/gencodoe/envpred3.py` | Learned envelope proposals + exact gate |
+| `src/gencodoe/fourwire_*.py` | Four-wire network, sweep, labels, GENCO-style four-wire model, frozen evaluation |
+| `src/gencodoe/report_*.py` | Report generators (the only source of reported numbers) |
+| `docs/` | Pre-registration, protocols and amendments, `experiment_log.md`, `claims.md`, handoff |
+| `results/` | Committed result files and run manifests |
+| `scripts/` | Hydra job scripts, `reproduce_check.py` |
+
+## Status of the evidence
+
+- **Pre-registered:** the exact search (B) and the GENCO screen (C).
+- **Frozen before their results were seen:** everything else (C+, W1–W3, Option 2, envelope prediction, the four-wire extension). These are exploratory, and the test dates were also used in development.
+- **Disclosed, not hidden:** every protocol deviation and every incident, including a wrong voltage base, an OpenDSS engine-poisoning bug, stale cluster caches and an invalid fit. See the amendments and the experiment log.
 
 ## License
 
