@@ -142,7 +142,14 @@ def semantic_check(d: dict, net, tol_kcl_ka: float = 2e-4) -> dict:
         kcl[:, net.parent[i]] -= I[:, i]
     kcl[:, 0] = 0.0                                                        # root row is defined as the total
     vpn = phase_neutral_pu(net, V)
+    # worst cable loading recomputed from stored branch currents: a merged chain carries one current and its
+    # rating is the chain minimum, so the max over retained branches equals OpenDSS's worst line
+    line_load = (np.abs(I[:, 1:, :3]) / (net.rating_a[1:, None] / 1e3)).max((1, 2))
     rep = {"states": int(len(c)), "converged": int(c.sum()),
+           "scenarios_unique": bool(len(np.unique(d["scenario"])) == len(d["scenario"])),
+           "line_loading_recomputed_max_abs_diff": float(np.abs(line_load - d["summary"][c, 2]).max()) if c.any() else 0.0,
+           "cable_flag_consistent": bool(((d["summary"][:, 2] > 1.0) == d["flags"][:, 2]).all()),
+           "transformer_flag_consistent": bool(((d["summary"][:, 3] > 1.0) == d["flags"][:, 3]).all()),
            "kcl_max_ka": float(np.abs(kcl).max()) if c.any() else 0.0,
            "root_neutral_max_v": float(np.abs(V[:, 0, 3]).max() * 1e3) if c.any() else 0.0,
            "vpn_min_recomputed_max_abs_diff": float(np.abs(vpn.min(1) - d["summary"][c, 0]).max()) if c.any() else 0.0,
@@ -152,7 +159,9 @@ def semantic_check(d: dict, net, tol_kcl_ka: float = 2e-4) -> dict:
            "finite": bool(np.isfinite(V).all() and np.isfinite(I).all())}
     rep["ok"] = (rep["kcl_max_ka"] < tol_kcl_ka and rep["root_neutral_max_v"] < 1.0 and rep["finite"]
                  and rep["vpn_min_recomputed_max_abs_diff"] < 1e-4 and rep["vpn_max_recomputed_max_abs_diff"] < 1e-4
-                 and rep["undervoltage_flag_consistent"] and rep["overvoltage_flag_consistent"])
+                 and rep["undervoltage_flag_consistent"] and rep["overvoltage_flag_consistent"]
+                 and rep["scenarios_unique"] and rep["cable_flag_consistent"] and rep["transformer_flag_consistent"]
+                 and rep["line_loading_recomputed_max_abs_diff"] < 1e-3)
     return rep
 
 
@@ -174,10 +183,8 @@ def main():
             rep["schema_ok"] &= str(z["schema_hash"]) == SCHEMA_HASH
             rep["health"].append(json.loads(str(z["engine_health"])))
             rep["files"][f.name] = hashlib.sha256(f.read_bytes()).hexdigest()
-        if a.split == "test":                     # structural only: test values are not opened
-            rep["n_files"] = len(files)
-        else:
-            rep["semantic"] = semantic_check(load_split(a.split), net)
+        # test labels may be checked semantically only after the frozen evaluation (amendment 2)
+        rep["semantic"] = semantic_check(load_split(a.split, allow_test=a.split == "test"), net)
         out = Path(f"results/fourwire_label_integrity_{a.split}.json")
         out.write_text(json.dumps(rep, indent=1))
         print(json.dumps({k: v for k, v in rep.items() if k != "files"}, indent=1))

@@ -291,3 +291,31 @@ Committed before the final fits and before any test state is opened.
 ### Unchanged
 
 Every success criterion (section 9 and 9b), its thresholds, the splits and the claim discipline.
+
+## Amendment 2 (2026-10-18, after the frozen test evaluation): disclosures and corrected wording
+
+Written after the result was committed (c20b96b). **It changes no result.** It records where the implementation differed from the protocol text, and it narrows the interpretation.
+
+### Implementation differences
+
+1. **Thevenin root equivalent.** The protocol (section 4) says it is identified "once from OpenDSS with small test injections". It was actually fitted by **least squares from every converged training-split label**: root phase voltages against the outgoing root phase currents (`fourwire_labels.py thevenin`).
+   - It uses training labels only, so there is no test leakage.
+   - The fit is E = 240.18 V nominal phasors with a symmetric Z_th.
+2. **PhaseGENCO embedding scaling.** Amendment 1 says "training statistics". The scaler (asinh + per-channel standardisation) was fitted on the **first 2,000 training states** only, to limit memory (`fourwire_train.py`). All other inputs use the full training split.
+3. **Near-limit classification.** Section 8 asks for metrics "restricted to the states near each operational boundary". The implementation uses **one union mask** (near any boundary) for all four labels (`fourwire_eval.py`).
+   - Per-boundary metrics were not computed.
+   - The reported near-limit balanced accuracies (U1 0.926, PhaseGraph 0.992) are for the union mask.
+4. **Label integrity.** The semantic checker verified the undervoltage and overvoltage flags against the stored states, but **not** the cable- and transformer-overload flags. No test-label integrity report was committed before evaluation. Both are corrected by an extended checker and the reports committed with this amendment; see `results/fourwire_label_integrity_*.json`.
+
+### Corrected interpretation (replaces the attribution sentence in the experiment log)
+
+- **U1 is already phase- and neutral-aware.** The primary comparison therefore shows the value of a **learned GENCO-style residual over a one-step four-wire prior**. It does **not** isolate the causal value of phase-aware representation itself.
+- The balanced baselines (63% fallback) support the claim that phase information matters, but they do not isolate it causally.
+- **The GENCO-specific result is negative.** Frozen balanced-GENCO embeddings made PhaseGENCO worse (+6.0 fallback points).
+- **The specialised iterated four-wire sweep remains the accuracy leader** (about 80× lower V_pn error, 0.1% fallback).
+
+**Permitted summary:**
+
+> "A GENCO-style phase-aware GNN can correct a cheap four-wire prior (V_pn MAE −91%, OpenDSS fallbacks 35.8% → 5.8%, zero observed false-safe decisions on the held-out evaluation), but pretrained balanced-GENCO representations add no value here, and a specialised classical four-wire sweep remains the accuracy leader."
+
+**Runtime.** End-to-end times mix A100 model inference with CPU sweeps and OpenDSS. They are reported as measured, not as a speed-up claim. Use "exact-call reduction", not "speed-up".
