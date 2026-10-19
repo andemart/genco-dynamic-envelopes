@@ -1,0 +1,41 @@
+# gridfm-datakit config: AC-OPF training data for GENCO on case118 with flexible export
+# units (grids/case118_flex.m, written by scripts/export_flex_case.py). The OPF dispatch
+# of the flexible units in each load scenario is that scenario's max-hosting envelope.
+#   gridfm_datakit generate configs/datakit_opf_case118_flex.yaml
+network:
+  name: "case118_flex"
+  source: "file"
+  network_dir: "./grids"
+
+load:
+  generator: "agg_load_profile"
+  agg_profile: "default"
+  scenarios: 30000
+  sigma: 0.2
+  change_reactive_power: true
+  global_range: 0.4
+  max_scaling_factor: 2.0
+  step_size: 0.1
+  start_scaling_factor: 1.0
+
+topology_perturbation:
+  type: "none"
+
+generation_perturbation:
+  type: "none"                # keep the flexible units' negative cost (cost permutation would shuffle it)
+
+admittance_perturbation:
+  type: "none"
+
+settings:
+  num_processes: 8
+  data_dir: "./data_out"      # gitignored; move to ~/gencodoe_work if the repo sits in a synced folder
+  large_chunk_size: 500
+  overwrite: true
+  mode: "opf"
+  include_dc_res: false
+  enable_solver_logs: false
+  pf_fast: true
+  dcpf_fast: true
+  max_iter: 200
+  seed: 42
