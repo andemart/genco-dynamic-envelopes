@@ -82,7 +82,7 @@ def fresh_ok(case, cust, limit, pv, qv, direction):
     return float(envelopes.exact(fdr.sweep_pf, case.fd)(pv + inj, qv, direction).mean())
 
 
-def run_interval(case, sc, opf, day, hour, direction, methods, genco=None):
+def run_interval(case, sc, opf, day, hour, direction, methods, genco=None, mopf=None, predictors=None):
     cust = customers(case)
     p, q, pv, qv = interval_draws(sc, day, hour)
     rows = []
@@ -95,6 +95,21 @@ def run_interval(case, sc, opf, day, hour, direction, methods, genco=None):
             prop_s = time.perf_counter() - t
             limit, lam, share, evals = env.limit, float("nan"), float(env.prob_ok), int(env.n_evals)
             check_s = 0.0
+        elif m in ("multi", "gnn", "mlp"):                              # direct shared-vector proposals
+            if m == "multi":
+                from .opf_multi import multi_envelope
+                x, extra = multi_envelope(mopf, case.fd, cust, p, q, direction)
+            else:
+                from .opf_labels import node_features
+                t1 = time.perf_counter()
+                frac = predictors[m].predict(node_features(case, p, q, direction)[None])[0]
+                extra = {"infer_s": time.perf_counter() - t1}
+                x = np.clip(frac[case.unit_bus], 0, 1) * case.cap[direction]
+            prop_s = time.perf_counter() - t
+            t2 = time.perf_counter()
+            limit, lam, share, evals = scale_down(case, cust, x, p, q, direction)
+            check_s = time.perf_counter() - t2
+            extra["proposal_total_mw"] = float(x.sum())
         else:
             if m == "lp":
                 xs = proposal_lp(case, cust, p, q, direction)
@@ -124,17 +139,27 @@ def main():
     ap.add_argument("--hours", type=int, nargs="+", default=list(range(24)))
     ap.add_argument("--methods", nargs="+", default=["uniform", "lp", "ipopt"])
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--tag", default="final", help="trained run tag for gnn/mlp")
     a = ap.parse_args()
     if any(d not in oc.SPLIT[a.split] for d in a.days):
         raise SystemExit(f"days {a.days} are not all in split {a.split}")
     case = oc.build()
     sc = oc.Scenarios(case, seed=0)
     opf = oc.OPF(case, Path("data_out/opf_case33")) if "ipopt" in a.methods else None
+    mopf = None
+    if "multi" in a.methods:
+        from .opf_multi import MultiOPF
+        mopf = MultiOPF()
+    predictors = {}
+    for m in ("gnn", "mlp"):
+        if m in a.methods:
+            from .opf_gnn import RUNS, Predictor
+            predictors[m] = Predictor(RUNS / f"{m}_{a.tag}", case)
     rows = []
     for day in a.days:
         for h in a.hours:
             for d in ("export", "import"):
-                rows += run_interval(case, sc, opf, day, h, d, a.methods)
+                rows += run_interval(case, sc, opf, day, h, d, a.methods, mopf=mopf, predictors=predictors)
         print(f"day {day} done", flush=True)
     import os
     a.out.parent.mkdir(parents=True, exist_ok=True)
