@@ -102,3 +102,33 @@ For each interval and direction, with design scenarios s = 1..S (S = 200, ε = �
 - **The exact check guarantees the design-sample rule for every method.** Differences between methods are in hosting and cost, never in nominal safety.
 - No claim of unconditional safety; no claim beyond the stated networks.
 - Negative results are reported. In particular, the gain may come from accuracy over the LP rather than speed over parallel IPOPT.
+
+## Amendment 1 (2026-10-19, before any label, fit or method comparison)
+
+Found while building stage A. Checked on **training days only** (days 0, 13, 27, 41, 55 and 69; 5 scenarios per hour; 720 solves per direction). No evaluation day was used.
+
+1. **The slack is pinned at 1.0 pu** (V_min = V_max = 1.0 at the root). Unpinned, the OPF raised the substation voltage to 1.05 pu to host more import. The protocol already specified 1.0 pu; the code now enforces it.
+
+2. **Export caps raised to 3.0 × nominal load. Import caps stay at 1.5 ×.**
+
+   | Setting | Network-limited solves (< 99% of caps) | Mean hosted / caps |
+   |---|---|---|
+   | Export at 1.5× | 2.4% | 99.9% |
+   | **Export at 3.0×** | **100%** | **78.7%** |
+   | Export at 5.0× | 100% | 49.5% |
+   | Import at 1.5× | 100% (network always binds) | 55.1% |
+
+   At 1.5× every method would return about the caps, so export would be uninformative. Import is already informative at 1.5×.
+
+3. **Infeasible per-scenario OPF.** 124 of 720 import solves were infeasible: the passive load already violates the voltage limits.
+   - For such a scenario, x_i^s = 0 for every unit (no feasible non-negative allocation; the zero-sentinel analogue).
+   - The ε-quantile then includes these zeros.
+   - GENCO-OPF does not detect infeasibility. Its prediction is used as is, and the exact check and scale-down decide.
+   - Counts are reported per method.
+
+4. **Fairness weight (the secondary objective):** a quadratic cost w·P_i² on every unit, with w = 1 / (2 · mean cap of the direction) and a slack cost c1 = 1. The primary objective stays maximum hosting.
+
+5. **IPOPT timing.**
+   - The reported per-solve time is the `solve_ac_opf` wall-clock.
+   - Python↔Julia data-update overhead is reported separately.
+   - "Parallel IPOPT" means N independent Julia processes on one Hydra zen4 node, N reported; throughput = states / wall-clock.
