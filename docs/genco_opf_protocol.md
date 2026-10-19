@@ -132,3 +132,71 @@ Found while building stage A. Checked on **training days only** (days 0, 13, 27,
    - The reported per-solve time is the `solve_ac_opf` wall-clock.
    - Python↔Julia data-update overhead is reported separately.
    - "Parallel IPOPT" means N independent Julia processes on one Hydra zen4 node, N reported; throughput = states / wall-clock.
+
+## Amendment 2 (2026-10-19, before any label, fit or test-day evaluation): option 1, the multi-scenario OPF
+
+### Finding that motivated it (validation day 80 only; development data)
+
+Per-scenario AC-OPF + per-customer ε-quantile **does not keep optimality**:
+- each per-scenario optimum sits on its own scenario's voltage limit, and uses different customers' headroom;
+- the stitched quantile vector then fails jointly and is scaled down hard.
+
+| Import, 03:00 | Proposal after quantile | After the exact check (λ) |
+|---|---|---|
+| IPOPT per scenario | 2.89 MW | 0.38 MW (λ = 0.13) |
+| LinDistFlow LP per scenario | 1.44 MW | 1.10 MW (λ = 0.77) |
+
+The cheap LP beat per-scenario IPOPT after the check in most tested intervals. GENCO-OPF imitating per-scenario IPOPT would inherit this and fail criterion 2 by construction.
+
+**Also corrected:** the per-scenario OPF let units supply reactive power, which the exact check does not model. From now on units inject **active power only**, and each OPF imposes only the constraints relevant to its direction, exactly as the exact check does: export checks overvoltage and loading; import checks undervoltage and loading.
+
+### New reference optimum: the multi-scenario AC-OPF (`gencodoe.opf_multi`)
+
+**Formulation.** For each interval and direction, one AC-OPF with a **shared** limit vector x across the design scenarios (the scenario approach):
+
+> maximise Σ x_i, subject to, for each kept scenario: polar AC power flow with unit injection ±x_i (P only), the direction-relevant voltage bound, sending-end branch |S| ≤ rating, and 0 ≤ x_i ≤ cap_i.
+
+**Discarding** follows the design rule, which allows S − ⌈0.98·S⌉ = 4 of 200 scenarios to fail:
+1. Scenarios infeasible at x = 0 are discarded first. If more than 4 are, the envelope is 0 (zero sentinel).
+2. The rest of the allowance is spent greedily: drop the kept scenario with the smallest direction-relevant headroom at the current x, re-solve, and stop when hosting no longer grows.
+
+**Solver.** JuMP (PowerModels' internal copy) with IPOPT; the exact check and scale-down follow as for every method.
+
+**Validation-day 80 result** (development): it passes the exact check unchanged (λ = 1), hosts 6–13% more than the LP after the check in the 5 tested non-zero intervals, and costs **7–24 s per interval and direction**.
+
+### GENCO's role (replaces section 5)
+
+A **GENCO-style graph model amortises the multi-scenario OPF**. It maps the interval's scenario statistics to the shared optimal vector, x̂_i / cap_i ∈ [0, 1], followed by the same exact check and scale-down.
+
+**Architecture.**
+- The encode–process–decode TransformerConv processor family used in the four-wire extension, with asinh-scaled impedance and rating edge features and no final LayerNorm in the encoders.
+- **Trained from scratch** on case33bw. There is no pretrained GENCO checkpoint for this network, and this is disclosed.
+
+**Inputs.**
+- **Node:** per bus, the 7 statistics (mean, min, p02, p10, p90, p98, max) over the 200 design scenarios of net P and of Q; cap; PV flag; root flag; depth; direction flag.
+- **Edge:** r, x, rating.
+
+**Labels.** Multi-scenario OPF optima on **training** days, with validation days for early stopping. Test days are only evaluated once, in the frozen evaluation.
+
+**Baselines for the learned model.** An MLP on the same features flattened (same budget, same training rule), so that any gain can be attributed to the graph structure.
+
+### Methods in the final evaluation (test days)
+
+- uniform;
+- LP (per scenario, quantile, check);
+- IPOPT per scenario (quantile, check);
+- **multi-scenario OPF (the reference)**;
+- GENCO-style graph model + check;
+- MLP + check.
+
+### Success criteria (replace section 8)
+
+GENCO-style versus the reference and the LP, after the exact check:
+
+1. Hosting ≥ 95% of the multi-scenario OPF.
+2. Hosting ≥ 1.05 × LP.
+3. Held-out P(ok) no worse than the multi-scenario OPF's minus 0.005 (mean) and minus 1 point (share ≥ 0.95).
+4. Proposal plus check wall-clock below the multi-scenario OPF's, reported per hardware.
+   - The claim "near-optimal at a fraction of the cost" needs 1–4.
+
+**Also reported:** GENCO-style versus the MLP. A graph-structure claim needs the GENCO-style model to beat the MLP by at least 2 points of hosting relative to the reference, with a day-bootstrap lower bound above 0.

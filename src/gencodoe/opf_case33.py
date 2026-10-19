@@ -99,6 +99,18 @@ class OPF:
         jl.seval("""function set_loads!(data, pd, qd)
             for (k, l) in data["load"]; b = l["load_bus"]; l["pd"] = pd[b]; l["qd"] = qd[b]; end
         end""")
+        jl.seval("""function solve_units(data, pd, qd)
+            set_loads!(data, pd, qd)
+            t = time()
+            res = solve_ac_opf(data, SOLVER)
+            dt = time() - t
+            st = string(res["termination_status"])
+            n = length(data["gen"])
+            pg = st in ("LOCALLY_SOLVED", "OPTIMAL", "ALMOST_LOCALLY_SOLVED") ?
+                 [res["solution"]["gen"][string(i)]["pg"] for i in 2:n] : fill(NaN, n - 1)
+            return pg, st, dt
+        end""")
+        self._solve = jl.seval("solve_units")
 
     def _matpower(self, direction: str) -> str:
         c, fd = self.c, self.c.fd
@@ -119,16 +131,10 @@ class OPF:
         return "\n".join(L)
 
     def solve(self, p: np.ndarray, q: np.ndarray, direction: str):
-        """One scenario (bus injections p, q in pu, consumption negative). Returns (unit Pg MW or NaN, ok, seconds)."""
-        jl = self.jl
-        D = f"DATA_{direction}"
-        jl.seval("set_loads!")(jl.seval(D), -np.asarray(p, float), -np.asarray(q, float))
+        """One scenario (bus injections p, q in pu, consumption negative).
+        Returns (unit Pg MW, NaN if not solved; ok; IPOPT solve seconds; total seconds incl. data transfer)."""
         t = time.perf_counter()
-        jl.seval(f"RES = solve_ac_opf({D}, SOLVER)")
-        dt = time.perf_counter() - t
-        status = str(jl.seval('string(RES["termination_status"])'))
-        ok = status in ("LOCALLY_SOLVED", "OPTIMAL", "ALMOST_LOCALLY_SOLVED")
-        pg = np.full(len(self.c.unit_bus), np.nan)
-        if ok:
-            pg = np.array(jl.seval(f'[RES["solution"]["gen"][string(i)]["pg"] for i in 2:length({D}["gen"])]'), float)
-        return pg, ok, dt
+        pg, st, dt = self._solve(self.jl.seval(f"DATA_{direction}"), -np.asarray(p, float), -np.asarray(q, float))
+        pg = np.asarray(pg, float)
+        ok = str(st) in ("LOCALLY_SOLVED", "OPTIMAL", "ALMOST_LOCALLY_SOLVED")
+        return pg, ok, float(dt), time.perf_counter() - t
