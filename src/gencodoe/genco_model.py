@@ -181,3 +181,19 @@ class GNS_heterogeneous_lv(GNS_heterogeneous):
         finally:
             self._ctx.batch = None
             self._ctx.prior = None
+
+
+@MODELS_REGISTRY.register("GNS_heterogeneous_lv_recon")
+class GNS_heterogeneous_lv_recon(GNS_heterogeneous_lv):
+    """Amendment 4b: the LV variant plus a reconstruction head that predicts [PD, QD] per bus from the final bus
+    embedding, appended to graphkit's [Vm, Va, Pg, Qg] so MaskedReconstructionMSE can train masked loads directly."""
+
+    def __init__(self, args) -> None:
+        super().__init__(args)
+        width = int(args.model.hidden_size) * int(args.model.attention_head)      # the bus embedding fed to mlp_bus
+        self.recon_head = nn.Sequential(nn.Linear(width, width), nn.LeakyReLU(), nn.Linear(width, 2))
+
+    def forward(self, batch, return_embeddings: bool = False):
+        pred, emb = super().forward(batch, return_embeddings=True)
+        pred["bus"] = torch.cat([pred["bus"], self.recon_head(emb["bus"])], dim=1)
+        return (pred, emb) if return_embeddings else pred
