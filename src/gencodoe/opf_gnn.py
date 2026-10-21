@@ -91,11 +91,17 @@ def graph(case: oc.Case33):
     return ei, ea
 
 
-def load_days(days):
+def load_days(days, emb=False):
+    """Features, labels (N, units) and meta of the label days; emb=True appends the frozen GENCO embeddings
+    (opf_genco.embed_days) to the node features."""
     X, Y, M = [], [], []
     for d in days:
         z = np.load(LABELS / f"day{d:03d}.npz")
-        X.append(z["X"])
+        x = z["X"]
+        if emb:
+            from .opf_genco import EMB
+            x = np.concatenate([x, np.load(EMB / f"day{d:03d}.npz")["E"].astype(np.float32)], axis=-1)
+        X.append(x)
         Y.append(z["Y"])
         M += json.loads(str(z["meta"]))
     return np.concatenate(X), np.concatenate(Y), M
@@ -103,7 +109,7 @@ def load_days(days):
 
 def build_model(kind, n_bus, node_in, edge_in):
     torch.manual_seed(CONFIG["seed"])
-    if kind == "gnn":
+    if kind in ("gnn", "gnn_genco"):
         return EnvGNN(node_in, edge_in, CONFIG["hidden"], CONFIG["layers"], CONFIG["heads"])
     return EnvMLP(n_bus, node_in)
 
@@ -138,8 +144,8 @@ class Predictor:
 
 def fit(kind, tag, epochs, device="cpu"):
     case = oc.build()
-    Xtr, Ytr, Mtr = load_days(oc.SPLIT["train"])
-    Xva, Yva, Mva = load_days(oc.SPLIT["val"])
+    Xtr, Ytr, Mtr = load_days(oc.SPLIT["train"], emb=kind == "gnn_genco")
+    Xva, Yva, Mva = load_days(oc.SPLIT["val"], emb=kind == "gnn_genco")
     ei, ea = graph(case)
     xs, es = Scaler(Xtr), Scaler(ea)                                   # training statistics only
     cap_w = np.zeros(case.fd.n_bus, np.float32)                        # loss weight: unit caps (hosting-aligned)
@@ -219,7 +225,7 @@ def fit(kind, tag, epochs, device="cpu"):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["fit"])
-    ap.add_argument("--model", choices=["gnn", "mlp"], required=True)
+    ap.add_argument("--model", choices=["gnn", "mlp", "gnn_genco"], required=True)
     ap.add_argument("--tag", default="smoke")
     ap.add_argument("--epochs", type=int, default=CONFIG["max_epochs"])
     ap.add_argument("--device", default="cpu")

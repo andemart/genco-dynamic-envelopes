@@ -138,23 +138,25 @@ def test_fit_smoke_on_per_unit_labels(case, tmp_path, monkeypatch):
     sc = oc.Scenarios(case, 0)
     rng = np.random.default_rng(0)
 
-    def fake_days(days):
+    def fake_days(days, emb=False):
         X, Y, M = [], [], []
         for d in days:
             for h in (0, 12):
                 p, q, _, _ = oe.interval_draws(sc, d, h)
                 for dr in ("export", "import"):
-                    X.append(opf_labels.node_features(case, p, q, dr))
+                    x = opf_labels.node_features(case, p, q, dr)
+                    X.append(np.concatenate([x, rng.random((33, 96), dtype=np.float32)], -1) if emb else x)
                     Y.append(rng.random(len(case.unit_bus)).astype(np.float32))
                     M.append({"day": d, "hour": h, "direction": dr})
         return np.array(X), np.array(Y), M
     monkeypatch.setattr(opf_gnn, "load_days", fake_days)
     monkeypatch.setattr(opf_gnn, "RUNS", tmp_path)
-    for kind in ("gnn", "mlp"):
+    for kind in ("gnn", "mlp", "gnn_genco"):
         meta = opf_gnn.fit(kind, "t", 1)
         assert meta["train_intervals"] == 4 * len(oc.SPLIT["train"]) and np.isfinite(meta["best_val"])
+        assert meta["node_in"] == (19 + 96 if kind == "gnn_genco" else 19)
         pred = opf_gnn.Predictor(tmp_path / f"{kind}_t", case)
-        out = pred.predict(fake_days([0])[0][:2])
+        out = pred.predict(fake_days([0], emb=kind == "gnn_genco")[0][:2])
         assert out.shape == (2, 33) and (out >= 0).all() and (out <= 1).all()
 
 
@@ -168,7 +170,7 @@ def test_report_metrics_and_criteria(tmp_path):
     """opf_report on synthetic day files: hosting ratios, bootstrap bounds and the criteria follow the protocol."""
     from gencodoe import opf_report as rp
     rng = np.random.default_rng(0)
-    scale = {"uniform": 0.5, "lp": 0.8, "ipopt": 0.85, "multi": 1.0, "gnn": 0.97, "mlp": 0.90}
+    scale = {"uniform": 0.5, "lp": 0.8, "ipopt": 0.85, "multi": 1.0, "gnn": 0.97, "mlp": 0.90, "gnn_genco": 0.995}
     for day in (100, 101, 102):
         rows = []
         for h in (0, 1):
@@ -179,9 +181,16 @@ def test_report_metrics_and_criteria(tmp_path):
                     rows.append({"day": day, "hour": h, "direction": d, "method": m, "total_mw": float(lim.sum()),
                                  "limit_mw": lim.tolist(), "lambda": 1.0, "design_share": 0.98, "fresh_ok": 0.97,
                                  "proposal_s": 30.0 if m == "multi" else 1.0, "check_s": 0.1, "exact_evals": 4})
-        (tmp_path / f"day{day}.json").write_text(json.dumps({"meta": {"days": [day]}, "rows": rows}))
-    out = rp.report(tmp_path)
-    assert out["n_days"] == 3 and out["n_rows"] == 3 * 2 * 2 * 6
+        main, extra = [r for r in rows if r["method"] != "gnn_genco"], [r for r in rows if r["method"] == "gnn_genco"]
+        (tmp_path / f"day{day}.json").write_text(json.dumps({"meta": {"days": [day]}, "rows": main}))
+        (tmp_path / "genco").mkdir(exist_ok=True)
+        (tmp_path / "genco" / f"day{day}.json").write_text(json.dumps({"meta": {"days": [day]}, "rows": extra}))
+    out = rp.report(tmp_path, [tmp_path / "genco"])
+    assert out["n_days"] == 3 and out["n_rows"] == 3 * 2 * 2 * 7
+    a3 = out["criteria"]["amendment3_genco_helps"]
+    assert abs(a3["genco_minus_gnn_over_reference"]["point"] - 0.025) < 1e-9 and a3["pass"]
+    assert out["summary"]["gnn_genco"]["combined"]["n_intervals"] == 12
+    assert rp.report(tmp_path)["n_rows"] == 3 * 2 * 2 * 6
     s = out["summary"]
     assert abs(s["gnn"]["combined"]["gap_to_reference_pct"] - 3.0) < 1e-9
     assert abs(s["lp"]["export"]["gain_over_uniform_pct"] - 60.0) < 1e-9

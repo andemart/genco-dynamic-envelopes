@@ -22,12 +22,21 @@ REF, LEARNED, BASELINE_LP, BASELINE_MLP = "multi", "gnn", "lp", "mlp"
 N_BOOT, BOOT_SEED = 2000, 0
 
 
-def load_rows(test_dir: Path):
+GENCO = "gnn_genco"                                      # amendment 3 arm, evaluated in a separate directory
+
+
+def load_rows(test_dir: Path, extra_dirs=()):
     rows, days = [], []
     for f in sorted(glob.glob(str(test_dir / "day*.json"))):
         d = json.loads(Path(f).read_text())
         rows += d["rows"]
         days += d["meta"]["days"]
+    for x in extra_dirs:
+        for f in sorted(glob.glob(str(Path(x) / "day*.json"))):
+            d = json.loads(Path(f).read_text())
+            if any(dd not in days for dd in d["meta"]["days"]):
+                raise ValueError(f"{f}: days not in the main evaluation")
+            rows += d["rows"]
     return rows, sorted(days)
 
 
@@ -101,13 +110,28 @@ def criteria(rows, days, summary):
                        "pass": sg["end_to_end_s_mean"] < sref["end_to_end_s_mean"]},
          "graph_structure": {"gnn_minus_mlp_over_reference": graph, "pass": graph["point"] >= 0.02 and graph["lo"] > 0}}
     c["genco_opf_positive"] = all(c[k]["pass"] for k in ("1_near_optimal", "2_beats_lp", "3_safe", "4_cheaper"))
+    if GENCO in summary:                                                # amendment 3: the actual GENCO as backbone
+        gg = day_totals(rows, GENCO, days)
+        sg2 = summary[GENCO]["combined"]
+        helps = boot_diff_ratio(gg, g, ref, rng)
+        r2, l2 = boot_ratio(gg, ref, rng), boot_ratio(gg, lp, rng)
+        c["amendment3_genco_helps"] = {
+            "genco_minus_gnn_over_reference": helps, "ratio_to_reference": r2, "ratio_to_lp": l2,
+            "fresh_mean": sg2["fresh_ok_mean"], "fresh_share": sg2["fresh_ok_share_ge_095"],
+            "end_to_end_s": sg2["end_to_end_s_mean"],
+            "criterion_1": r2["point"] >= 0.95, "criterion_2": l2["point"] >= 1.05,
+            "criterion_3": sg2["fresh_ok_mean"] >= sref["fresh_ok_mean"] - 0.005
+            and sg2["fresh_ok_share_ge_095"] >= sref["fresh_ok_share_ge_095"] - 0.01,
+            "criterion_4": sg2["end_to_end_s_mean"] < sref["end_to_end_s_mean"]}
+        a3 = c["amendment3_genco_helps"]
+        a3["pass"] = bool(helps["point"] >= 0.02 and helps["lo"] > 0 and a3["criterion_1"] and a3["criterion_3"])
     c["near_optimal_and_safe_not_faster"] = all(c[k]["pass"] for k in ("1_near_optimal", "2_beats_lp", "3_safe")) and not c["4_cheaper"]["pass"]
     return c
 
 
-def report(test_dir: Path):
-    rows, days = load_rows(test_dir)
-    methods = sorted({x["method"] for x in rows}, key=["uniform", "lp", "ipopt", REF, LEARNED, BASELINE_MLP].index)
+def report(test_dir: Path, extra_dirs=()):
+    rows, days = load_rows(test_dir, extra_dirs)
+    methods = sorted({x["method"] for x in rows}, key=["uniform", "lp", "ipopt", REF, LEARNED, BASELINE_MLP, GENCO].index)
     summary = {m: {d: summarise(rows, m, d) for d in ("export", "import", "combined")} for m in methods}
     out = {"days": days, "n_days": len(days), "n_rows": len(rows), "methods": methods, "summary": summary,
            "bootstrap": {"replicates": N_BOOT, "seed": BOOT_SEED, "block": "day"}}
@@ -133,9 +157,10 @@ def table(out):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--test-dir", type=Path, default=Path("data_out/opf_case33/test"))
+    ap.add_argument("--extra-dir", type=Path, nargs="*", default=[], help="e.g. data_out/opf_case33/test_genco")
     ap.add_argument("--out", type=Path, default=Path("results/genco_opf_stageA_report.json"))
     a = ap.parse_args()
-    out = report(a.test_dir)
+    out = report(a.test_dir, a.extra_dir)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(out, indent=1))
     print(table(out))

@@ -95,14 +95,17 @@ def run_interval(case, sc, opf, day, hour, direction, methods, genco=None, mopf=
             prop_s = time.perf_counter() - t
             limit, lam, share, evals = env.limit, float("nan"), float(env.prob_ok), int(env.n_evals)
             check_s = 0.0
-        elif m in ("multi", "gnn", "mlp"):                              # direct shared-vector proposals
+        elif m in ("multi", "gnn", "mlp", "gnn_genco"):                 # direct shared-vector proposals
             if m == "multi":
                 from .opf_multi import multi_envelope
                 x, extra = multi_envelope(mopf, case.fd, cust, p, q, direction)
             else:
                 from .opf_labels import node_features
                 t1 = time.perf_counter()
-                frac = predictors[m].predict(node_features(case, p, q, direction)[None])[0]
+                feats = node_features(case, p, q, direction)[None]
+                if m == "gnn_genco":                                    # amendment 3: + frozen GENCO embeddings
+                    feats = predictors[m].augment(feats, p, q)
+                frac = predictors[m].predict(feats)[0]
                 extra = {"infer_s": time.perf_counter() - t1}
                 x = np.clip(frac[case.unit_bus], 0, 1) * case.cap[direction]
             prop_s = time.perf_counter() - t
@@ -139,7 +142,8 @@ def main():
     ap.add_argument("--hours", type=int, nargs="+", default=list(range(24)))
     ap.add_argument("--methods", nargs="+", default=["uniform", "lp", "ipopt"])
     ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--tag", default="final", help="trained run tag for gnn/mlp")
+    ap.add_argument("--tag", default="final", help="trained run tag for gnn/mlp/gnn_genco")
+    ap.add_argument("--genco-run", type=Path, default=None, help="graphkit run dir for gnn_genco (default: newest)")
     a = ap.parse_args()
     if any(d not in oc.SPLIT[a.split] for d in a.days):
         raise SystemExit(f"days {a.days} are not all in split {a.split}")
@@ -155,6 +159,10 @@ def main():
         if m in a.methods:
             from .opf_gnn import RUNS, Predictor
             predictors[m] = Predictor(RUNS / f"{m}_{a.tag}", case)
+    if "gnn_genco" in a.methods:
+        from .opf_genco import GencoConditioned, find_run
+        from .opf_gnn import RUNS
+        predictors["gnn_genco"] = GencoConditioned(RUNS / f"gnn_genco_{a.tag}", case, a.genco_run or find_run("genco_pf_case33_lv_prior"))
     rows = []
     for day in a.days:
         for h in a.hours:
