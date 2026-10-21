@@ -149,6 +149,12 @@ def fit(kind, tag, epochs, device="cpu"):
     ei0, ea0 = torch.as_tensor(ei, dtype=torch.long, device=dev), torch.as_tensor(es(ea), device=dev)
     n = case.fd.n_bus
 
+    def to_bus(Y):                                                     # labels are per unit; the model predicts per bus
+        out = np.zeros((len(Y), n), np.float32)
+        out[:, case.unit_bus] = Y
+        return out
+    Ytr, Yva = to_bus(Ytr), to_bus(Yva)
+
     def batch_graph(b):
         off = (torch.arange(b, device=dev) * n).repeat_interleave(ei0.shape[1])
         return ei0.repeat(1, b) + off, ea0.repeat(b, 1)

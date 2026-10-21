@@ -128,6 +128,34 @@ def test_features_and_models(case):
         assert out.shape == (b, 33) and (out >= 0).all() and (out <= 1).all()
 
 
+def test_fit_smoke_on_per_unit_labels(case, tmp_path, monkeypatch):
+    """fit() consumes labels shaped (N, units) as opf_labels writes them, trains one epoch for both models and
+    writes a loadable run; the Predictor returns one fraction per bus."""
+    pytest.importorskip("torch")
+    from gencodoe import opf_gnn, opf_labels
+    sc = oc.Scenarios(case, 0)
+    rng = np.random.default_rng(0)
+
+    def fake_days(days):
+        X, Y, M = [], [], []
+        for d in days:
+            for h in (0, 12):
+                p, q, _, _ = oe.interval_draws(sc, d, h)
+                for dr in ("export", "import"):
+                    X.append(opf_labels.node_features(case, p, q, dr))
+                    Y.append(rng.random(len(case.unit_bus)).astype(np.float32))
+                    M.append({"day": d, "hour": h, "direction": dr})
+        return np.array(X), np.array(Y), M
+    monkeypatch.setattr(opf_gnn, "load_days", fake_days)
+    monkeypatch.setattr(opf_gnn, "RUNS", tmp_path)
+    for kind in ("gnn", "mlp"):
+        meta = opf_gnn.fit(kind, "t", 1)
+        assert meta["train_intervals"] == 4 * len(oc.SPLIT["train"]) and np.isfinite(meta["best_val"])
+        pred = opf_gnn.Predictor(tmp_path / f"{kind}_t", case)
+        out = pred.predict(fake_days([0])[0][:2])
+        assert out.shape == (2, 33) and (out >= 0).all() and (out <= 1).all()
+
+
 def test_test_days_never_labelled():
     from gencodoe.opf_labels import label_day
     with pytest.raises(SystemExit):
