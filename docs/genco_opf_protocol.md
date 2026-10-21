@@ -200,3 +200,22 @@ GENCO-style versus the reference and the LP, after the exact check:
    - The claim "near-optimal at a fraction of the cost" needs 1–4.
 
 **Also reported:** GENCO-style versus the MLP. A graph-structure claim needs the GENCO-style model to beat the MLP by at least 2 points of hosting relative to the reference, with a day-bootstrap lower bound above 0.
+
+## Amendment 3 (2026-10-21, after the stage A result was frozen; exploratory and post-hoc): the actual GENCO on case33bw
+
+**Why.** Stage A benchmarked a GENCO-*style* architecture trained from scratch, because no GENCO checkpoint existed for case33bw and graphkit has no task for the shared-envelope target. That answers "can a GENCO-style GNN amortise the OPF", not "does GENCO help". This amendment adds the missing arm. It is written before any case33bw PF state is generated and before any fit. The stage A result (`results/genco_opf_stageA_report.json`) stays frozen and is not re-run.
+
+**Disclosure.** The test days 100–119 have been evaluated once for the six stage A methods. The one method added here is evaluated once on the same days, after development on validation days only. Because the baselines were seen first, the comparison is exploratory, and this is stated wherever the result is reported.
+
+**GENCO PF model (`gencodoe.datakit_case33`, graphkit training).**
+- The ENWL1 recipe, unchanged: graphkit `GNS_heterogeneous_lv` (asinh encoders) with the linear prior, hidden 12, 12 layers, 8 heads, `MaskedBusMSE`, AdamW 5e-4, batch 64, at most 80 epochs, patience 12 on validation loss (`configs/genco_pf_case33_lv_prior.yaml`). Final-layer bus embedding width 96.
+- Training states: 20,000 PF states from the stage A scenario generator (section 6) on days 0–99 only, hour uniform; with probability 0.5 a state carries an envelope injection: direction export or import (50/50), every unit at one level uniform in [0, cap] (the augmentation of the ENWL1 v2 dataset). Scenario seed separate from the OPF streams (datakit seed 42 + 3000). Splits by day: 0–79 train (weights, normalizer), 80–99 val (early stopping, model selection). Test days are never drawn.
+- MATPOWER export for datakit with loose limits (0.5–1.5 pu, no ratings) and the slack pinned at 1.0 pu, as for ENWL1; the stage A limits and ratings are applied by the exact check only.
+- **Gate G3b (as in the workplan), on 2,000 fresh val-day states (same generator, seed + 4000):** Vm MAE < 0.002 pu and p99 < 0.01 pu against the exact sweep. If the gate fails, the GENCO arm is reported as "no usable case33bw GENCO" and nothing below runs.
+
+**GENCO-conditioned envelope model (`gnn_genco`).**
+- The stage A GENCO-style model (same architecture, config, loss, training rule, seed, labels, early stopping) with the frozen GENCO's final-layer bus embeddings of one state per interval and direction, the per-bus mean of the 200 design scenarios, concatenated to the 19 node features (19 + 96). The backbone is never trained; no pooled representation (the PhaseGENCO recipe of the four-wire extension).
+- One fit, tag `final`, on the stage A labels (days 0–79, val 80–99).
+- Evaluation: the stage A pipeline, method `gnn_genco` only, on the test days, through the same exact check and scale-down, appended to the frozen rows; no other method is re-run.
+
+**Criterion (mirrors the graph-structure claim).** "GENCO helps" needs `gnn_genco` to beat the from-scratch `gnn` by at least 2 points of hosting relative to the multi-scenario reference, combined over directions, with a day-bootstrap lower bound above 0 (2,000 replicates, seed 0); and criteria 1 and 3 of amendment 2 must still hold for `gnn_genco`. Criterion 2 against the LP and criterion 4 are also reported for `gnn_genco`. Anything else, including a gain between 0 and 2 points, is reported as "GENCO does not materially help on case33bw".
