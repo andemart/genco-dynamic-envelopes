@@ -204,3 +204,41 @@ def test_report_metrics_and_criteria(tmp_path):
     assert abs(g["point"] - 0.07) < 1e-9 and c["graph_structure"]["pass"]
     assert "near_optimal_and_safe_not_faster" in c and not c["near_optimal_and_safe_not_faster"]
     assert "gnn" in rp.table(out)
+
+
+def test_se_metering_wls_scenarios_and_report(case, tmp_path):
+    """Amendment 4: metering is deterministic and sized f*32; WLS with noise-free voltages is no worse than the prior
+    mean; scenarios keep metered readings and the estimate's sign; the report evaluates criterion 2."""
+    from gencodoe import opf_se as se
+    sc = oc.Scenarios(case, 0)
+    assert np.array_equal(se.metered_units(case, 81, 0.3), se.metered_units(case, 81, 0.3))
+    assert len(se.metered_units(case, 81, 0.3)) == 10 and len(se.metered_units(case, 81, 1.0)) == 32
+    p_real, q_real = se.realised_state(sc, 81, 18)
+    pd_, qd_, _, _ = oe.interval_draws(sc, 81, 18)
+    met = se.metered_units(case, 81, 0.5)
+    meas = se.measure(case, p_real, q_real, met, 81, 18, 0.5)
+    U = meas["unmeasured"]
+    assert len(U) == 16 and not np.isin(meas["bus"], U).any()
+    meas["vm"] = fdr.sweep_pf(case.fd, p_real[None], q_real[None]).vm[0, se.V_BUSES]
+    mp, mq, sp, sq = se.prior_moments(pd_, qd_, U)
+    ph, qh = se.estimate_wls(case, pd_, qd_, meas)
+    assert np.abs(ph - p_real[U]).mean() <= np.abs(mp - p_real[U]).mean() + 1e-9
+    P, Q = se.scenarios_from_estimate(pd_, qd_, meas, ph, qh, np.full(16, 0.01), np.full(16, 0.005), np.random.default_rng(0))
+    assert P.shape == pd_.shape and np.allclose(P[:, meas["bus"]], meas["p"]) and (np.sign(P[:, U]) * np.sign(ph) >= 0).all()
+    rows = []
+    rng = np.random.default_rng(1)
+    for day in (100, 101, 102):
+        for h in (0, 1):
+            for f in (0.3, 0.5, 1.0):
+                for est, s_ in (("prior", 0.8), ("wls", 0.9), ("genco", 0.95 if f < 1 else 0.9)):
+                    for d in ("export", "import"):
+                        tot = s_ * (1 + 0.05 * rng.random()) * (3 if d == "export" else 1)
+                        rows.append({"day": day, "hour": h, "f": f, "estimator": est, "direction": d, "total_mw": tot,
+                                     "limit_mw": [tot / 32] * 32, "lambda": 1.0, "design_share": 0.98, "realised_ok": True,
+                                     "n_unmeasured": 16, "mae_unmeasured_kw": 10.0, "estimate_s": 0.01, "envelope_s": 0.2, "exact_evals": 4})
+        (tmp_path / f"day{day}.json").write_text(json.dumps({"meta": {"days": [day]}, "rows": [r for r in rows if r["day"] == day]}))
+    out = se.report(tmp_path, n_boot=200)
+    assert out["estimators"] == ["prior", "wls", "genco"] and out["n_rows"] == 3 * 2 * 3 * 3 * 2
+    c = out["criterion_2_genco_beats_wls"]
+    assert abs(c["0.5"]["ratio_genco_to_wls"]["point"] - 0.95 / 0.9) < 0.03 and c["pass"] and out["unsafe"] == []
+    assert "genco" in se.table(out)
