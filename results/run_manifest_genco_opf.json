@@ -1,0 +1,186 @@
+{
+ "study": "GENCO-OPF stage A (case33bw), frozen test-day evaluation (docs/genco_opf_protocol.md, amendment 2)",
+ "date": "2026-10-21",
+ "cluster": "VUB Hydra zen4, AMD EPYC 9384X, 1 CPU and 8 GB per task, JULIA_NUM_THREADS=1, OMP_NUM_THREADS=1",
+ "software": {
+  "julia": "1.13.2",
+  "PowerModels": "0.21.6",
+  "Ipopt": "1.15.0",
+  "torch": "2.11.0+cu126 (CPU used)",
+  "python": "3.12.3"
+ },
+ "jobs": {
+  "labels": {
+   "slurm": "scripts/hydra_opf_labels.slurm",
+   "jobs": [
+    "13359329 (day 99)",
+    "13359330 (days 0-98)"
+   ],
+   "commit": "44ee439",
+   "days": "0-99 (train 0-79, val 80-99)"
+  },
+  "fits": {
+   "slurm": "scripts/hydra_opf_fit.slurm",
+   "job": "13360254",
+   "commit": "ec18686",
+   "runs": [
+    "gnn_final (best epoch 60/75, val 0.00354)",
+    "mlp_final (best epoch 24/39, val 0.00366)"
+   ],
+   "failed_attempt": "13360157 (label shape bug, fixed in ec18686, no test day touched)"
+  },
+  "smoke": {
+   "job": "13360326",
+   "commit": "eae6857",
+   "what": "val day 80 hour 13, all six methods (data_out/opf_case33/smoke_val80_h13.json)"
+  },
+  "test": {
+   "slurm": "scripts/hydra_opf_test.slurm",
+   "job": "13360327",
+   "commit": "eae6857",
+   "days": "100-119, 24 h, both directions, methods uniform lp ipopt multi gnn mlp",
+   "elapsed_per_task": "28-38 min"
+  },
+  "report": {
+   "module": "gencodoe.opf_report",
+   "commit": "6fb268b",
+   "where": "laptop, on the 20 day files copied from hydra",
+   "out": "results/genco_opf_stageA_report.json"
+  }
+ },
+ "label_set": {
+  "intervals": 4800,
+  "zero_sentinel_share": {
+   "export": 0.0,
+   "import": 0.69
+  },
+  "ipopt_failures": "1 (day 67 h1 export, labelled 0)",
+  "kept_scenarios_min": 196
+ },
+ "note": "Test days 100-119 were evaluated once. The per-scenario IPOPT timing is serial (1 CPU, 200 solves); criterion 4 compares against the multi-scenario reference as amended.",
+ "amendment3": {
+  "protocol": "docs/genco_opf_protocol.md amendment 3 (commit 25cd114, exploratory, post-hoc)",
+  "datakit": {
+   "slurm": "scripts/hydra_case33_datakit.slurm",
+   "job": "13360775",
+   "commit": "ce56b6d",
+   "state": "FAILED (exit 1): both datasets were generated and written completely (20,000 of 20,000 and 2,000 of 2,000 solved, splits written); the job then failed on `sha256sum` applied to the partitioned bus_data.parquet directories. The checksum line was fixed in 4051a7c; the data were not regenerated and were never hashed by that job (hashes now in results/opf_artifact_hashes.json).",
+   "earlier_attempt": "13360734 FAILED (exit 2): commit check, after the checkout was moved to ce56b6d under the queued job",
+   "states": "20,000 (days 0-99, 16,046 train / 3,954 val) + 2,000 gate (val days)"
+  },
+  "training": {
+   "slurm": "scripts/hydra_train.slurm",
+   "config": "configs/genco_pf_case33_lv_prior.yaml",
+   "job": "13360801",
+   "hardware": "A100-PCIE-40GB",
+   "elapsed": "01:14:01",
+   "epochs": 80,
+   "run": "mlruns/728973693371267139/e6e309fdc799405b894b3ec7e6053c3c"
+  },
+  "gate_embed_fit": {
+   "slurm": "scripts/hydra_opf_genco.slurm",
+   "jobs": [
+    "13360802 (crashed on a single-graph batch after the gate passed)",
+    "13361551"
+   ],
+   "commit": "d35d2a6",
+   "gate": "results/genco_case33_gate.json (pass)",
+   "fit": "gnn_genco_final (best epoch 32, val 0.00370, 170,433 params)"
+  },
+  "test": {
+   "slurm": "scripts/hydra_opf_test_genco.slurm",
+   "job": "13361552",
+   "commit": "d35d2a6",
+   "method": "gnn_genco only, appended to the frozen rows",
+   "elapsed_per_task": "1-2 min"
+  },
+  "report": {
+   "module": "gencodoe.opf_report --extra-dir",
+   "out": "results/genco_opf_amendment3_report.json",
+   "where": "laptop, on files copied from hydra"
+  },
+  "verdict": "amendment3_genco_helps: not met (gnn_genco - gnn = -0.49 points of the reference [-0.58, -0.40])"
+ },
+ "amendment4": {
+  "protocol": "amendment 4 (c71012c, preregistered) + 4a correction (f46db76, disclosed, after run 1)",
+  "se_training": {
+   "slurm": "scripts/hydra_train.slurm",
+   "config": "configs/genco_se_case33_lv.yaml",
+   "job": "13361830",
+   "hardware": "A100-PCIE-40GB",
+   "elapsed": "00:47:11",
+   "epochs": 80
+  },
+  "run1": {
+   "gate_cal_job": "13362188",
+   "test_job": "13362189",
+   "commit": "43c1e9d",
+   "report": "results/genco_opf_amendment4_report_run1.json",
+   "gate": "results/genco_se_case33_gate_run1.json (failed: load MAE 329 kW vs prior 7.6)",
+   "note": "metered readings without noise in the scenarios; zero envelopes counted as unsafe"
+  },
+  "run2": {
+   "gate_cal_job": "13362271",
+   "test_job": "13362272",
+   "commit": "dc18730",
+   "report": "results/genco_opf_amendment4_report.json",
+   "gate": "results/genco_se_case33_gate.json (failed)",
+   "calibration": "results/se_calibration.json",
+   "estimators": "prior wls"
+  },
+  "verdict": "GENCO-SE: no usable estimator (graphkit SE task derives injections from voltages). Value of information: 10% metered -> 87% of full-metering hosting, 50% -> 92%, prior safe (0.98) at every f; WLS +5 to +2 points but realised feasibility 0.94-0.95 at f=0.3-0.7.",
+  "failed_setup_jobs": {
+   "13361841": "FAILED (exit 1): GENCO-SE gate crashed before scoring (generator feature width, fixed in 43c1e9d); calibration for WLS completed; the final checksum line failed on the missing gate file",
+   "13362269": "FAILED (exit 3): clean-tree check, after three tracked result files were deleted on hydra before resubmission; chain cancelled and resubmitted as 13362271/13362272 at dc18730 with the run-1 files renamed *_run1"
+  }
+ },
+ "test_day_evaluations_case33bw": [
+  "13360327 stage A (six methods)",
+  "13361552 amendment 3 (gnn_genco)",
+  "13362189 amendment 4 run 1 (prior, wls)",
+  "13362272 amendment 4a run 2 (prior, wls)",
+  "amendment 4b: pending (prior, wls, genco recon)"
+ ],
+ "artifact_hashes": "results/opf_artifact_hashes.json (SHA-256 of every raw day file, label, embedding, checkpoint and metadata file the reports and fits depend on)",
+ "amendment5": {
+  "protocol": "amendment 5 (4158e66), 5a (cee7ec4), 5b (1c7309d) on branch ander-case118 built on upstream/evgenii/opf-envelopes (7fc64c4, not rewritten)",
+  "checkpoint": {
+   "repo": "gridfm/genco-opf-datakit",
+   "path": "case118_ieee/base/seed0",
+   "files_sha256": {
+    "normalizer_stats.pt": "f6583ab4b2d3e8ab41b1dcda003926c5f89eec7f313f6c6df6aed8e999d10055",
+    "last.pt": "c2934420b6f2e56b97ddda900d547bbd80f9b6dabd1f526c056a65dc4f770758",
+    "metrics.csv": "8007f1b9cabf1134ab3185dd88d1868ef4b4dadb4bfba3897ca23da417db4aee",
+    "case118_ieee_base_seed0.yaml": "8f9c091e8872135570cf141a4035028e6befb33eeb7a833806c118831ce0affe"
+   },
+   "graphkit": "0.9.0.3 (main)"
+  },
+  "step0": {
+   "script": "scripts/amendment5_precheck.py",
+   "commit": "319a967",
+   "result": "results/genco_opf_amendment5_precheck.json",
+   "where": "laptop (M-series, CPU)"
+  },
+  "option1_warmstart": {
+   "slurm": "scripts/hydra_amendment5_warmstart.slurm",
+   "job": "13362503",
+   "commit": "3cde16e",
+   "elapsed": "00:12:23",
+   "hardware": {
+    "node": "node616.hydra.os",
+    "cpu": "x86_64",
+    "threads": 1,
+    "julia": "1.13.2",
+    "powermodels": "0.21.6",
+    "ipopt_jl": "1.15.0"
+   },
+   "scenarios": "500 held-out case118_flex (configs/datakit_opf_case118_flex_heldout.yaml, seed 888)",
+   "result": "results/genco_opf_amendment5_warmstart.json (guard applied by opf_warmstart --recompute at 1c7309d)",
+   "verdict": "no material warm-start gain: GENCO start median 0.288 s / 58 iterations vs previous-solution start 0.236 s / 47 (flat 0.275 s / 54); cut -22.2% [-26.3, -19.6]; objective within 1e-4 of the flat start in 56% (previous start: 38%); guard fails"
+  },
+  "option2_transfer": {
+   "labels_job": "13362542 (queued; configs/datakit_opf_case118_flex.yaml + scripts/amendment5_splits.py)",
+   "status": "go/no-go 2026-10-23 09:00"
+  }
+ }
+}
