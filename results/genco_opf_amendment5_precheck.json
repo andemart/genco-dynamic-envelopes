@@ -1,0 +1,58 @@
+{
+ "checkpoint": {
+  "repo": "gridfm/genco-opf-datakit",
+  "path": "case118_ieee/base/seed0",
+  "files": {
+   "case118_ieee_base_seed0.yaml": "8f9c091e8872135570cf141a4035028e6befb33eeb7a833806c118831ce0affe",
+   "last.pt": "c2934420b6f2e56b97ddda900d547bbd80f9b6dabd1f526c056a65dc4f770758",
+   "normalizer_stats.pt": "f6583ab4b2d3e8ab41b1dcda003926c5f89eec7f313f6c6df6aed8e999d10055",
+   "metrics.csv": "8007f1b9cabf1134ab3185dd88d1868ef4b4dadb4bfba3897ca23da417db4aee",
+   "best_model_state_dict.pt": "ef652b60f6a3ac8f5aec338f4029edc664fabfb2a151696a068767feff7a2db9"
+  },
+  "config": "case118_ieee_base_seed0.yaml"
+ },
+ "graphkit_main_note": "installed gridfm-graphkit 0.9.0.3 (main); the model card warns main may not reproduce the paper branch",
+ "card_metrics": {
+  "pg_rmse_mw": 17.1376,
+  "optimality_gap_pct": 1.6389,
+  "vm_source": "metrics.csv of the checkpoint"
+ },
+ "a_plain_case118": {
+  "n_scenarios": 300,
+  "n_bus": 118,
+  "n_gen": 54,
+  "n_flex": 0,
+  "finite": true,
+  "pg_rmse_mw": 9.570716875211232,
+  "pg_mae_mw": 2.4669912111557903,
+  "pg_rmse_mw_rel_to_mean_pg": 0.1191544045767362,
+  "vm_mae_pu": 0.008639583986176395,
+  "vm_p99_pu": 0.028629815970175044,
+  "total_pg_rel_err_mean_abs": 0.0046501349878405145,
+  "inference_s_per_scenario": 0.0092268276399894
+ },
+ "b_case118_flex": {
+  "n_scenarios": 3,
+  "n_bus": 118,
+  "n_gen": 153,
+  "n_flex": 99,
+  "finite": true,
+  "pg_rmse_mw": 141.63781868260497,
+  "pg_mae_mw": 55.394255683902465,
+  "pg_rmse_mw_rel_to_mean_pg": 2.5862195988842402,
+  "vm_mae_pu": 0.05157067769918016,
+  "vm_p99_pu": 0.10219389960158454,
+  "total_pg_rel_err_mean_abs": 0.26118829506166047,
+  "inference_s_per_scenario": 0.0165508749972408,
+  "flex_raw_min": 0.03943192958831787,
+  "flex_raw_max_over_cap": 0.9999901453653971,
+  "flex_total_rel_err": [
+   -0.3763271618339279,
+   -0.363736927654119,
+   -0.3728062886416824
+  ],
+  "flex_unit_mae_mw": 43.08790360612539,
+  "flex_cap_total_mw": 8484.0,
+  "pass": true
+ }
+}
