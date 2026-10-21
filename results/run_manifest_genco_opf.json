@@ -2,14 +2,101 @@
  "study": "GENCO-OPF stage A (case33bw), frozen test-day evaluation (docs/genco_opf_protocol.md, amendment 2)",
  "date": "2026-10-21",
  "cluster": "VUB Hydra zen4, AMD EPYC 9384X, 1 CPU and 8 GB per task, JULIA_NUM_THREADS=1, OMP_NUM_THREADS=1",
- "software": {"julia": "1.13.2", "PowerModels": "0.21.6", "Ipopt": "1.15.0", "torch": "2.11.0+cu126 (CPU used)", "python": "3.12.3"},
- "jobs": {
-  "labels": {"slurm": "scripts/hydra_opf_labels.slurm", "jobs": ["13359329 (day 99)", "13359330 (days 0-98)"], "commit": "44ee439", "days": "0-99 (train 0-79, val 80-99)"},
-  "fits": {"slurm": "scripts/hydra_opf_fit.slurm", "job": "13360254", "commit": "ec18686", "runs": ["gnn_final (best epoch 60/75, val 0.00354)", "mlp_final (best epoch 24/39, val 0.00366)"], "failed_attempt": "13360157 (label shape bug, fixed in ec18686, no test day touched)"},
-  "smoke": {"job": "13360326", "commit": "eae6857", "what": "val day 80 hour 13, all six methods (data_out/opf_case33/smoke_val80_h13.json)"},
-  "test": {"slurm": "scripts/hydra_opf_test.slurm", "job": "13360327", "commit": "eae6857", "days": "100-119, 24 h, both directions, methods uniform lp ipopt multi gnn mlp", "elapsed_per_task": "28-38 min"},
-  "report": {"module": "gencodoe.opf_report", "commit": "6fb268b", "where": "laptop, on the 20 day files copied from hydra", "out": "results/genco_opf_stageA_report.json"}
+ "software": {
+  "julia": "1.13.2",
+  "PowerModels": "0.21.6",
+  "Ipopt": "1.15.0",
+  "torch": "2.11.0+cu126 (CPU used)",
+  "python": "3.12.3"
  },
- "label_set": {"intervals": 4800, "zero_sentinel_share": {"export": 0.0, "import": 0.69}, "ipopt_failures": "1 (day 67 h1 export, labelled 0)", "kept_scenarios_min": 196},
- "note": "Test days 100-119 were evaluated once. The per-scenario IPOPT timing is serial (1 CPU, 200 solves); criterion 4 compares against the multi-scenario reference as amended."
+ "jobs": {
+  "labels": {
+   "slurm": "scripts/hydra_opf_labels.slurm",
+   "jobs": [
+    "13359329 (day 99)",
+    "13359330 (days 0-98)"
+   ],
+   "commit": "44ee439",
+   "days": "0-99 (train 0-79, val 80-99)"
+  },
+  "fits": {
+   "slurm": "scripts/hydra_opf_fit.slurm",
+   "job": "13360254",
+   "commit": "ec18686",
+   "runs": [
+    "gnn_final (best epoch 60/75, val 0.00354)",
+    "mlp_final (best epoch 24/39, val 0.00366)"
+   ],
+   "failed_attempt": "13360157 (label shape bug, fixed in ec18686, no test day touched)"
+  },
+  "smoke": {
+   "job": "13360326",
+   "commit": "eae6857",
+   "what": "val day 80 hour 13, all six methods (data_out/opf_case33/smoke_val80_h13.json)"
+  },
+  "test": {
+   "slurm": "scripts/hydra_opf_test.slurm",
+   "job": "13360327",
+   "commit": "eae6857",
+   "days": "100-119, 24 h, both directions, methods uniform lp ipopt multi gnn mlp",
+   "elapsed_per_task": "28-38 min"
+  },
+  "report": {
+   "module": "gencodoe.opf_report",
+   "commit": "6fb268b",
+   "where": "laptop, on the 20 day files copied from hydra",
+   "out": "results/genco_opf_stageA_report.json"
+  }
+ },
+ "label_set": {
+  "intervals": 4800,
+  "zero_sentinel_share": {
+   "export": 0.0,
+   "import": 0.69
+  },
+  "ipopt_failures": "1 (day 67 h1 export, labelled 0)",
+  "kept_scenarios_min": 196
+ },
+ "note": "Test days 100-119 were evaluated once. The per-scenario IPOPT timing is serial (1 CPU, 200 solves); criterion 4 compares against the multi-scenario reference as amended.",
+ "amendment3": {
+  "protocol": "docs/genco_opf_protocol.md amendment 3 (commit 25cd114, exploratory, post-hoc)",
+  "datakit": {
+   "slurm": "scripts/hydra_case33_datakit.slurm",
+   "job": "13360775",
+   "commit": "4051a7c (data identical to the 8711245 run that aborted on its commit check)",
+   "states": "20,000 (days 0-99, 16,046 train / 3,954 val) + 2,000 gate (val days)"
+  },
+  "training": {
+   "slurm": "scripts/hydra_train.slurm",
+   "config": "configs/genco_pf_case33_lv_prior.yaml",
+   "job": "13360801",
+   "hardware": "A100-PCIE-40GB",
+   "elapsed": "01:14:01",
+   "epochs": 80,
+   "run": "mlruns/728973693371267139/e6e309fdc799405b894b3ec7e6053c3c"
+  },
+  "gate_embed_fit": {
+   "slurm": "scripts/hydra_opf_genco.slurm",
+   "jobs": [
+    "13360802 (crashed on a single-graph batch after the gate passed)",
+    "13361551"
+   ],
+   "commit": "d35d2a6",
+   "gate": "results/genco_case33_gate.json (pass)",
+   "fit": "gnn_genco_final (best epoch 32, val 0.00370, 170,433 params)"
+  },
+  "test": {
+   "slurm": "scripts/hydra_opf_test_genco.slurm",
+   "job": "13361552",
+   "commit": "d35d2a6",
+   "method": "gnn_genco only, appended to the frozen rows",
+   "elapsed_per_task": "1-2 min"
+  },
+  "report": {
+   "module": "gencodoe.opf_report --extra-dir",
+   "out": "results/genco_opf_amendment3_report.json",
+   "where": "laptop, on files copied from hydra"
+  },
+  "verdict": "amendment3_genco_helps: not met (gnn_genco - gnn = -0.49 points of the reference [-0.58, -0.40])"
+ }
 }

@@ -883,3 +883,25 @@ Protocol: `docs/genco_opf_protocol.md` with amendments 1–2. Test days 100–11
 - Per-scenario IPOPT + quantile remains the worst optimiser after the check (11.4% gap), the finding that motivated amendment 2; the LP is at 5.4%.
 - Timing is serial CPU for every method (1 task per day). The reference costs 49 s per export and 7 s per import interval; per-scenario IPOPT 8.7 s serial for 200 solves; LP 0.4 s; learned models 0.02 s including the check.
 - Training labels: 4,800 intervals, 69% import zero-sentinel, one IPOPT failure (day 67 h 1 export, labelled 0). Both models learned the sentinel (predicted 0.3% of cap on sentinel validation intervals); validation weighted MSE 0.0035 (graph) and 0.0037 (MLP).
+
+## GENCO-OPF amendment 3 (exploratory, post-hoc): the actual GENCO on case33bw (`results/genco_opf_amendment3_report.json`, gate `results/genco_case33_gate.json`)
+
+Protocol amendment 3 (commit 25cd114), written after the stage A verdict and before any case33bw PF state existed. Hydra jobs: datakit 13360775 (20,000 training states, days 0–99, 50% with an envelope injection; 2,000 gate states from val days), graphkit training 13360801 (A100, 74 min, 80 epochs, commit 4051a7c), gate + embeddings + fit 13361551 and the single test evaluation 13361552 (commit d35d2a6). The stage A rows were not re-run; the report merges the one added method into the frozen evaluation.
+
+**The GENCO PF model is excellent on this network.** graphkit `GNS_heterogeneous_lv` + linear prior (hidden 12, 12 layers, 164k parameters of the backbone), trained from scratch on case33bw: on 2,000 fresh val-day states (1,710 near a voltage limit) Vm MAE 5.9e-5 pu, p99 3.5e-4, max 3.8e-3, loading MAE 3.0e-5. Gate G3b passed with a 30× margin (bar 2e-3 / 1e-2). For comparison the ENWL1 model had Vm MAE 3.8e-4.
+
+**Conditioning the envelope model on it does not help; it hurts slightly.** `gnn_genco` = the stage A GENCO-style model with the frozen GENCO's final-layer bus embeddings (96 per bus) of the interval's mean design scenario appended to the 19 node features; same labels, loss, training rule and seed. Validation weighted MSE 0.0037 (best epoch 32) against 0.0035 for `gnn`.
+
+| Test days 100–119, after the exact check | gnn (stage A) | mlp | **gnn_genco** |
+|---|---|---|---|
+| Hosting, combined, MWh/day | 199.6 | 198.3 | 198.6 |
+| Gap to the multi-scenario reference | 1.2% | 1.9% | 1.7% |
+| Export / import gap | 0.9% / 6.5% | 1.6% / 6.0% | 1.4% / 6.8% |
+| Held-out P(ok) mean, share ≥ 0.95 | 0.733, 0.65 | 0.733, 0.64 | 0.734, 0.64 |
+| Proposal + check, s | 0.02 | 0.02 | 0.04 |
+
+**Criterion (amendment 3): not met.** `gnn_genco` − `gnn` = **−0.49 points** of the reference, day-bootstrap interval [−0.58, −0.40], against a bar of +2 points with a lower bound above 0. The interval excludes zero on the wrong side. Criteria 1 (98.3% of the reference [98.1, 98.4]), 3 and 4 still hold for `gnn_genco`; criterion 2 does not (1.039 × LP).
+
+**Reading.** On case33bw the scenario statistics in the 19 node features already carry what the envelope needs; a near-exact learned power-flow state of the mean scenario adds 96 correlated inputs and a little overfitting (validation loss up 5%, best epoch earlier). This is the fourth preregistered role in the project where a GENCO component does not clear its bar, and the first where the GENCO model itself is demonstrably accurate on the network, so the negative result is about the role, not about the model's quality. The honest summary for stage A as a whole: a GENCO-style model, with or without the actual GENCO inside it, amortises the multi-scenario AC-OPF to within 1–2% at a thousandth of the cost, and the value of the graph structure and of the pretrained-style backbone is 0.6 and −0.5 points respectively.
+
+**Also disclosed.** Exploratory and post-hoc: the six stage A methods were evaluated on these test days first; `gnn_genco` once, after development on validation days only (one fit, no tuning). Timing: GENCO embedding on CPU adds about 0.02 s per interval.
