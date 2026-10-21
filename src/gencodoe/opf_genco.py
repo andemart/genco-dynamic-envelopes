@@ -54,6 +54,9 @@ def embed_states(oracle, fd: fdr.Feeder, p: np.ndarray, q: np.ndarray) -> np.nda
     """Final-layer bus embeddings (n, n_bus, 96) of states (p, q injections, pu, consumption negative)."""
     import torch
     p, q = np.atleast_2d(p), np.atleast_2d(q)
+    n = len(p)
+    if n == 1:                                             # graphkit squeezes the gen output of a lone graph
+        p, q = np.repeat(p, 2, 0), np.repeat(q, 2, 0)
     captured = []
     hook = oracle.model.model.mlp_bus.register_forward_hook(lambda m, i, o: captured.append(i[0].detach()))
     try:
@@ -65,7 +68,7 @@ def embed_states(oracle, fd: fdr.Feeder, p: np.ndarray, q: np.ndarray) -> np.nda
     h = torch.cat(captured[per - 1::per]).reshape(len(p), fd.n_bus, -1)
     if h.shape[-1] != EMB_WIDTH:
         raise AssertionError(f"embedding width {h.shape[-1]} != {EMB_WIDTH}")
-    return h.cpu().numpy().astype(np.float32)
+    return h[:n].cpu().numpy().astype(np.float32)
 
 
 def embed_interval(oracle, fd: fdr.Feeder, p: np.ndarray, q: np.ndarray) -> np.ndarray:
