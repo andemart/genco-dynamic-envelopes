@@ -224,7 +224,8 @@ def test_se_metering_wls_scenarios_and_report(case, tmp_path):
     ph, qh = se.estimate_wls(case, pd_, qd_, meas)
     assert np.abs(ph - p_real[U]).mean() <= np.abs(mp - p_real[U]).mean() + 1e-9
     P, Q = se.scenarios_from_estimate(pd_, qd_, meas, ph, qh, np.full(16, 0.01), np.full(16, 0.005), np.random.default_rng(0))
-    assert P.shape == pd_.shape and np.allclose(P[:, meas["bus"]], meas["p"]) and (np.sign(P[:, U]) * np.sign(ph) >= 0).all()
+    assert P.shape == pd_.shape and np.allclose(P[:, meas["bus"]].mean(0), meas["p"], rtol=0.02)   # noisy per scenario (4a)
+    assert (np.sign(P[:, U]) * np.sign(ph) >= 0).all()
     rows = []
     rng = np.random.default_rng(1)
     for day in (100, 101, 102):
