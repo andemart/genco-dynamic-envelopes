@@ -21,4 +21,4 @@ echo "commit=$HEAD (verified) node=$(hostname)"
 export OMP_NUM_THREADS=1
 .venv/bin/python -m gencodoe.datakit_case33 --scenarios 20000 --processes 8 --augment 0.5
 .venv/bin/python -m gencodoe.datakit_case33 --split gate --scenarios 2000 --processes 8 --augment 0.5
-sha256sum grids/case33bw_opf.m data_out/datakit_case33/case33bw_opf/raw/bus_data.parquet data_out/datakit_case33_gate/case33bw_opf/raw/bus_data.parquet
+sha256sum grids/case33bw_opf.m data_out/datakit_case33/case33bw_opf/raw/case33_draws.parquet data_out/datakit_case33_gate/case33bw_opf/raw/case33_draws.parquet   # bus_data.parquet may be a partitioned directory
