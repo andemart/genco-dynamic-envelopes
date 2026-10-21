@@ -41,6 +41,17 @@ def jobs(tmp: Path, include_slow: bool):
            Path("results/envpred3_primary_q95.json"))
     yield ("envpred3 frontier", "results/envpred3_frontier_report.json",
            [PY, "-m", "gencodoe.envpred3", "report", "--out", str(tmp / "frontier.json")], tmp / "frontier.json")
+    # GENCO-OPF layer (docs/genco_opf_protocol.md): reports regenerate from the raw day files under data_out/opf_case33
+    # (hashes in results/opf_artifact_hashes.json); each ends in a bootstrap with a fixed seed.
+    yield ("GENCO-OPF stage A report", "results/genco_opf_stageA_report.json",
+           [PY, "-m", "gencodoe.opf_report", "--test-dir", "data_out/opf_case33/test", "--out", str(tmp / "opfA.json")], tmp / "opfA.json")
+    yield ("GENCO-OPF amendment 3 report", "results/genco_opf_amendment3_report.json",
+           [PY, "-m", "gencodoe.opf_report", "--test-dir", "data_out/opf_case33/test", "--extra-dir", "data_out/opf_case33/test_genco",
+            "--out", str(tmp / "opf3.json")], tmp / "opf3.json")
+    yield ("GENCO-OPF amendment 4 report (run 2)", "results/genco_opf_amendment4_report.json",
+           [PY, "-m", "gencodoe.opf_se", "report", "--dir", "data_out/opf_case33/se", "--out", str(tmp / "opf4.json")], tmp / "opf4.json")
+    yield ("GENCO-OPF amendment 4 report (run 1)", "results/genco_opf_amendment4_report_run1.json",
+           [PY, "-m", "gencodoe.opf_se", "report", "--dir", "data_out/opf_case33/se_run1", "--out", str(tmp / "opf4r1.json")], tmp / "opf4r1.json")
     if include_slow:
         yield ("Option 2 screen (GENCO on CPU, slow)", "results/option2_screen.json",
                [PY, "-m", "gencodoe.option2", "--run", "mlruns_hydra/877677247744645366/d42d5c34e3ed4988b020d8ab292201ee",

@@ -50,6 +50,10 @@
      "hi": 1.0
     },
     "realised_feasibility": 0.9821717990275527,
+    "realised_feasibility_ci": {
+     "lo": 0.9716652208201892,
+     "hi": 0.9905819515306122
+    },
     "realised_feasibility_all": 0.7270833333333333,
     "zero_envelope_share": 0.3572916666666667,
     "mae_unmeasured_kw": 7.9611961141664285,
@@ -71,6 +75,10 @@
      "hi": 1.0
     },
     "realised_feasibility": 0.9828926905132193,
+    "realised_feasibility_ci": {
+     "lo": 0.9704873206967214,
+     "hi": 0.9926150194808162
+    },
     "realised_feasibility_all": 0.728125,
     "zero_envelope_share": 0.3302083333333333,
     "mae_unmeasured_kw": 7.658683154934977,
@@ -92,6 +100,10 @@
      "hi": 1.0
     },
     "realised_feasibility": 0.9832572298325722,
+    "realised_feasibility_ci": {
+     "lo": 0.9733525965428275,
+     "hi": 0.9925818771293549
+    },
     "realised_feasibility_all": 0.728125,
     "zero_envelope_share": 0.315625,
     "mae_unmeasured_kw": 7.673061283302883,
@@ -113,6 +125,10 @@
      "hi": 1.0
     },
     "realised_feasibility": 0.9792899408284024,
+    "realised_feasibility_ci": {
+     "lo": 0.967238633989804,
+     "hi": 0.9900149755581845
+    },
     "realised_feasibility_all": 0.7239583333333334,
     "zero_envelope_share": 0.29583333333333334,
     "mae_unmeasured_kw": 7.7947647328804,
@@ -134,6 +150,10 @@
      "hi": 1.0
     },
     "realised_feasibility": 0.9745403111739745,
+    "realised_feasibility_ci": {
+     "lo": 0.9630681818181818,
+     "hi": 0.9854867377631938
+    },
     "realised_feasibility_all": 0.7197916666666667,
     "zero_envelope_share": 0.2635416666666667,
     "mae_unmeasured_kw": 0.0,
@@ -157,6 +177,10 @@
      "hi": 1.0579447995679951
     },
     "realised_feasibility": 0.950509461426492,
+    "realised_feasibility_ci": {
+     "lo": 0.9364618914437236,
+     "hi": 0.9657740988113752
+    },
     "realised_feasibility_all": 0.70625,
     "zero_envelope_share": 0.284375,
     "mae_unmeasured_kw": 6.744035201404981,
@@ -178,6 +202,10 @@
      "hi": 1.0436437600689907
     },
     "realised_feasibility": 0.9452449567723343,
+    "realised_feasibility_ci": {
+     "lo": 0.9329681459552602,
+     "hi": 0.957664799810569
+    },
     "realised_feasibility_all": 0.7020833333333333,
     "zero_envelope_share": 0.27708333333333335,
     "mae_unmeasured_kw": 6.616092370562764,
@@ -199,6 +227,10 @@
      "hi": 1.0326624779468714
     },
     "realised_feasibility": 0.9446870451237264,
+    "realised_feasibility_ci": {
+     "lo": 0.9263429972073213,
+     "hi": 0.9602304014817781
+    },
     "realised_feasibility_all": 0.7010416666666667,
     "zero_envelope_share": 0.284375,
     "mae_unmeasured_kw": 6.630165431139265,
@@ -220,6 +252,10 @@
      "hi": 1.0228415207576238
     },
     "realised_feasibility": 0.9378612716763006,
+    "realised_feasibility_ci": {
+     "lo": 0.9191146690635017,
+     "hi": 0.9556518279965259
+    },
     "realised_feasibility_all": 0.6958333333333333,
     "zero_envelope_share": 0.2791666666666667,
     "mae_unmeasured_kw": 6.908246793446766,
@@ -241,6 +277,10 @@
      "hi": 1.0
     },
     "realised_feasibility": 0.9745403111739745,
+    "realised_feasibility_ci": {
+     "lo": 0.9625,
+     "hi": 0.985403051264641
+    },
     "realised_feasibility_all": 0.7197916666666667,
     "zero_envelope_share": 0.2635416666666667,
     "mae_unmeasured_kw": 0.0,

@@ -37,6 +37,10 @@
     "n_intervals": 480,
     "hosting_mwh": 2031.9216768,
     "hosting_mwh_per_day": 101.59608383999999,
+    "fresh_ok_mean_ci": {
+     "lo": 0.9765311979166666,
+     "hi": 0.9782834375
+    },
     "gain_over_uniform_pct": 0.0,
     "gap_to_reference_pct": 46.345862485462874,
     "design_share_min": 0.98,
@@ -54,6 +58,10 @@
     "n_intervals": 480,
     "hosting_mwh": 59.9897088,
     "hosting_mwh_per_day": 2.99948544,
+    "fresh_ok_mean_ci": {
+     "lo": 0.41678218749999996,
+     "hi": 0.5629676041666665
+    },
     "gain_over_uniform_pct": 0.0,
     "gap_to_reference_pct": 76.40625648321415,
     "design_share_min": 0.0,
@@ -71,6 +79,10 @@
     "n_intervals": 960,
     "hosting_mwh": 2091.9113856,
     "hosting_mwh_per_day": 104.59556927999999,
+    "fresh_ok_mean_ci": {
+     "lo": 0.6973148697916666,
+     "hi": 0.7701286718750001
+    },
     "gain_over_uniform_pct": 0.0,
     "gap_to_reference_pct": 48.23711600812164,
     "design_share_min": 0.0,
@@ -90,6 +102,10 @@
     "n_intervals": 480,
     "hosting_mwh": 3590.3320579595993,
     "hosting_mwh_per_day": 179.51660289797996,
+    "fresh_ok_mean_ci": {
+     "lo": 0.9728457291666667,
+     "hi": 0.9750959374999999
+    },
     "gain_over_uniform_pct": 76.69638052259396,
     "gap_to_reference_pct": 5.195081011197644,
     "design_share_min": 0.98,
@@ -107,6 +123,10 @@
     "n_intervals": 480,
     "hosting_mwh": 231.64727871954858,
     "hosting_mwh_per_day": 11.58236393597743,
+    "fresh_ok_mean_ci": {
+     "lo": 0.41636552083333334,
+     "hi": 0.5620031249999999
+    },
     "gain_over_uniform_pct": 286.14502946136747,
     "gap_to_reference_pct": 8.893932146067796,
     "design_share_min": 0.0,
@@ -124,6 +144,10 @@
     "n_intervals": 960,
     "hosting_mwh": 3821.9793366791478,
     "hosting_mwh_per_day": 191.09896683395738,
+    "fresh_ok_mean_ci": {
+     "lo": 0.6952949479166667,
+     "hi": 0.76790828125
+    },
     "gain_over_uniform_pct": 82.7027360235401,
     "gap_to_reference_pct": 5.427794702147171,
     "design_share_min": 0.0,
@@ -143,6 +167,10 @@
     "n_intervals": 480,
     "hosting_mwh": 3448.661017218118,
     "hosting_mwh_per_day": 172.4330508609059,
+    "fresh_ok_mean_ci": {
+     "lo": 0.9735164583333332,
+     "hi": 0.9755896354166667
+    },
     "gain_over_uniform_pct": 69.72411174082703,
     "gap_to_reference_pct": 8.935991691250011,
     "design_share_min": 0.98,
@@ -160,6 +188,10 @@
     "n_intervals": 480,
     "hosting_mwh": 130.81059326198968,
     "hosting_mwh_per_day": 6.540529663099484,
+    "fresh_ok_mean_ci": {
+     "lo": 0.4164947916666667,
+     "hi": 0.5624348958333332
+    },
     "gain_over_uniform_pct": 118.05505623989573,
     "gap_to_reference_pct": 48.55264930537586,
     "design_share_min": 0.0,
@@ -177,6 +209,10 @@
     "n_intervals": 960,
     "hosting_mwh": 3579.4716104801078,
     "hosting_mwh_per_day": 178.9735805240054,
+    "fresh_ok_mean_ci": {
+     "lo": 0.6956431770833333,
+     "hi": 0.7684104947916667
+    },
     "gain_over_uniform_pct": 71.11009745058811,
     "gap_to_reference_pct": 11.428478758262061,
     "design_share_min": 0.0,
@@ -196,6 +232,10 @@
     "n_intervals": 480,
     "hosting_mwh": 3787.0735994022234,
     "hosting_mwh_per_day": 189.35367997011116,
+    "fresh_ok_mean_ci": {
+     "lo": 0.9546644791666667,
+     "hi": 0.9575667708333334
+    },
     "gain_over_uniform_pct": 86.3789162073584,
     "gap_to_reference_pct": 0.0,
     "design_share_min": 0.98,
@@ -213,6 +253,10 @@
     "n_intervals": 480,
     "hosting_mwh": 254.26108729765633,
     "hosting_mwh_per_day": 12.713054364882817,
+    "fresh_ok_mean_ci": {
+     "lo": 0.4154119791666667,
+     "hi": 0.5593284895833334
+    },
     "gain_over_uniform_pct": 323.8411760679464,
     "gap_to_reference_pct": 0.0,
     "design_share_min": 0.0,
@@ -230,6 +274,10 @@
     "n_intervals": 960,
     "hosting_mwh": 4041.33468669988,
     "hosting_mwh_per_day": 202.066734334994,
+    "fresh_ok_mean_ci": {
+     "lo": 0.6857933333333333,
+     "hi": 0.75764640625
+    },
     "gain_over_uniform_pct": 93.18861757333705,
     "gap_to_reference_pct": 0.0,
     "design_share_min": 0.0,
@@ -249,6 +297,10 @@
     "n_intervals": 480,
     "hosting_mwh": 3754.0201534257903,
     "hosting_mwh_per_day": 187.70100767128952,
+    "fresh_ok_mean_ci": {
+     "lo": 0.9757082291666667,
+     "hi": 0.9772938541666666
+    },
     "gain_over_uniform_pct": 84.75220754265791,
     "gap_to_reference_pct": 0.8727965039192931,
     "design_share_min": 0.98,
@@ -266,6 +318,10 @@
     "n_intervals": 480,
     "hosting_mwh": 237.6143414470898,
     "hosting_mwh_per_day": 11.88071707235449,
+    "fresh_ok_mean_ci": {
+     "lo": 0.41675828125,
+     "hi": 0.5629914062499999
+    },
     "gain_over_uniform_pct": 296.09184008422756,
     "gap_to_reference_pct": 6.547107159609777,
     "design_share_min": 0.0,
@@ -283,6 +339,10 @@
     "n_intervals": 960,
     "hosting_mwh": 3991.63449487288,
     "hosting_mwh_per_day": 199.581724743644,
+    "fresh_ok_mean_ci": {
+     "lo": 0.6968761458333332,
+     "hi": 0.7695357552083333
+    },
     "gain_over_uniform_pct": 90.81279074964274,
     "gap_to_reference_pct": 1.229796482596801,
     "design_share_min": 0.0,
@@ -302,6 +362,10 @@
     "n_intervals": 480,
     "hosting_mwh": 3726.739937576069,
     "hosting_mwh_per_day": 186.33699687880346,
+    "fresh_ok_mean_ci": {
+     "lo": 0.9742310937499999,
+     "hi": 0.9761689583333334
+    },
     "gain_over_uniform_pct": 83.40962548542608,
     "gap_to_reference_pct": 1.593147327151967,
     "design_share_min": 0.98,
@@ -319,6 +383,10 @@
     "n_intervals": 480,
     "hosting_mwh": 239.1042745716661,
     "hosting_mwh_per_day": 11.955213728583306,
+    "fresh_ok_mean_ci": {
+     "lo": 0.41747697916666665,
+     "hi": 0.5648925
+    },
     "gain_over_uniform_pct": 298.57548795380404,
     "gap_to_reference_pct": 5.961121651401802,
     "design_share_min": 0.0,
@@ -336,6 +404,10 @@
     "n_intervals": 960,
     "hosting_mwh": 3965.8442121477356,
     "hosting_mwh_per_day": 198.29221060738678,
+    "fresh_ok_mean_ci": {
+     "lo": 0.6963126822916668,
+     "hi": 0.7700174218749999
+    },
     "gain_over_uniform_pct": 89.5799334258251,
     "gap_to_reference_pct": 1.8679589889099013,
     "design_share_min": 0.0,

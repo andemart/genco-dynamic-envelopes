@@ -421,6 +421,15 @@ def report(se_dir: Path, n_boot: int = 2000, seed: int = 0) -> dict:
         q = num[idx].sum(1) / den[idx].sum(1)
         return {"point": float(num.sum() / den.sum()), "lo": float(np.percentile(q, 2.5)), "hi": float(np.percentile(q, 97.5))}
 
+    rng_ci = np.random.default_rng(seed + 1)                   # own stream: leaves the preregistered bootstraps unchanged
+
+    def boot_mean(values, row_days):
+        """Day-block bootstrap of a per-interval mean (audit correction: intervals on the safety metric)."""
+        per = {d: values[row_days == d] for d in days}
+        idx = rng_ci.integers(0, len(days), size=(n_boot, len(days)))
+        means = np.array([np.concatenate([per[days[k]] for k in row]).mean() for row in idx])
+        return {"lo": float(np.percentile(means, 2.5)), "hi": float(np.percentile(means, 97.5))}
+
     summary = {}
     for est in ests:
         summary[est] = {}
@@ -434,6 +443,8 @@ def report(se_dir: Path, n_boot: int = 2000, seed: int = 0) -> dict:
                 "ratio_to_full_metering": boot(tot(est, f), full) if full is not None else None,
                 "ratio_to_prior": boot(tot(est, f), tot("prior", f)) if "prior" in ests else None,
                 "realised_feasibility": float(np.mean([r["realised_ok"] for r in sel if r["total_mw"] > 0])),   # issued envelopes
+                "realised_feasibility_ci": boot_mean(np.array([r["realised_ok"] for r in sel if r["total_mw"] > 0], float),
+                                                     np.array([r["day"] for r in sel if r["total_mw"] > 0])),
                 "realised_feasibility_all": float(np.mean([r["realised_ok"] for r in sel])),
                 "zero_envelope_share": float(np.mean([r["total_mw"] <= 0 for r in sel])),
                 "mae_unmeasured_kw": float(np.mean([r["mae_unmeasured_kw"] for r in sel])),

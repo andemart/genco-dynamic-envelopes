@@ -57,7 +57,10 @@ def summarise(rows, method, direction):
     fresh = np.array([x["fresh_ok"] for x in r])
     j = np.array([jain(x["limit_mw"]) for x in r])
     days = sorted({x["day"] for x in r})
+    rday = np.array([x["day"] for x in r])
+    ci = boot_mean_by_day(fresh, rday, days, np.random.default_rng(BOOT_SEED))
     return {"n_intervals": len(r), "hosting_mwh": host, "hosting_mwh_per_day": host / len(days),
+            "fresh_ok_mean_ci": ci,                              # day-block bootstrap (audit correction, reporting only)
             "gain_over_uniform_pct": 100.0 * (host / host_u - 1) if host_u > 0 else float("nan"),
             "gap_to_reference_pct": 100.0 * (1 - host / host_ref) if host_ref > 0 else float("nan"),
             "design_share_min": float(min(x["design_share"] for x in r)),
@@ -69,6 +72,14 @@ def summarise(rows, method, direction):
             "check_s_mean": float(np.mean([x["check_s"] for x in r])),
             "end_to_end_s_mean": float(np.mean([x["proposal_s"] + x["check_s"] for x in r])),
             "exact_evals_mean": float(np.mean([x["exact_evals"] for x in r]))}
+
+
+def boot_mean_by_day(values, row_days, days, rng, n=N_BOOT):
+    """Day-block bootstrap of a per-interval mean: 2.5 / 97.5 percentiles."""
+    per = {d: values[row_days == d] for d in days}
+    idx = rng.integers(0, len(days), size=(n, len(days)))
+    means = np.array([np.concatenate([per[days[k]] for k in row]).mean() for row in idx])
+    return {"lo": float(np.percentile(means, 2.5)), "hi": float(np.percentile(means, 97.5))}
 
 
 def day_totals(rows, method, days):

@@ -246,3 +246,75 @@ def test_se_metering_wls_scenarios_and_report(case, tmp_path):
     P0, _ = se.scenarios_prior(pd_, qd_, meas, np.random.default_rng(3))
     assert not np.allclose(P0[:, meas["bus"]], meas["p"]) and np.allclose(P0[:, meas["bus"]].mean(0), meas["p"], rtol=0.02)
     assert "genco" in se.table(out)
+
+
+def _datakit_frames(case):
+    """Datakit-style bus / gen / branch tables for case33bw (one scenario, flat solved state), the columns graphkit's
+    build_hetero_data reads; enough to build a template graph without a datakit run."""
+    import pandas as pd
+    fd = case.fd
+    n = fd.n_bus
+    bus = pd.DataFrame({"scenario": 0, "bus": np.arange(n), "Pd": np.maximum(case.pd, 0), "Qd": np.maximum(case.qd, 0),
+                        "Qg": 0.0, "Vm": 1.0, "Va": 0.0, "PQ": (fd.parent >= 0).astype(float), "PV": 0.0,
+                        "REF": (fd.parent < 0).astype(float), "min_vm_pu": 0.5, "max_vm_pu": 1.5, "min_q_mvar": 0.0,
+                        "max_q_mvar": 0.0, "GS": 0.0, "BS": 0.0, "vn_kv": 12.66})
+    bus.loc[0, ["min_q_mvar", "max_q_mvar"]] = [-100.0, 100.0]
+    gen = pd.DataFrame({"scenario": 0, "idx": [0], "bus": [0], "p_mw": [case.pd.sum()], "min_p_mw": [-100.0], "max_p_mw": [100.0],
+                        "cp0_eur": [0.0], "cp1_eur_per_mw": [1.0], "cp2_eur_per_mw2": [0.0], "in_service": [1], "min_q_mvar": [-100.0], "max_q_mvar": [100.0]})
+    k = np.arange(1, n)
+    z = fd.r[k] + 1j * fd.x[k]
+    y = 1 / z
+    branch = pd.DataFrame({"scenario": 0, "idx": np.arange(n - 1), "from_bus": fd.parent[k], "to_bus": k, "pf": 0.0, "qf": 0.0, "pt": 0.0, "qt": 0.0,
+                           "Yff_r": y.real, "Yff_i": y.imag, "Yft_r": -y.real, "Yft_i": -y.imag, "Ytt_r": y.real, "Ytt_i": y.imag,
+                           "Ytf_r": -y.real, "Ytf_i": -y.imag, "tap": 1.0, "ang_min": -360.0, "ang_max": 360.0, "rate_a": 0.0, "br_status": 1})
+    return bus, gen, branch
+
+
+def test_recon_variant_and_genco_recon_inference(case, tmp_path, monkeypatch):
+    """Amendment 4b: GNS_heterogeneous_lv_recon loads from its config, emits a six-wide bus output that the
+    reconstruction loss accepts, and GencoRecon runs our measurement pattern through an (untrained) checkpoint."""
+    torch = pytest.importorskip("torch")
+    pytest.importorskip("gridfm_graphkit")
+    import yaml
+    from gridfm_graphkit.io.param_handler import NestedNamespace, get_loss_function, get_task_transforms, load_model
+    from torch_geometric.data import Batch
+    from gencodoe import genco_model  # noqa: F401
+    from gencodoe import opf_se as se
+    from gencodoe.genco import frames_to_graphs
+    args = NestedNamespace(**yaml.safe_load(se.SER_CONFIG.read_text()))
+    g = frames_to_graphs(*_datakit_frames(case))[0]
+    torch.manual_seed(0)
+    tr = get_task_transforms(args)
+    b = Batch.from_data_list([tr(g.clone()), tr(g.clone())])
+    m = load_model(args)
+    out = m(b)
+    assert out["bus"].shape == (2 * 33, 6)
+    loss = get_loss_function(args)(out, b.y_dict, b.edge_index_dict, b.edge_attr_dict, b.mask_dict, model=m, x_dict=b.x_dict)["loss"]
+    assert torch.isfinite(loss)
+    run = tmp_path / "run"
+    (run / "artifacts/model").mkdir(parents=True)
+    (run / "artifacts/stats").mkdir(parents=True)
+    torch.save(m.state_dict(), run / "artifacts/model/best_model_state_dict.pt")
+    torch.save({"case33bw_opf": {"baseMVA_orig": torch.tensor(1.0), "baseMVA": torch.tensor(0.3), "vn_kv_max": torch.tensor(12.66)}},
+               run / "artifacts/stats/normalizer_stats.pt")
+    monkeypatch.setattr(se.GencoRecon, "__init__", lambda self, run_, device="cpu": _init_recon(self, run_, g))
+    est = se.GencoRecon(run)
+    sc = oc.Scenarios(case, 0)
+    p_real, q_real = se.realised_state(sc, 81, 18)
+    meas = se.measure(case, p_real, q_real, se.metered_units(case, 81, 0.5), 81, 18, 0.5)
+    gr = est.graph(meas)
+    mb = gr.mask_dict["bus"]
+    assert (~mb[meas["bus"], 0]).all() and (~mb[meas["v_bus"], 3]).all() and mb[:, 4].all()   # PD known, VM known, VA masked
+    ph, qh, vm = est.estimate(meas)
+    assert ph.shape == (len(meas["unmeasured"]),) and vm.shape == (33,) and np.isfinite(ph).all()
+
+
+def _init_recon(self, run, template):
+    """GencoRecon without a datakit raw directory: the template graph is given."""
+    from gridfm_graphkit.datasets.transforms import RemoveInactiveBranches, RemoveInactiveGenerators
+    from gencodoe.datakit_case33 import NAME
+    from gencodoe.genco import GencoModel
+    self.model = GencoModel(self.CONFIG, run / "artifacts/model/best_model_state_dict.pt",
+                            run / "artifacts/stats/normalizer_stats.pt", device="cpu", network=NAME)
+    self.template = RemoveInactiveGenerators()(RemoveInactiveBranches()(template.clone()))
+    self.n_bus = self.template["bus"].num_nodes

@@ -63,7 +63,9 @@
   "datakit": {
    "slurm": "scripts/hydra_case33_datakit.slurm",
    "job": "13360775",
-   "commit": "4051a7c (data identical to the 8711245 run that aborted on its commit check)",
+   "commit": "ce56b6d",
+   "state": "FAILED (exit 1): both datasets were generated and written completely (20,000 of 20,000 and 2,000 of 2,000 solved, splits written); the job then failed on `sha256sum` applied to the partitioned bus_data.parquet directories. The checksum line was fixed in 4051a7c; the data were not regenerated and were never hashed by that job (hashes now in results/opf_artifact_hashes.json).",
+   "earlier_attempt": "13360734 FAILED (exit 2): commit check, after the checkout was moved to ce56b6d under the queued job",
    "states": "20,000 (days 0-99, 16,046 train / 3,954 val) + 2,000 gate (val days)"
   },
   "training": {
@@ -126,6 +128,18 @@
    "calibration": "results/se_calibration.json",
    "estimators": "prior wls"
   },
-  "verdict": "GENCO-SE: no usable estimator (graphkit SE task derives injections from voltages). Value of information: 10% metered -> 87% of full-metering hosting, 50% -> 92%, prior safe (0.98) at every f; WLS +5 to +2 points but realised feasibility 0.94-0.95 at f=0.3-0.7."
- }
+  "verdict": "GENCO-SE: no usable estimator (graphkit SE task derives injections from voltages). Value of information: 10% metered -> 87% of full-metering hosting, 50% -> 92%, prior safe (0.98) at every f; WLS +5 to +2 points but realised feasibility 0.94-0.95 at f=0.3-0.7.",
+  "failed_setup_jobs": {
+   "13361841": "FAILED (exit 1): GENCO-SE gate crashed before scoring (generator feature width, fixed in 43c1e9d); calibration for WLS completed; the final checksum line failed on the missing gate file",
+   "13362269": "FAILED (exit 3): clean-tree check, after three tracked result files were deleted on hydra before resubmission; chain cancelled and resubmitted as 13362271/13362272 at dc18730 with the run-1 files renamed *_run1"
+  }
+ },
+ "test_day_evaluations_case33bw": [
+  "13360327 stage A (six methods)",
+  "13361552 amendment 3 (gnn_genco)",
+  "13362189 amendment 4 run 1 (prior, wls)",
+  "13362272 amendment 4a run 2 (prior, wls)",
+  "amendment 4b: pending (prior, wls, genco recon)"
+ ],
+ "artifact_hashes": "results/opf_artifact_hashes.json (SHA-256 of every raw day file, label, embedding, checkpoint and metadata file the reports and fits depend on)"
 }
