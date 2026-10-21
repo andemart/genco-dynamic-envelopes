@@ -52,6 +52,54 @@ def test_multi_opf_solution_is_exact_feasible(case):
         assert x.sum() >= uni.limit.sum() - 1e-6
 
 
+def _multi_env_setup(case, n_bad):
+    """40 design scenarios, scenario 0..n_bad-1 scaled x5 so they fail the exact check at x = 0 in both
+    directions (undervoltage and branch overload). With beta=None, eps=0.05 the rule allows 40 - ceil(38) = 2
+    discards."""
+    pytest.importorskip("juliacall")
+    from gencodoe.opf_multi import MultiOPF
+    sc = oc.Scenarios(case, 0)
+    p, q, _, _ = oe.interval_draws(sc, 80, 13)
+    p, q = p[:40].copy(), q[:40].copy()
+    p[:n_bad] *= 5.0
+    q[:n_bad] *= 5.0
+    feas = envelopes.exact(fdr.sweep_pf, case.fd)
+    for d in ("export", "import"):
+        assert (~feas(p, q, d)).sum() == n_bad
+    return MultiOPF(), oe.customers(case), p, q
+
+
+def test_multi_envelope_discards_infeasible_scenario(case):
+    """One scenario infeasible at x = 0 is discarded, the OPF runs on the rest, and the result passes the exact
+    check on every scenario except the discarded ones (at most 2 in total)."""
+    from gencodoe.opf_multi import multi_envelope
+    m, cust, p, q = _multi_env_setup(case, 1)
+    for d in ("export", "import"):
+        x, info = multi_envelope(m, case.fd, cust, p, q, d, eps=0.05, beta=None)
+        assert info["infeasible_at_zero"] == 1 and info["allowed_discards"] == 2
+        assert not info["zero_sentinel"] and info["opf_ok"]
+        assert 38 <= info["kept_scenarios"] <= 39
+        assert x.sum() > 0 and (x >= 0).all() and (x <= cust.cap(d) + 1e-7).all()
+        # x is exact-feasible (to IPOPT's boundary tolerance) on every kept scenario; the real violators are
+        # exactly the discarded ones: the bad scenario plus any greedy discard
+        inj = oe.SIGN[d] * x @ cust.incidence(case.fd.n_bus)
+        res = fdr.sweep_pf(case.fd, p + inj, q)
+        vm = res.vm[:, 1:]
+        head_v = (case.fd.vmax - vm.max(1)) if d == "export" else (vm.min(1) - case.fd.vmin)
+        violated = (np.minimum(head_v, 1.0 - res.loading[:, 1:].max(1)) < -1e-5) | ~res.converged
+        assert violated[0] and violated.sum() == 40 - info["kept_scenarios"]
+
+
+def test_multi_envelope_zero_sentinel_when_too_many_infeasible(case):
+    """Three infeasible scenarios exceed the 2-discard allowance: envelope 0, no OPF solve."""
+    from gencodoe.opf_multi import multi_envelope
+    m, cust, p, q = _multi_env_setup(case, 3)
+    for d in ("export", "import"):
+        x, info = multi_envelope(m, case.fd, cust, p, q, d, eps=0.05, beta=None)
+        assert info["zero_sentinel"] and info["infeasible_at_zero"] == 3 and info["allowed_discards"] == 2
+        assert not x.any() and len(x) == len(cust) and info["opf_solve_s"] == 0.0
+
+
 def test_scale_down_zero_and_passthrough(case):
     sc = oc.Scenarios(case, 0)
     p, q, _, _ = oe.interval_draws(sc, 80, 13)
