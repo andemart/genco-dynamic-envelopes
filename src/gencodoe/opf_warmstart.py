@@ -138,15 +138,43 @@ def run(raw: Path, case: Path, hub: Path, n: int, seed: int = 0, n_boot: int = 2
     return out
 
 
+def guard(out: dict, obj_tol: float = 1e-4, match_share: float = 0.99, fail_margin: float = 0.01) -> dict:
+    """Amendment 5a solution-quality guard on a result file: (iii) fails no more than (ii) + 1 point of the scenarios
+    and matches the flat-start objective within obj_tol in >= 99% of the scenarios where both converged."""
+    ps = out["per_scenario"]
+    ok_p, ok_g, ok_f = (np.array(ps[k]["ok"], bool) for k in ("previous", "genco", "flat"))
+    obj_g, obj_f = np.array(ps["genco"]["obj"], float), np.array(ps["flat"]["obj"], float)
+    both = ok_g & ok_f
+    rel = np.abs(obj_g[both] / obj_f[both] - 1)
+    signed = obj_g[both] / obj_f[both] - 1
+    g = {"obj_tol": obj_tol, "genco_failures": int((~ok_g).sum()), "previous_failures": int((~ok_p).sum()), "n": int(len(ok_g)),
+         "objective_match_share_at_tol": float((rel <= obj_tol).mean()), "objective_match_share_1e-6": float((rel <= 1e-6).mean()),
+         "objective_rel_diff_median_signed": float(np.median(signed)),
+         "share_genco_objective_lower_than_flat_by_tol": float((signed < -obj_tol).mean()),    # a different, cheaper local optimum
+         "share_genco_objective_higher_than_flat_by_tol": float((signed > obj_tol).mean())}
+    g["pass"] = bool((~ok_g).sum() <= (~ok_p).sum() + fail_margin * len(ok_g) and g["objective_match_share_at_tol"] >= match_share)
+    c = out["criterion"]
+    out["criterion_5a"] = {"timing_rule_pass": bool(c["pass"]), "quality_guard": g, "pass": bool(c["pass"] and g["pass"])}
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--raw", type=Path, required=True)
+    ap.add_argument("--recompute", type=Path, default=None, help="apply the amendment 5a guard to an existing result file")
+    ap.add_argument("--raw", type=Path, default=None)
     ap.add_argument("--case", type=Path, default=Path("grids/case118_flex.m"))
-    ap.add_argument("--hub", type=Path, required=True)
+    ap.add_argument("--hub", type=Path, default=None)
     ap.add_argument("--n", type=int, default=500)
     ap.add_argument("--out", type=Path, default=Path("results/genco_opf_amendment5_warmstart.json"))
     a = ap.parse_args()
-    out = run(a.raw, a.case, a.hub, a.n)
+    if a.recompute is not None:
+        out = guard(json.loads(a.recompute.read_text()))
+        a.recompute.write_text(json.dumps(out, indent=1))
+        print(json.dumps(out["criterion_5a"], indent=1))
+        return
+    if a.raw is None or a.hub is None:
+        raise SystemExit("--raw and --hub are required")
+    out = guard(run(a.raw, a.case, a.hub, a.n))
     a.out.parent.mkdir(parents=True, exist_ok=True)
     tmp = a.out.with_name("." + a.out.name + ".partial")
     tmp.write_text(json.dumps(out, indent=1))

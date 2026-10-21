@@ -1,0 +1,71 @@
+# Amendment 5 option 2, arm=finetune, N=1000 labels (nested split data_out/case118_flex/splits/N1000). GENCO (GNS_heterogeneous) OPF on case118
+# with 99 flexible export units (scripts/export_flex_case.py, configs/datakit_opf_case118_flex.yaml).
+# The predicted dispatch of the flexible units is the scenario's max-hosting envelope.
+# Based on graphkit v0.9.0.3 examples/config/HGNS_OPF_datakit_case118.yaml, unchanged except
+# for the network, the dataset size, epochs/patience (sized for one Apple-M5 run) and workers.
+version: 1
+task:
+  task_name: OptimalPowerFlow
+data:
+  baseMVA: 100
+  mask_value: 0.0
+  normalization: HeteroDataMVANormalizer
+  networks:
+  - case118_flex
+  scenarios:
+  - 30000
+  test_ratio: 0.1
+  val_ratio: 0.1
+  workers: 8
+  split_by_load_scenario_idx: false
+  split_from_existing_files: data_out/case118_flex/splits/N1000
+  stream_partitions: auto
+model:
+  attention_head: 8
+  edge_dim: 10
+  hidden_size: 48
+  input_bus_dim: 15
+  input_gen_dim: 6
+  output_bus_dim: 2
+  output_gen_dim: 1
+  num_layers: 12
+  type: GNS_heterogeneous
+optimizer:
+  type: AdamW
+  learning_rate: 0.0005
+  optimizer_params:
+    betas: [0.9, 0.999]
+  scheduler_type: ReduceLROnPlateau
+  scheduler_params:
+    mode: min
+    factor: 0.7
+    patience: 5
+training:
+  batch_size: 64
+  epochs: 80
+  loss_weights:
+  - 0.1
+  - 0.1
+  - 0.75
+  - 0.001
+  losses:
+  - LayeredWeightedPhysics
+  - MaskedGenMSE
+  - MaskedBusMSE
+  - QgViolationPenalty
+  loss_args:
+  - base_weight: 0.5
+  - {}
+  - {}
+  - {}
+  accelerator: auto
+  devices: auto
+  strategy: auto
+seed: 0
+verbose: true
+callbacks:
+  patience: 12
+  tol: 0
+  early_stopping_monitor: Validation loss
+  checkpoint_monitor: Validation loss
+  lr_scheduler_monitor: Validation loss

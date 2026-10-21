@@ -18,3 +18,20 @@ def run_dir_from_hub(hub: Path, out: Path) -> Path:
     torch.save(state, out / "artifacts/model/best_model_state_dict.pt")
     shutil.copy(hub / "normalizer_stats.pt", out / "artifacts/stats/normalizer_stats.pt")
     return out
+
+
+def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("cmd", choices=["convert"])
+    ap.add_argument("--hub", type=Path, required=True)
+    ap.add_argument("--out", type=Path, required=True)
+    a = ap.parse_args()
+    run = run_dir_from_hub(a.hub, a.hub / "run")
+    a.out.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(run / "artifacts/model/best_model_state_dict.pt", a.out)
+    print(f"wrote {a.out}")
+
+
+if __name__ == "__main__":
+    main()
