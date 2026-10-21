@@ -38,6 +38,8 @@ NOISE_P, NOISE_V = 0.01, 0.002                     # relative std
 ESTIMATORS = ("prior", "wls", "genco")
 MIN_STD_MW = 1e-4
 SE_CONFIG = Path("configs/genco_se_case33_lv.yaml")
+SER_CONFIG = Path("configs/genco_ser_case33_lv.yaml")                      # amendment 4b (masked reconstruction)
+VARIANTS = {"se": ("genco_se_case33_lv", SE_CONFIG), "recon": ("genco_ser_case33_lv", SER_CONFIG)}
 
 
 # ----------------------------------------------------------------------------------------- realised state, metering
@@ -120,13 +122,15 @@ class GencoSE:
     """graphkit StateEstimation checkpoint: measured P, Q at the metered buses and |V| at V_BUSES in, voltages and
     physics-decoded net injections out. Mirrors graphkit's SimulateMeasurements + ApplyMasking with our pattern."""
 
+    CONFIG = SE_CONFIG
+
     def __init__(self, run: Path, device: str = "cpu"):
         import torch
         from .datakit_case33 import NAME
         from .genco import GencoModel, frames_to_graphs, read_raw
         from .opf_genco import DATAKIT
         torch.set_num_threads(max(1, int(os.environ.get("OMP_NUM_THREADS", "1"))))
-        self.model = GencoModel(SE_CONFIG, run / "artifacts/model/best_model_state_dict.pt",
+        self.model = GencoModel(self.CONFIG, run / "artifacts/model/best_model_state_dict.pt",
                                 run / "artifacts/stats/normalizer_stats.pt", device=device, network=NAME)
         from gridfm_graphkit.datasets.transforms import RemoveInactiveBranches, RemoveInactiveGenerators
         g = frames_to_graphs(*read_raw(DATAKIT / NAME / "raw", scenarios=[0]))[0]
@@ -175,6 +179,62 @@ class GencoSE:
         return bus[U, 2].astype(float), bus[U, 3].astype(float), bus[:, 0].astype(float)
 
 
+class GencoRecon(GencoSE):
+    """Amendment 4b: GNS_heterogeneous_lv_recon in PF mode with our measurement pattern as the mask. Known: P, Q at the
+    metered homes and at the substation (0), Qg = 0 at every load bus, |V| at V_BUSES. Masked: everything else, all
+    generator P, all branch flows. Unmeasured loads = the reconstruction head's [PD, QD] (columns 4, 5)."""
+
+    CONFIG = SER_CONFIG
+
+    def graph(self, meas):
+        import torch
+        from gridfm_graphkit.datasets.globals import PD_H, QD_H, QG_H, VA_H, VM_H
+        g = self.template.clone()
+        x = g["bus"].x
+        n_y = g["bus"].y.size(1)
+        x[:, :n_y] = 0.0
+        x[meas["bus"], PD_H] = torch.as_tensor(-meas["p"], dtype=x.dtype)
+        x[meas["bus"], QD_H] = torch.as_tensor(-meas["q"], dtype=x.dtype)
+        x[meas["v_bus"], VM_H] = torch.as_tensor(meas["vm"], dtype=x.dtype)
+        mask = torch.ones(self.n_bus, n_y, dtype=torch.bool)
+        mask[meas["bus"], PD_H] = False
+        mask[meas["bus"], QD_H] = False
+        mask[0, PD_H] = False                                      # the substation has no load
+        mask[0, QD_H] = False
+        mask[1:, QG_H] = False                                     # no reactive generation at load buses (= 0)
+        mask[meas["v_bus"], VM_H] = False
+        mask[:, VA_H] = True
+        gx = g["gen"].x
+        gmask = torch.ones(gx.size(0), g["gen"].y.size(1), dtype=torch.bool)
+        gx[:, :g["gen"].y.size(1)] = 0.0
+        ea = g[("bus", "connects", "bus")].edge_attr
+        bmask = torch.ones(ea.size(0), 2, dtype=torch.bool)
+        ea[:, :2] = 0.0
+        from gridfm_graphkit.datasets.globals import PQ_H, PV_H, REF_H
+        self.model.normalizer.transform(g)
+        g.mask_dict = {"bus": torch.nn.functional.pad(mask, (0, x.size(1) - n_y)),
+                       "gen": torch.nn.functional.pad(gmask, (0, gx.size(1) - g["gen"].y.size(1))),
+                       "branch": torch.nn.functional.pad(bmask, (0, ea.size(1) - 2)),
+                       "PQ": x[:, PQ_H] == 1, "PV": x[:, PV_H] == 1, "REF": x[:, REF_H] == 1}   # as AddRandomHeteroMask
+        return g
+
+    def estimate(self, meas):
+        import torch
+        from torch_geometric.data import Batch
+        g = self.graph(meas)
+        batch = Batch.from_data_list([g, g]).to(self.model.device)
+        with torch.no_grad():
+            out = self.model.model(batch)
+        self.model.normalizer.inverse_output(out, batch)           # scales Pg, Qg, PD, QD back to MW
+        bus = out["bus"].reshape(2, self.n_bus, -1)[0].cpu().numpy()
+        U = meas["unmeasured"]
+        return -bus[U, 4].astype(float), -bus[U, 5].astype(float), bus[:, 0].astype(float)
+
+
+def genco_estimator(variant: str, run: Path):
+    return {"se": GencoSE, "recon": GencoRecon}[variant](run)
+
+
 # ------------------------------------------------------------------------------------------------------ scenarios
 def scenarios_prior(p_design, q_design, meas, rng=None):
     """Metered homes at their readings, each scenario with its own draw of the 1% measurement noise (amendment 4a);
@@ -214,12 +274,12 @@ def realised_ok(case, cust, limit, p_real, q_real, direction) -> bool:
 
 
 class Study:
-    def __init__(self, genco_run: Path | None = None, calibration: dict | None = None):
+    def __init__(self, genco_run: Path | None = None, calibration: dict | None = None, variant: str = "recon"):
         self.case = oc.build()
         self.sc = oc.Scenarios(self.case, 0)
         self.cust = oe.customers(self.case)
         self.cal = calibration or {}
-        self.genco = GencoSE(genco_run) if genco_run is not None else None
+        self.genco = genco_estimator(variant, genco_run) if genco_run is not None else None
 
     def estimates(self, est, p_design, q_design, meas):
         """(p_hat, q_hat) at the unmeasured homes for one estimator, plus the estimator's seconds."""
@@ -306,13 +366,14 @@ class Study:
 SEED_GATE, N_GATE, GATE = 606, 2000, {"vm_mae": 2e-3}
 
 
-def gate(genco_run: Path, days=tuple(oc.SPLIT["val"]), out: Path = Path("results/genco_se_case33_gate.json")) -> dict:
+def gate(genco_run: Path, days=tuple(oc.SPLIT["val"]), out: Path = Path("results/genco_se_case33_gate.json"),
+         variant: str = "recon") -> dict:
     """Amendment 4 gate: on N_GATE states from the validation days' scenario distribution with a random metered half
     (f = 0.5) and noisy measurements, GENCO-SE must reach Vm MAE < 2e-3 pu (all buses) and an MAE of the unmeasured
     active loads below the prior mean's."""
     case = oc.build()
     sc = oc.Scenarios(case, 0)
-    model = GencoSE(genco_run)
+    model = genco_estimator(variant, genco_run)
     rng = np.random.default_rng(SEED_GATE)
     dv, e_g, e_p = [], [], []
     for k in range(N_GATE):
@@ -329,7 +390,7 @@ def gate(genco_run: Path, days=tuple(oc.SPLIT["val"]), out: Path = Path("results
         pd_, _, _, _ = oe.interval_draws(sc, day, hour)
         e_p.append(np.abs(pd_[:, U].mean(0) - p[U]))
     dv = np.concatenate(dv)
-    res = {"run": str(genco_run), "n_states": N_GATE, "vm_mae": float(dv.mean()), "vm_p99": float(np.percentile(dv, 99)),
+    res = {"run": str(genco_run), "variant": variant, "n_states": N_GATE, "vm_mae": float(dv.mean()), "vm_p99": float(np.percentile(dv, 99)),
            "vm_max": float(dv.max()), "mae_unmeasured_kw_genco": float(np.concatenate(e_g).mean() * 1e3),
            "mae_unmeasured_kw_prior": float(np.concatenate(e_p).mean() * 1e3), "gate": GATE}
     res["pass"] = bool(res["vm_mae"] < GATE["vm_mae"] and res["mae_unmeasured_kw_genco"] < res["mae_unmeasured_kw_prior"])
@@ -416,6 +477,7 @@ def main():
     ap.add_argument("--fractions", type=float, nargs="+", default=list(FRACTIONS))
     ap.add_argument("--estimators", nargs="+", default=list(ESTIMATORS))
     ap.add_argument("--genco-run", type=Path, default=None)
+    ap.add_argument("--genco-variant", choices=list(VARIANTS), default="recon", help="se: amendment 4; recon: 4b")
     ap.add_argument("--calibration", type=Path, default=Path("results/se_calibration.json"))
     ap.add_argument("--dir", type=Path, default=Path("data_out/opf_case33/se"))
     ap.add_argument("--out", type=Path, required=True)
@@ -431,17 +493,17 @@ def main():
     genco_run = None
     if "genco" in a.estimators:
         from .opf_genco import find_run
-        genco_run = a.genco_run or find_run("genco_se_case33_lv")
+        genco_run = a.genco_run or find_run(VARIANTS[a.genco_variant][0])
     if a.cmd == "gate":
-        r = gate(genco_run, out=a.out)
+        r = gate(genco_run, out=a.out, variant=a.genco_variant)
         print(json.dumps(r, indent=1))
         raise SystemExit(0 if r["pass"] else 5)
     if a.cmd == "calibrate":
         if a.split != "val":
             raise SystemExit("calibration uses validation days only")
-        st = Study(genco_run)
+        st = Study(genco_run, variant=a.genco_variant)
         cal = st.calibrate(a.days, [e for e in a.estimators if e != "prior"], a.fractions)
-        cal["meta"] = {"days": a.days, "genco_run": str(genco_run)}
+        cal["meta"] = {"days": a.days, "genco_run": str(genco_run), "genco_variant": a.genco_variant}
         a.out.parent.mkdir(parents=True, exist_ok=True)
         a.out.write_text(json.dumps(cal, indent=1))
         print(f"wrote {a.out}")
@@ -449,7 +511,7 @@ def main():
     cal = json.loads(a.calibration.read_text()) if a.calibration.exists() else {}
     if any(e not in cal for e in a.estimators if e != "prior"):
         raise SystemExit(f"calibration {a.calibration} is missing an estimator")
-    st = Study(genco_run, cal)
+    st = Study(genco_run, cal, variant=a.genco_variant)
     rows = []
     for day in a.days:
         for h in a.hours:
@@ -459,7 +521,7 @@ def main():
     a.out.parent.mkdir(parents=True, exist_ok=True)
     tmp = a.out.with_name("." + a.out.name + ".partial")
     tmp.write_text(json.dumps({"meta": {"split": a.split, "days": a.days, "fractions": a.fractions, "estimators": a.estimators,
-                                        "genco_run": str(genco_run), "calibration": str(a.calibration), "v_buses": V_BUSES.tolist(),
+                                        "genco_run": str(genco_run), "genco_variant": a.genco_variant, "calibration": str(a.calibration), "v_buses": V_BUSES.tolist(),
                                         "noise": {"p_rel": NOISE_P, "v_rel": NOISE_V}, "seeds": [SEED_REAL, SEED_METER, SEED_NOISE, SEED_SCEN]},
                                "rows": rows}, indent=1))
     os.replace(tmp, a.out)

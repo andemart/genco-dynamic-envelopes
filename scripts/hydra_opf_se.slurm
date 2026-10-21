@@ -18,9 +18,11 @@ HEAD=$(git rev-parse HEAD)
 git diff --quiet HEAD -- src scripts results || { echo "ABORT: tracked files modified relative to HEAD"; exit 3; }
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 RUN_ARG=(); [ $# -ge 1 ] && RUN_ARG=(--genco-run "$1")
-echo "commit=$HEAD (verified) node=$(hostname) run=${1:-newest}"
+VARIANT=${GENCO_VARIANT:-recon}; TAG=${SE_TAG:-recon}                 # amendment 4: VARIANT=se TAG=""; 4b: recon
+GATE=results/genco_se_case33_gate${TAG:+_$TAG}.json; CAL=results/se_calibration${TAG:+_$TAG}.json; ESTF=results/se_estimators${TAG:+_$TAG}.txt
+echo "commit=$HEAD (verified) node=$(hostname) run=${1:-newest} variant=$VARIANT tag=$TAG"
 EST="prior wls"
-if .venv/bin/python -m gencodoe.opf_se gate "${RUN_ARG[@]}" --out results/genco_se_case33_gate.json; then EST="prior wls genco"; else echo "GATE FAILED: GENCO-SE arm dropped"; fi
-echo "estimators: $EST" | tee results/se_estimators.txt
-.venv/bin/python -m gencodoe.opf_se calibrate --split val --days $(seq 80 99) --estimators $EST "${RUN_ARG[@]}" --out results/se_calibration.json
-sha256sum results/se_calibration.json $(ls results/genco_se_case33_gate.json 2>/dev/null)
+if .venv/bin/python -m gencodoe.opf_se gate "${RUN_ARG[@]}" --genco-variant "$VARIANT" --out "$GATE"; then EST="prior wls genco"; else echo "GATE FAILED: GENCO-SE arm dropped"; fi
+echo "estimators: $EST" | tee "$ESTF"
+.venv/bin/python -m gencodoe.opf_se calibrate --split val --days $(seq 80 99) --estimators $EST "${RUN_ARG[@]}" --genco-variant "$VARIANT" --out "$CAL"
+sha256sum "$CAL" $(ls "$GATE" 2>/dev/null)

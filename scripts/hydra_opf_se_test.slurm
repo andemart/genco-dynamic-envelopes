@@ -15,12 +15,14 @@ module load Python/3.12.3-GCCcore-13.3.0
 HEAD=$(git rev-parse HEAD)
 [ "$HEAD" = "$GENCODOE_COMMIT" ] || { echo "ABORT: HEAD $HEAD != GENCODOE_COMMIT $GENCODOE_COMMIT"; exit 2; }
 git diff --quiet HEAD -- src scripts results || { echo "ABORT: tracked files modified relative to HEAD"; exit 3; }
-EST=$(sed -n 's/^estimators: //p' results/se_estimators.txt)
+VARIANT=${GENCO_VARIANT:-recon}; TAG=${SE_TAG:-recon}                 # amendment 4: VARIANT=se TAG=""; 4b: recon
+CAL=results/se_calibration${TAG:+_$TAG}.json; ESTF=results/se_estimators${TAG:+_$TAG}.txt; OUTDIR=data_out/opf_case33/se${TAG:+_$TAG}
+EST=$(sed -n 's/^estimators: //p' "$ESTF")
 [ -n "$EST" ] || { echo "ABORT: no estimators recorded"; exit 4; }
 DAY=$SLURM_ARRAY_TASK_ID
-OUT=data_out/opf_case33/se/day$(printf %03d "$DAY").json
+OUT=$OUTDIR/day$(printf %03d "$DAY").json
 [ -f "$OUT" ] && { echo "exists: $OUT"; exit 0; }
-echo "commit=$HEAD (verified) day=$DAY estimators=$EST node=$(hostname)"
-sha256sum results/se_calibration.json
+echo "commit=$HEAD (verified) day=$DAY estimators=$EST variant=$VARIANT node=$(hostname)"
+sha256sum "$CAL"
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-.venv/bin/python -m gencodoe.opf_se run --split test --days "$DAY" --estimators $EST --calibration results/se_calibration.json --out "$OUT"
+.venv/bin/python -m gencodoe.opf_se run --split test --days "$DAY" --estimators $EST --genco-variant "$VARIANT" --calibration "$CAL" --out "$OUT"
