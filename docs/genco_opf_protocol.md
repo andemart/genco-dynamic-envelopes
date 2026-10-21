@@ -219,3 +219,32 @@ GENCO-style versus the reference and the LP, after the exact check:
 - Evaluation: the stage A pipeline, method `gnn_genco` only, on the test days, through the same exact check and scale-down, appended to the frozen rows; no other method is re-run.
 
 **Criterion (mirrors the graph-structure claim).** "GENCO helps" needs `gnn_genco` to beat the from-scratch `gnn` by at least 2 points of hosting relative to the multi-scenario reference, combined over directions, with a day-bootstrap lower bound above 0 (2,000 replicates, seed 0); and criteria 1 and 3 of amendment 2 must still hold for `gnn_genco`. Criterion 2 against the LP and criterion 4 are also reported for `gnn_genco`. Anything else, including a gain between 0 and 2 points, is reported as "GENCO does not materially help on case33bw".
+
+## Amendment 4 (2026-10-21, before any state is estimated): partial metering, state estimation and the value of information
+
+**Why.** Stage A assumed the operator knows the scenario distribution and nothing about the realised state. A DSO that issues an envelope for the coming interval has smart-meter readings from a share of the participating homes and voltage measurements at a few points. Estimating the unmeasured homes narrows the scenarios, and the exact check turns narrower scenarios into larger envelopes at the same safety level. State estimation is also the one role where a learned model does inference rather than imitation, so it is the fairest test of GENCO left in this project (suggested by R., GridFM team). Written before any measurement is simulated, any estimator is fitted or any envelope is computed under it.
+
+**Setting (case33bw, stage A network, limits, caps and scenario generator).**
+- **Realised state.** Per interval one draw from the scenario generator, seed 303, never used elsewhere. Development on validation days 80–99; the frozen run on test days 100–119, evaluated once per estimator and metered share.
+- **Metering.** A share f of the 32 flexible households is metered, f ∈ {0.1, 0.3, 0.5, 0.7, 1.0}; the subset is drawn per (day, f) with seed 404 and is the same for every estimator. A metered home reports P and Q with 1% relative Gaussian noise. Voltage magnitude is measured at the substation and at four fixed buses, the feeder end and the end of each lateral (case33bw buses 18, 22, 25, 33), with 0.2% relative Gaussian noise (about 0.002 pu). No outliers. Measurements are redrawn per interval.
+- **Prior.** The interval's 200 design draws from the stage A distribution (seed 101), as in stage A.
+
+**Estimators of the unmeasured households** (each gives 200 design scenarios; metered homes are fixed at their readings in every scenario).
+1. **prior:** unmeasured homes from the prior draws, unchanged. The floor: metering without estimation.
+2. **WLS:** Gauss–Newton weighted least squares on the voltage measurements with the prior mean as pseudo-measurements of the unmeasured homes (weight 1/prior variance per bus), sensitivities from the exact sweep by finite differences at the prior mean. The classical distribution-system state estimator.
+3. **GENCO-SE:** graphkit `StateEstimation` task on the LV variant (no linear prior: it needs known injections), trained from scratch on the amendment 3 PF states (days 0–99, splits by day) with graphkit's measurement simulation: power injections masked at ratio 0.5 with 1% relative noise, voltage magnitude masked at ratio 0.85 (about five of 33 buses) with 0.2% relative noise, no outliers; at most 80 epochs, patience 12, seed 0, one fit. At inference the measured buses are exactly the metered homes and the five voltage buses. **Gate:** on 2,000 validation-day states at f = 0.5, Vm MAE < 2e-3 pu and MAE of the unmeasured active loads below the prior mean's; otherwise "no usable case33bw GENCO-SE" and arm 3 is not run.
+- **Design scenarios for WLS and GENCO-SE:** Gaussian draws around the estimate with a per-bus, per-f standard deviation calibrated as the residual std of that estimator on the validation days (the same rule for both), truncated so load sign is kept. The training mask ratio of 0.5 does not match every f; this is disclosed, and no per-f retraining is done.
+
+**Envelope.** The LinDistFlow LP proposal (per scenario, quantile) followed by the stage A exact check and scale-down (S = 200, acceptance 0.98) on the estimator's scenarios, both directions. The LP is used instead of the multi-scenario OPF to keep the sweep to minutes; the choice is the same for every estimator and is disclosed.
+
+**Metrics** (per f, estimator and direction, combined over directions; day-block bootstrap, 2,000 replicates, seed 0).
+- Hosting after the check, MWh per day, and its ratio to f = 1.0 (all homes metered) and to the prior at the same f.
+- **Realised feasibility:** the share of intervals whose issued envelope is feasible at the realised state (exact sweep). Target ≥ 0.95. An estimator below 0.95 at some f is reported as unsafe at that f whatever its hosting; the exact check only guarantees the design rule against the estimator's own scenarios.
+- Estimation error of the unmeasured active loads (MAE, kW) per estimator and f; cost per interval.
+
+**Criteria.**
+1. **Value of information:** reported as the hosting curve over f for each estimator; no bar.
+2. **GENCO-SE beats WLS** if, at both f = 0.3 and f = 0.5, hosting ≥ 1.02 × WLS with the bootstrap lower bound of the ratio above 1, and realised feasibility ≥ 0.95. Otherwise "GENCO-SE does not beat WLS on case33bw".
+3. Both estimators are reported against the prior; an estimator that does not beat the prior's hosting at f ≤ 0.5 is reported as adding nothing.
+
+**Claim discipline.** Exploratory layer; one network; synthetic realised states from the same generator as the prior (the estimators are not tested under model mismatch, and this is stated). Negative results are reported.
