@@ -127,7 +127,9 @@ class GencoSE:
         torch.set_num_threads(max(1, int(os.environ.get("OMP_NUM_THREADS", "1"))))
         self.model = GencoModel(SE_CONFIG, run / "artifacts/model/best_model_state_dict.pt",
                                 run / "artifacts/stats/normalizer_stats.pt", device=device, network=NAME)
-        self.template = frames_to_graphs(*read_raw(DATAKIT / NAME / "raw", scenarios=[0]))[0]
+        from gridfm_graphkit.datasets.transforms import RemoveInactiveBranches, RemoveInactiveGenerators
+        g = frames_to_graphs(*read_raw(DATAKIT / NAME / "raw", scenarios=[0]))[0]
+        self.template = RemoveInactiveGenerators()(RemoveInactiveBranches()(g))   # graphkit's SE preprocessing
         self.n_bus = self.template["bus"].num_nodes
 
     def graph(self, meas):

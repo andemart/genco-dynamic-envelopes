@@ -23,4 +23,4 @@ EST="prior wls"
 if .venv/bin/python -m gencodoe.opf_se gate "${RUN_ARG[@]}" --out results/genco_se_case33_gate.json; then EST="prior wls genco"; else echo "GATE FAILED: GENCO-SE arm dropped"; fi
 echo "estimators: $EST" | tee results/se_estimators.txt
 .venv/bin/python -m gencodoe.opf_se calibrate --split val --days $(seq 80 99) --estimators $EST "${RUN_ARG[@]}" --out results/se_calibration.json
-sha256sum results/genco_se_case33_gate.json results/se_calibration.json
+sha256sum results/se_calibration.json $(ls results/genco_se_case33_gate.json 2>/dev/null)
