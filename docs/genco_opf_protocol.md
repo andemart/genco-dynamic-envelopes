@@ -248,3 +248,11 @@ GENCO-style versus the reference and the LP, after the exact check:
 3. Both estimators are reported against the prior; an estimator that does not beat the prior's hosting at f ≤ 0.5 is reported as adding nothing.
 
 **Claim discipline.** Exploratory layer; one network; synthetic realised states from the same generator as the prior (the estimators are not tested under model mismatch, and this is stated). Negative results are reported.
+
+### Amendment 4a (2026-10-21, after the first test run of amendment 4; correction, disclosed)
+
+The first run (`results/genco_opf_amendment4_report_run1.json`, hydra jobs 13362188/13362189, commit 43c1e9d) exposed two flaws in the amendment 4 design, both visible without any estimator:
+1. **Metered readings entered the scenarios without their noise.** With every home metered the 200 scenarios collapse to one noisy point, the envelope is sized to its boundary, and realised feasibility of issued export envelopes fell to 0.33 at f = 1.0 (0.98 at f = 0.1, 0.95 at f = 0.5 for the prior). Correction: each scenario carries its own draw of the 1% measurement noise on the metered homes (same seed stream for every estimator).
+2. **Zero envelopes counted as unsafe.** A zero import envelope is issued when the passive load already violates a limit; its "feasibility at the realised state" is the base case's, not the envelope's. Correction: realised feasibility is reported for issued (non-zero) envelopes, with the zero-envelope share alongside; the all-interval figure is kept in the report.
+
+The GENCO-SE gate failed in the first run as it would in any run (Vm MAE 1.7e-3 pu but unmeasured-load MAE 329 kW against the prior's 7.6 kW: graphkit's StateEstimation task derives injections from the predicted voltages by physics, which is unusable at this accuracy on a distribution feeder); the arm stays dropped. The test days are re-run once with the corrected scenario set for prior and WLS; the first run is kept and both are reported.

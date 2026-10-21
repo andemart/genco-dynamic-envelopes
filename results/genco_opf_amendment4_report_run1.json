@@ -1,0 +1,279 @@
+{
+ "days": [
+  100,
+  101,
+  102,
+  103,
+  104,
+  105,
+  106,
+  107,
+  108,
+  109,
+  110,
+  111,
+  112,
+  113,
+  114,
+  115,
+  116,
+  117,
+  118,
+  119
+ ],
+ "n_rows": 9600,
+ "estimators": [
+  "prior",
+  "wls"
+ ],
+ "fractions": [
+  0.1,
+  0.3,
+  0.5,
+  0.7,
+  1.0
+ ],
+ "summary": {
+  "prior": {
+   "0.1": {
+    "hosting_mwh_per_day": 193.3643550854478,
+    "export_mwh_per_day": 180.96745322291162,
+    "import_mwh_per_day": 12.396901862536218,
+    "ratio_to_full_metering": {
+     "point": 0.8610858950611342,
+     "lo": 0.8544754013083714,
+     "hi": 0.86761033313418
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.728125,
+    "mae_unmeasured_kw": 7.9611961141664285,
+    "estimate_s": 7.821454135713187e-05,
+    "envelope_s": 0.42038181009596276
+   },
+   "0.3": {
+    "hosting_mwh_per_day": 199.58970219832491,
+    "export_mwh_per_day": 184.91647859747246,
+    "import_mwh_per_day": 14.673223600852443,
+    "ratio_to_full_metering": {
+     "point": 0.8888084739634825,
+     "lo": 0.8815811394727995,
+     "hi": 0.895794357731721
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.725,
+    "mae_unmeasured_kw": 7.658683154934977,
+    "estimate_s": 7.150031869969098e-05,
+    "envelope_s": 0.4180141707396842
+   },
+   "0.5": {
+    "hosting_mwh_per_day": 204.17550925551748,
+    "export_mwh_per_day": 187.50783051416246,
+    "import_mwh_per_day": 16.66767874135498,
+    "ratio_to_full_metering": {
+     "point": 0.9092298891342121,
+     "lo": 0.9028506923406961,
+     "hi": 0.9156058807215083
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.7114583333333333,
+    "mae_unmeasured_kw": 7.673061283302883,
+    "estimate_s": 6.644528725701093e-05,
+    "envelope_s": 0.4186259312195716
+   },
+   "0.7": {
+    "hosting_mwh_per_day": 210.62023421304895,
+    "export_mwh_per_day": 191.55566260698788,
+    "import_mwh_per_day": 19.064571606061058,
+    "ratio_to_full_metering": {
+     "point": 0.937929396631478,
+     "lo": 0.9295877518835639,
+     "hi": 0.9457996069293303
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.66875,
+    "mae_unmeasured_kw": 7.7947647328804,
+    "estimate_s": 6.148424584656217e-05,
+    "envelope_s": 0.4171279415860454
+   },
+   "1.0": {
+    "hosting_mwh_per_day": 224.55873008083546,
+    "export_mwh_per_day": 199.9940451490674,
+    "import_mwh_per_day": 24.56468493176803,
+    "ratio_to_full_metering": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.284375,
+    "mae_unmeasured_kw": 0.0,
+    "estimate_s": 4.4247868618185746e-05,
+    "envelope_s": 0.40912393188056434
+   }
+  },
+  "wls": {
+   "0.1": {
+    "hosting_mwh_per_day": 202.95389812061705,
+    "export_mwh_per_day": 183.24686153718196,
+    "import_mwh_per_day": 19.707036583435073,
+    "ratio_to_full_metering": {
+     "point": 0.9037898372846996,
+     "lo": 0.9004029248744203,
+     "hi": 0.907334733208408
+    },
+    "ratio_to_prior": {
+     "point": 1.0495931270834875,
+     "lo": 1.041062090885113,
+     "hi": 1.057883974387704
+    },
+    "realised_feasibility": 0.6989583333333333,
+    "mae_unmeasured_kw": 6.744035201404981,
+    "estimate_s": 0.002054599275364429,
+    "envelope_s": 0.4181952550063291
+   },
+   "0.3": {
+    "hosting_mwh_per_day": 207.07053277361564,
+    "export_mwh_per_day": 186.6548843523698,
+    "import_mwh_per_day": 20.415648421245855,
+    "ratio_to_full_metering": {
+     "point": 0.9221219442195612,
+     "lo": 0.915942431947603,
+     "hi": 0.9278634723372982
+    },
+    "ratio_to_prior": {
+     "point": 1.0374810448279406,
+     "lo": 1.030372752968965,
+     "hi": 1.0438267092370177
+    },
+    "realised_feasibility": 0.7,
+    "mae_unmeasured_kw": 6.616092370562764,
+    "estimate_s": 0.001561817679081893,
+    "envelope_s": 0.4177487660938065
+   },
+   "0.5": {
+    "hosting_mwh_per_day": 209.4135667954969,
+    "export_mwh_per_day": 188.60443385549397,
+    "import_mwh_per_day": 20.809132940002918,
+    "ratio_to_full_metering": {
+     "point": 0.9325558918155323,
+     "lo": 0.9244218495013641,
+     "hi": 0.9416985010629443
+    },
+    "ratio_to_prior": {
+     "point": 1.0256546809119218,
+     "lo": 1.019090028563455,
+     "hi": 1.0325806232954753
+    },
+    "realised_feasibility": 0.6802083333333333,
+    "mae_unmeasured_kw": 6.630165431139265,
+    "estimate_s": 0.0012831235936422065,
+    "envelope_s": 0.41789707287910766
+   },
+   "0.7": {
+    "hosting_mwh_per_day": 214.38763364228663,
+    "export_mwh_per_day": 192.8695271418981,
+    "import_mwh_per_day": 21.518106500388576,
+    "ratio_to_full_metering": {
+     "point": 0.9547062969456254,
+     "lo": 0.9483654776885457,
+     "hi": 0.9606694217827435
+    },
+    "ratio_to_prior": {
+     "point": 1.0178871675996088,
+     "lo": 1.01348338557206,
+     "hi": 1.0227900896570274
+    },
+    "realised_feasibility": 0.6354166666666666,
+    "mae_unmeasured_kw": 6.908246793446766,
+    "estimate_s": 0.001021909920912852,
+    "envelope_s": 0.4169471394706837
+   },
+   "1.0": {
+    "hosting_mwh_per_day": 224.55873008083546,
+    "export_mwh_per_day": 199.9940451490674,
+    "import_mwh_per_day": 24.56468493176803,
+    "ratio_to_full_metering": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.284375,
+    "mae_unmeasured_kw": 0.0,
+    "estimate_s": 2.8907603488429838e-06,
+    "envelope_s": 0.40904654123116113
+   }
+  }
+ },
+ "bootstrap": {
+  "replicates": 2000,
+  "seed": 0,
+  "block": "day"
+ },
+ "unsafe": [
+  [
+   "prior",
+   0.1
+  ],
+  [
+   "prior",
+   0.3
+  ],
+  [
+   "prior",
+   0.5
+  ],
+  [
+   "prior",
+   0.7
+  ],
+  [
+   "prior",
+   1.0
+  ],
+  [
+   "wls",
+   0.1
+  ],
+  [
+   "wls",
+   0.3
+  ],
+  [
+   "wls",
+   0.5
+  ],
+  [
+   "wls",
+   0.7
+  ],
+  [
+   "wls",
+   1.0
+  ]
+ ]
+}

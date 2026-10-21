@@ -8,10 +8,11 @@
 Per interval: one realised state (seed 303); a share f of the 32 households metered (P, Q, 1% noise; subset per
 (day, f), seed 404); |V| at the substation and four fixed buses (0.2% noise). Estimators of the unmeasured homes:
 prior (unchanged design draws), WLS (Gauss-Newton on the voltages with the prior mean as pseudo-measurements) and
-GENCO-SE (graphkit StateEstimation checkpoint). Each gives 200 design scenarios (metered homes fixed at their
-readings; WLS/GENCO: Gaussian around the estimate with the per-bus std calibrated on validation days). Envelope:
-LP proposal + stage A exact check and scale-down. Metrics: hosting after the check, realised feasibility at the
-realised state, estimation MAE, cost.
+GENCO-SE (graphkit StateEstimation checkpoint). Each gives 200 design scenarios (metered homes at their
+readings with a per-scenario draw of the measurement noise, amendment 4a; WLS/GENCO: Gaussian around the estimate with
+the per-bus std calibrated on validation days). Envelope: LP proposal + stage A exact check and scale-down. Metrics:
+hosting after the check, realised feasibility of the issued (non-zero) envelopes at the realised state, zero-envelope
+share, estimation MAE, cost.
 """
 
 from __future__ import annotations
@@ -175,16 +176,21 @@ class GencoSE:
 
 
 # ------------------------------------------------------------------------------------------------------ scenarios
-def scenarios_prior(p_design, q_design, meas):
+def scenarios_prior(p_design, q_design, meas, rng=None):
+    """Metered homes at their readings, each scenario with its own draw of the 1% measurement noise (amendment 4a);
+    unmeasured homes unchanged."""
     P, Q = p_design.copy(), q_design.copy()
-    P[:, meas["bus"]], Q[:, meas["bus"]] = meas["p"], meas["q"]
+    S, m = len(P), len(meas["bus"])
+    zp = 1 + NOISE_P * rng.standard_normal((S, m)) if rng is not None else 1.0
+    zq = 1 + NOISE_P * rng.standard_normal((S, m)) if rng is not None else 1.0
+    P[:, meas["bus"]], Q[:, meas["bus"]] = meas["p"] * zp, meas["q"] * zq
     return P, Q
 
 
 def scenarios_from_estimate(p_design, q_design, meas, p_hat, q_hat, std_p, std_q, rng):
     """Metered homes fixed; unmeasured homes Gaussian around the estimate with the calibrated per-bus std,
     truncated to the sign of the estimate."""
-    P, Q = scenarios_prior(p_design, q_design, meas)
+    P, Q = scenarios_prior(p_design, q_design, meas, rng)
     U = meas["unmeasured"]
     S = len(P)
     zp = p_hat + std_p * rng.standard_normal((S, len(U)))
@@ -247,11 +253,11 @@ class Study:
         for est in estimators:
             (p_hat, q_hat), est_s = self.estimates(est, p_design, q_design, meas)
             mae = float(np.abs(p_hat - p_real[U]).mean() * 1e3) if len(U) else 0.0   # kW
+            rng = np.random.default_rng([SEED_SCEN, day, hour, int(round(100 * f))])
             if est == "prior" or len(U) == 0:
-                P, Q = scenarios_prior(p_design, q_design, meas)
+                P, Q = scenarios_prior(p_design, q_design, meas, rng)
             else:
                 sp, sq = self.std_for(est, f, U)
-                rng = np.random.default_rng([SEED_SCEN, day, hour, int(round(100 * f))])
                 P, Q = scenarios_from_estimate(p_design, q_design, meas, p_hat, q_hat, sp, sq, rng)
             for d in directions:
                 t = time.perf_counter()
@@ -366,7 +372,9 @@ def report(se_dir: Path, n_boot: int = 2000, seed: int = 0) -> dict:
                 "import_mwh_per_day": float(tot(est, f, "import").sum() / len(days)),
                 "ratio_to_full_metering": boot(tot(est, f), full) if full is not None else None,
                 "ratio_to_prior": boot(tot(est, f), tot("prior", f)) if "prior" in ests else None,
-                "realised_feasibility": float(np.mean([r["realised_ok"] for r in sel])),
+                "realised_feasibility": float(np.mean([r["realised_ok"] for r in sel if r["total_mw"] > 0])),   # issued envelopes
+                "realised_feasibility_all": float(np.mean([r["realised_ok"] for r in sel])),
+                "zero_envelope_share": float(np.mean([r["total_mw"] <= 0 for r in sel])),
                 "mae_unmeasured_kw": float(np.mean([r["mae_unmeasured_kw"] for r in sel])),
                 "estimate_s": float(np.mean([r["estimate_s"] for r in sel])),
                 "envelope_s": float(np.mean([r["envelope_s"] for r in sel]))}
@@ -386,13 +394,13 @@ def report(se_dir: Path, n_boot: int = 2000, seed: int = 0) -> dict:
 
 
 def table(out: dict) -> str:
-    L = [f"{'est':6} {'f':>4} {'MWh/d':>7} {'exp':>7} {'imp':>6} {'/full':>6} {'/prior':>7} {'real.ok':>7} {'MAE kW':>7} {'est s':>6}"]
+    L = [f"{'est':6} {'f':>4} {'MWh/d':>7} {'exp':>7} {'imp':>6} {'/full':>6} {'/prior':>7} {'real.ok':>7} {'zero%':>6} {'MAE kW':>7} {'est s':>6}"]
     for est, per in out["summary"].items():
         for f, s in per.items():
             rf = s["ratio_to_full_metering"]["point"] if s["ratio_to_full_metering"] else float("nan")
             rp = s["ratio_to_prior"]["point"] if s["ratio_to_prior"] else float("nan")
             L.append(f"{est:6} {f:>4} {s['hosting_mwh_per_day']:7.2f} {s['export_mwh_per_day']:7.2f} {s['import_mwh_per_day']:6.2f} "
-                     f"{rf:6.3f} {rp:7.3f} {s['realised_feasibility']:7.3f} {s['mae_unmeasured_kw']:7.2f} {s['estimate_s']:6.3f}")
+                     f"{rf:6.3f} {rp:7.3f} {s['realised_feasibility']:7.3f} {100 * s['zero_envelope_share']:6.1f} {s['mae_unmeasured_kw']:7.2f} {s['estimate_s']:6.3f}")
     if "criterion_2_genco_beats_wls" in out:
         L.append(f"criterion 2 (GENCO-SE beats WLS at f=0.3 and 0.5): {'PASS' if out['criterion_2_genco_beats_wls']['pass'] else 'FAIL'}")
     L.append(f"unsafe (realised feasibility < 0.95): {out['unsafe']}")

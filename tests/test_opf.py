@@ -241,4 +241,7 @@ def test_se_metering_wls_scenarios_and_report(case, tmp_path):
     assert out["estimators"] == ["prior", "wls", "genco"] and out["n_rows"] == 3 * 2 * 3 * 3 * 2
     c = out["criterion_2_genco_beats_wls"]
     assert abs(c["0.5"]["ratio_genco_to_wls"]["point"] - 0.95 / 0.9) < 0.03 and c["pass"] and out["unsafe"] == []
+    assert out["summary"]["wls"]["0.5"]["zero_envelope_share"] == 0.0 and out["summary"]["wls"]["0.5"]["realised_feasibility_all"] == 1.0
+    P0, _ = se.scenarios_prior(pd_, qd_, meas, np.random.default_rng(3))
+    assert not np.allclose(P0[:, meas["bus"]], meas["p"]) and np.allclose(P0[:, meas["bus"]].mean(0), meas["p"], rtol=0.02)
     assert "genco" in se.table(out)
