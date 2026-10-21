@@ -905,3 +905,27 @@ Protocol amendment 3 (commit 25cd114), written after the stage A verdict and bef
 **Reading.** On case33bw the scenario statistics in the 19 node features already carry what the envelope needs; a near-exact learned power-flow state of the mean scenario adds 96 correlated inputs and a little overfitting (validation loss up 5%, best epoch earlier). This is the fourth preregistered role in the project where a GENCO component does not clear its bar, and the first where the GENCO model itself is demonstrably accurate on the network, so the negative result is about the role, not about the model's quality. The honest summary for stage A as a whole: a GENCO-style model, with or without the actual GENCO inside it, amortises the multi-scenario AC-OPF to within 1–2% at a thousandth of the cost, and the value of the graph structure and of the pretrained-style backbone is 0.6 and −0.5 points respectively.
 
 **Also disclosed.** Exploratory and post-hoc: the six stage A methods were evaluated on these test days first; `gnn_genco` once, after development on validation days only (one fit, no tuning). Timing: GENCO embedding on CPU adds about 0.02 s per interval.
+
+## GENCO-OPF amendment 4 (partial metering and state estimation, case33bw): frozen result (`results/genco_opf_amendment4_report.json`; run 1 under `*_run1`)
+
+Protocol amendment 4 (commit c71012c, preregistered) with the disclosed correction 4a (f46db76) after run 1. Hydra: graphkit SE training 13361830 (A100, 47 min, 80 epochs, `configs/genco_se_case33_lv.yaml`), run 1 gate/calibration 13362188 and test 13362189 (commit 43c1e9d), run 2 calibration 13362271 and test 13362272 (commit dc18730). Test days 100–119, 24 h, both directions, f ∈ {0.1, 0.3, 0.5, 0.7, 1.0}, LP proposal + stage A exact check; one realised state per interval; the report ran on the laptop on the copied day files.
+
+**GENCO-SE: no usable estimator (gate failed in both runs).** On 2,000 validation-day states at f = 0.5 the graphkit StateEstimation checkpoint reaches Vm MAE 1.7e-3 pu (bar 2e-3) but an MAE of the unmeasured active loads of **329 kW against 7.6 kW for the prior mean**; the decoded injections are uncorrelated with the truth even at the metered homes whose load was an input. Cause: graphkit's SE task trains on voltages only and derives injections from the predicted voltages through its physics layer, which on a distribution feeder amplifies a 1e-3 pu voltage error into hundreds of kW (the same amplification as in the four-wire study). The masked-reconstruction formulation that would predict loads directly cannot run on the heterogeneous model in graphkit 0.9.0.3 (two-wide voltage mask hard-coded in PF mode) without a custom head; not attempted before the deadline. The arm was dropped per protocol; prior and WLS were evaluated.
+
+**Value of information (run 2, issued envelopes; hosting combined over directions, MWh per test day; realised feasibility of issued envelopes; zero-envelope share).**
+
+| f metered | prior MWh/d | prior / full | prior realised ok | WLS MWh/d | WLS / prior | WLS realised ok | unmeasured-load MAE prior / WLS, kW |
+|---|---|---|---|---|---|---|---|
+| 0.1 | 193.4 | 0.868 [0.861, 0.875] | 0.982 | 203.0 | 1.050 [1.041, 1.058] | 0.951 | 8.0 / 6.7 |
+| 0.3 | 199.5 | 0.896 [0.889, 0.903] | 0.983 | 207.0 | 1.038 [1.031, 1.044] | 0.945 | 7.7 / 6.6 |
+| 0.5 | 204.0 | 0.916 [0.910, 0.923] | 0.983 | 209.3 | 1.026 [1.019, 1.033] | 0.945 | 7.7 / 6.6 |
+| 0.7 | 210.3 | 0.945 [0.936, 0.952] | 0.979 | 214.0 | 1.017 [1.013, 1.023] | 0.938 | 7.8 / 6.9 |
+| 1.0 | 222.7 | 1 | 0.975 | 222.7 | 1 | 0.975 | – |
+
+Zero-envelope share (import mostly): 26–36% of intervals. Realised feasibility over all intervals, zero envelopes included, is about 0.70–0.73 for every arm: those are base-case violations, not envelope violations.
+
+**Reading.**
+- **Metering a tenth of the homes already yields 87% of the full-metering hosting, half of them 92%.** The exact check turns the narrower scenario set directly into capacity, with the issued envelopes staying at 0.98 realised feasibility for the prior at every f. The remaining 8–13% is the unmeasured homes' uncertainty, which five voltage readings cannot remove.
+- **WLS adds 5 points at f = 0.1, falling to 2 points at f = 0.7, and costs about 3 points of realised feasibility.** Under the preregistered rule (issued envelopes ≥ 0.95) WLS is safe only at f = 0.1 and f = 1.0; at f = 0.3–0.7 it sits at 0.938–0.945, so its calibrated Gaussian spread (one validation-day RMSE per bus) under-covers slightly. Inflating the spread would trade the gain back; not done post hoc.
+- **Criterion 2 (GENCO-SE beats WLS): not evaluable;** criterion 3: WLS beats the prior's hosting at every f ≤ 0.7 but not at the safety line.
+- Scope: one network, synthetic realised states from the prior's own generator (no model mismatch), fixed five-bus voltage sensing, random metered subsets.

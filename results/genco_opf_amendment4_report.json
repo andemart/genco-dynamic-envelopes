@@ -1,0 +1,271 @@
+{
+ "days": [
+  100,
+  101,
+  102,
+  103,
+  104,
+  105,
+  106,
+  107,
+  108,
+  109,
+  110,
+  111,
+  112,
+  113,
+  114,
+  115,
+  116,
+  117,
+  118,
+  119
+ ],
+ "n_rows": 9600,
+ "estimators": [
+  "prior",
+  "wls"
+ ],
+ "fractions": [
+  0.1,
+  0.3,
+  0.5,
+  0.7,
+  1.0
+ ],
+ "summary": {
+  "prior": {
+   "0.1": {
+    "hosting_mwh_per_day": 193.36444043240994,
+    "export_mwh_per_day": 180.96469787875773,
+    "import_mwh_per_day": 12.39974255365221,
+    "ratio_to_full_metering": {
+     "point": 0.8684609789460922,
+     "lo": 0.8614475342517953,
+     "hi": 0.8754800960996779
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.9821717990275527,
+    "realised_feasibility_all": 0.7270833333333333,
+    "zero_envelope_share": 0.3572916666666667,
+    "mae_unmeasured_kw": 7.9611961141664285,
+    "estimate_s": 7.824185201267634e-05,
+    "envelope_s": 0.41990887848977915
+   },
+   "0.3": {
+    "hosting_mwh_per_day": 199.5235155962857,
+    "export_mwh_per_day": 184.85773012275908,
+    "import_mwh_per_day": 14.665785473526615,
+    "ratio_to_full_metering": {
+     "point": 0.8961233373107461,
+     "lo": 0.8885605142015831,
+     "hi": 0.9033496509413681
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.9828926905132193,
+    "realised_feasibility_all": 0.728125,
+    "zero_envelope_share": 0.3302083333333333,
+    "mae_unmeasured_kw": 7.658683154934977,
+    "estimate_s": 7.157671237412918e-05,
+    "envelope_s": 0.4177722563562308
+   },
+   "0.5": {
+    "hosting_mwh_per_day": 204.02626615194416,
+    "export_mwh_per_day": 187.37447225535854,
+    "import_mwh_per_day": 16.651793896585552,
+    "ratio_to_full_metering": {
+     "point": 0.9163466169725725,
+     "lo": 0.9100932314014285,
+     "hi": 0.9226994511576213
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.9832572298325722,
+    "realised_feasibility_all": 0.728125,
+    "zero_envelope_share": 0.315625,
+    "mae_unmeasured_kw": 7.673061283302883,
+    "estimate_s": 6.643678339059988e-05,
+    "envelope_s": 0.41800362302916105
+   },
+   "0.7": {
+    "hosting_mwh_per_day": 210.31042591974125,
+    "export_mwh_per_day": 191.2546401321327,
+    "import_mwh_per_day": 19.05578578760851,
+    "ratio_to_full_metering": {
+     "point": 0.9445707699326013,
+     "lo": 0.9363724377892989,
+     "hi": 0.9521681905245022
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.9792899408284024,
+    "realised_feasibility_all": 0.7239583333333334,
+    "zero_envelope_share": 0.29583333333333334,
+    "mae_unmeasured_kw": 7.7947647328804,
+    "estimate_s": 6.142202508575186e-05,
+    "envelope_s": 0.4179936820840567
+   },
+   "1.0": {
+    "hosting_mwh_per_day": 222.65184633518533,
+    "export_mwh_per_day": 198.3799375863029,
+    "import_mwh_per_day": 24.271908748882442,
+    "ratio_to_full_metering": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.9745403111739745,
+    "realised_feasibility_all": 0.7197916666666667,
+    "zero_envelope_share": 0.2635416666666667,
+    "mae_unmeasured_kw": 0.0,
+    "estimate_s": 4.4275297780889863e-05,
+    "envelope_s": 0.4179179479219101
+   }
+  },
+  "wls": {
+   "0.1": {
+    "hosting_mwh_per_day": 203.00333081393953,
+    "export_mwh_per_day": 183.33709088818014,
+    "import_mwh_per_day": 19.666239925759374,
+    "ratio_to_full_metering": {
+     "point": 0.9117522902025862,
+     "lo": 0.9083390414300099,
+     "hi": 0.9154219091442669
+    },
+    "ratio_to_prior": {
+     "point": 1.0498483090271131,
+     "lo": 1.0410933546270702,
+     "hi": 1.0579447995679951
+    },
+    "realised_feasibility": 0.950509461426492,
+    "realised_feasibility_all": 0.70625,
+    "zero_envelope_share": 0.284375,
+    "mae_unmeasured_kw": 6.744035201404981,
+    "estimate_s": 0.0019792730270940715,
+    "envelope_s": 0.4182557741977841
+   },
+   "0.3": {
+    "hosting_mwh_per_day": 207.01493631856616,
+    "export_mwh_per_day": 186.62659763270912,
+    "import_mwh_per_day": 20.388338685857054,
+    "ratio_to_full_metering": {
+     "point": 0.9297696817969386,
+     "lo": 0.9230614433799097,
+     "hi": 0.9359843853416446
+    },
+    "ratio_to_prior": {
+     "point": 1.0375465553515935,
+     "lo": 1.030695970394722,
+     "hi": 1.0436437600689907
+    },
+    "realised_feasibility": 0.9452449567723343,
+    "realised_feasibility_all": 0.7020833333333333,
+    "zero_envelope_share": 0.27708333333333335,
+    "mae_unmeasured_kw": 6.616092370562764,
+    "estimate_s": 0.001559048401926096,
+    "envelope_s": 0.4178330050646991
+   },
+   "0.5": {
+    "hosting_mwh_per_day": 209.26238241504151,
+    "export_mwh_per_day": 188.49181522472995,
+    "import_mwh_per_day": 20.770567190311578,
+    "ratio_to_full_metering": {
+     "point": 0.9398636744292387,
+     "lo": 0.9316857446263972,
+     "hi": 0.9489181081821961
+    },
+    "ratio_to_prior": {
+     "point": 1.0256639322076202,
+     "lo": 1.019040998178113,
+     "hi": 1.0326624779468714
+    },
+    "realised_feasibility": 0.9446870451237264,
+    "realised_feasibility_all": 0.7010416666666667,
+    "zero_envelope_share": 0.284375,
+    "mae_unmeasured_kw": 6.630165431139265,
+    "estimate_s": 0.0012791273250513768,
+    "envelope_s": 0.41790995432636463
+   },
+   "0.7": {
+    "hosting_mwh_per_day": 213.9741100068812,
+    "export_mwh_per_day": 192.4164089870103,
+    "import_mwh_per_day": 21.55770101987093,
+    "ratio_to_full_metering": {
+     "point": 0.9610255361851324,
+     "lo": 0.9553639738829229,
+     "hi": 0.9665357556937025
+    },
+    "ratio_to_prior": {
+     "point": 1.017420363594043,
+     "lo": 1.0127450553634967,
+     "hi": 1.0228415207576238
+    },
+    "realised_feasibility": 0.9378612716763006,
+    "realised_feasibility_all": 0.6958333333333333,
+    "zero_envelope_share": 0.2791666666666667,
+    "mae_unmeasured_kw": 6.908246793446766,
+    "estimate_s": 0.001019856616630932,
+    "envelope_s": 0.4177264560147402
+   },
+   "1.0": {
+    "hosting_mwh_per_day": 222.65184633518533,
+    "export_mwh_per_day": 198.3799375863029,
+    "import_mwh_per_day": 24.271908748882442,
+    "ratio_to_full_metering": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "ratio_to_prior": {
+     "point": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    },
+    "realised_feasibility": 0.9745403111739745,
+    "realised_feasibility_all": 0.7197916666666667,
+    "zero_envelope_share": 0.2635416666666667,
+    "mae_unmeasured_kw": 0.0,
+    "estimate_s": 2.8483378628152423e-06,
+    "envelope_s": 0.417799943828436
+   }
+  }
+ },
+ "bootstrap": {
+  "replicates": 2000,
+  "seed": 0,
+  "block": "day"
+ },
+ "unsafe": [
+  [
+   "wls",
+   0.3
+  ],
+  [
+   "wls",
+   0.5
+  ],
+  [
+   "wls",
+   0.7
+  ]
+ ]
+}

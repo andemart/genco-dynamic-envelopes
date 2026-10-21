@@ -98,5 +98,34 @@
    "where": "laptop, on files copied from hydra"
   },
   "verdict": "amendment3_genco_helps: not met (gnn_genco - gnn = -0.49 points of the reference [-0.58, -0.40])"
+ },
+ "amendment4": {
+  "protocol": "amendment 4 (c71012c, preregistered) + 4a correction (f46db76, disclosed, after run 1)",
+  "se_training": {
+   "slurm": "scripts/hydra_train.slurm",
+   "config": "configs/genco_se_case33_lv.yaml",
+   "job": "13361830",
+   "hardware": "A100-PCIE-40GB",
+   "elapsed": "00:47:11",
+   "epochs": 80
+  },
+  "run1": {
+   "gate_cal_job": "13362188",
+   "test_job": "13362189",
+   "commit": "43c1e9d",
+   "report": "results/genco_opf_amendment4_report_run1.json",
+   "gate": "results/genco_se_case33_gate_run1.json (failed: load MAE 329 kW vs prior 7.6)",
+   "note": "metered readings without noise in the scenarios; zero envelopes counted as unsafe"
+  },
+  "run2": {
+   "gate_cal_job": "13362271",
+   "test_job": "13362272",
+   "commit": "dc18730",
+   "report": "results/genco_opf_amendment4_report.json",
+   "gate": "results/genco_se_case33_gate.json (failed)",
+   "calibration": "results/se_calibration.json",
+   "estimators": "prior wls"
+  },
+  "verdict": "GENCO-SE: no usable estimator (graphkit SE task derives injections from voltages). Value of information: 10% metered -> 87% of full-metering hosting, 50% -> 92%, prior safe (0.98) at every f; WLS +5 to +2 points but realised feasibility 0.94-0.95 at f=0.3-0.7."
  }
 }
