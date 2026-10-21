@@ -1,0 +1,83 @@
+# Amendment 4: the actual GENCO in StateEstimation mode on case33bw (LV variant, no linear prior: it needs known
+# injections). Data: the amendment 3 PF states (data_out/datakit_case33, splits by day). graphkit's measurement
+# simulation: power injections masked at ratio 0.5 (1% relative noise), voltage magnitude masked at 0.85 (0.2%),
+# no branch-flow measurements, no outliers. The bus head predicts Vm, Va (output_bus_dim 2); in SE mode graphkit
+# decodes net injections from the predicted voltages by physics, so unmeasured loads follow from the voltages.
+# Loss: MaskedBusMSE on Vm, Va at unmeasured buses.
+# Hydra A100: sbatch scripts/hydra_train.slurm configs/genco_se_case33_lv.yaml data_out/datakit_case33 genco_se_case33_lv
+version: 1
+callbacks:
+  patience: 12
+  tol: 0
+  early_stopping_monitor: Validation loss
+  checkpoint_monitor: Validation loss
+  lr_scheduler_monitor: Validation loss
+task:
+  task_name: StateEstimation
+  relative_measurement: true
+  noise_type: Gaussian
+  measurements:
+    vm:
+      mask_ratio: 0.85
+      std: 0.002
+      outlier_ratio: 0.0
+    power_inj:
+      mask_ratio: 0.5
+      std: 0.01
+      outlier_ratio: 0.0
+    power_flow:
+      mask_ratio: 1.0
+      std: 0.01
+      outlier_ratio: 0.0
+data:
+  baseMVA: 1
+  mask_value: 0.0
+  normalization: HeteroDataMVANormalizer
+  networks:
+  - case33bw_opf
+  scenarios:
+  - 20000  # ignored: split_from_existing_files sets the scenarios
+  test_ratio: 0.1
+  val_ratio: 0.1
+  workers: 8
+  split_by_load_scenario_idx: false
+  stream_partitions: auto
+  split_from_existing_files: data_out/datakit_case33/splits
+model:
+  attention_head: 8
+  edge_dim: 10
+  hidden_size: 12
+  input_bus_dim: 15
+  input_gen_dim: 6
+  output_bus_dim: 2
+  output_gen_dim: 1
+  num_layers: 12
+  type: GNS_heterogeneous_lv
+  linear_prior: false
+optimizer:
+  type: AdamW
+  learning_rate: 0.0005
+  optimizer_params:
+    betas:
+    - 0.9
+    - 0.999
+  scheduler_type: ReduceLROnPlateau
+  scheduler_params:
+    mode: min
+    factor: 0.7
+    patience: 5
+seed: 0
+training:
+  batch_size: 64
+  epochs: 80
+  losses:
+  - MaskedBusMSE
+  loss_weights:
+  - 1.0
+  loss_args:
+  - {}
+  physics_warmup_epochs: 0
+  accelerator: auto
+  devices: 1
+  strategy: auto
+verbose: true
