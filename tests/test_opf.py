@@ -1,4 +1,6 @@
 """GENCO-OPF layer (docs/genco_opf_protocol.md): case, multi-scenario OPF physics, pipeline, models."""
+import json
+
 import numpy as np
 import pytest
 
@@ -160,3 +162,36 @@ def test_test_days_never_labelled():
     from gencodoe.opf_labels import label_day
     with pytest.raises(SystemExit):
         label_day(110)
+
+
+def test_report_metrics_and_criteria(tmp_path):
+    """opf_report on synthetic day files: hosting ratios, bootstrap bounds and the criteria follow the protocol."""
+    from gencodoe import opf_report as rp
+    rng = np.random.default_rng(0)
+    scale = {"uniform": 0.5, "lp": 0.8, "ipopt": 0.85, "multi": 1.0, "gnn": 0.97, "mlp": 0.90}
+    for day in (100, 101, 102):
+        rows = []
+        for h in (0, 1):
+            for d in ("export", "import"):
+                base = 1.0 + 0.1 * rng.random()
+                for m, s in scale.items():
+                    lim = np.full(32, base * s / 32)
+                    rows.append({"day": day, "hour": h, "direction": d, "method": m, "total_mw": float(lim.sum()),
+                                 "limit_mw": lim.tolist(), "lambda": 1.0, "design_share": 0.98, "fresh_ok": 0.97,
+                                 "proposal_s": 30.0 if m == "multi" else 1.0, "check_s": 0.1, "exact_evals": 4})
+        (tmp_path / f"day{day}.json").write_text(json.dumps({"meta": {"days": [day]}, "rows": rows}))
+    out = rp.report(tmp_path)
+    assert out["n_days"] == 3 and out["n_rows"] == 3 * 2 * 2 * 6
+    s = out["summary"]
+    assert abs(s["gnn"]["combined"]["gap_to_reference_pct"] - 3.0) < 1e-9
+    assert abs(s["lp"]["export"]["gain_over_uniform_pct"] - 60.0) < 1e-9
+    assert s["multi"]["combined"]["jain_mean"] == 1.0 and s["multi"]["combined"]["zero_interval_share"] == 0.0
+    c = out["criteria"]
+    r = c["1_near_optimal"]["ratio_to_reference"]
+    assert abs(r["point"] - 0.97) < 1e-9 and r["lo"] <= r["point"] <= r["hi"] and c["1_near_optimal"]["pass"]
+    assert c["2_beats_lp"]["pass"] and abs(c["2_beats_lp"]["ratio_to_lp"]["point"] - 0.97 / 0.8) < 1e-9
+    assert c["3_safe"]["pass"] and c["4_cheaper"]["pass"] and c["genco_opf_positive"]
+    g = c["graph_structure"]["gnn_minus_mlp_over_reference"]
+    assert abs(g["point"] - 0.07) < 1e-9 and c["graph_structure"]["pass"]
+    assert "near_optimal_and_safe_not_faster" in c and not c["near_optimal_and_safe_not_faster"]
+    assert "gnn" in rp.table(out)
