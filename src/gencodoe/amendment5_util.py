@@ -27,10 +27,15 @@ def main():
     ap.add_argument("--hub", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args()
-    run = run_dir_from_hub(a.hub, a.hub / "run")
+    # graphkit `finetune` loads the state dict into the Lightning task, so keys keep the "model." prefix
+    # (the Hub last.pt has the task's 416 keys, some under "model._orig_mod." from torch.compile).
+    state = torch.load(a.hub / "last.pt", map_location="cpu", weights_only=False)
+    state = state["state_dict"] if "state_dict" in state else state
+    state = {k.replace("model._orig_mod.", "model."): v for k, v in state.items()}
+    state = {(k if k.startswith("model.") else "model." + k): v for k, v in state.items()}
     a.out.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy(run / "artifacts/model/best_model_state_dict.pt", a.out)
-    print(f"wrote {a.out}")
+    torch.save(state, a.out)
+    print(f"wrote {a.out} ({len(state)} tensors, task-level keys)")
 
 
 if __name__ == "__main__":
