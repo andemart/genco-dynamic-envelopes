@@ -139,7 +139,23 @@
   "13361552 amendment 3 (gnn_genco)",
   "13362189 amendment 4 run 1 (prior, wls)",
   "13362272 amendment 4a run 2 (prior, wls)",
-  "amendment 4b: pending (prior, wls, genco recon)"
+  "13362347 amendment 4b (prior, wls; gate failed, no new estimator)"
  ],
- "artifact_hashes": "results/opf_artifact_hashes.json (SHA-256 of every raw day file, label, embedding, checkpoint and metadata file the reports and fits depend on)"
+ "artifact_hashes": "results/opf_artifact_hashes.json (SHA-256 of every raw day file, label, embedding, checkpoint and metadata file the reports and fits depend on)",
+ "amendment4b": {
+  "protocol": "amendment 4b (464aa61)",
+  "code": "b6fe32d",
+  "training": {
+   "job": "13362345",
+   "config": "configs/genco_ser_case33_lv.yaml",
+   "hardware": "A100",
+   "elapsed": "00:19:23",
+   "epochs": 22,
+   "best_epoch": 10
+  },
+  "gate_cal_job": "13362346",
+  "gate": "results/genco_se_case33_gate_recon.json (FAILED: Vm MAE 0.0124, load MAE 51.0 kW vs prior 7.6)",
+  "test_job": "13362347 (prior, wls only; reproduces run 2 row for row; data_out/opf_case33/se_recon)",
+  "verdict": "no usable GENCO-SE (reconstruction variant) as trained"
+ }
 }

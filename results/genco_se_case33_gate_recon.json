@@ -1,0 +1,14 @@
+{
+ "run": "mlruns/352447872664121326/7ff36b96ace94140ad0cf0b0f3891acf",
+ "variant": "recon",
+ "n_states": 2000,
+ "vm_mae": 0.012446695947812345,
+ "vm_p99": 0.04861579249956495,
+ "vm_max": 0.08219454882743249,
+ "mae_unmeasured_kw_genco": 51.027855039289015,
+ "mae_unmeasured_kw_prior": 7.5695144412981605,
+ "gate": {
+  "vm_mae": 0.002
+ },
+ "pass": false
+}
