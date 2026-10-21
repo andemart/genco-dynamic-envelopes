@@ -847,3 +847,39 @@ The sentence "The improvement is attributed to the unbalanced representation…"
 - The embedding scaler used 2,000 training states.
 - The near-limit mask is a union over boundaries.
 - The original label checker did not check the cable and transformer flags. It is now extended; every split passes, test included.
+
+## GENCO-OPF stage A (case33bw): frozen test result (`results/genco_opf_stageA_report.json`, run manifest `results/run_manifest_genco_opf.json`)
+
+Protocol: `docs/genco_opf_protocol.md` with amendments 1–2. Test days 100–119, 24 h, both directions, S = 200 design and 1,000 fresh scenarios; six methods through the same exact check and scale-down. Hydra zen4, 1 CPU per task (jobs 13359329/13359330 labels, 13360254 fits, 13360327 test; commits 44ee439, ec18686, eae6857). The report ran on the laptop with commit 6fb268b on the copied day files. Both learned models were fitted once on the training days with the validation days for early stopping; nothing was tuned on test days.
+
+**Hosting after the exact check (MWh per test day, 20-day mean) and gap to the multi-scenario reference.**
+
+| Method | Export | Import | Combined | Gap to reference (combined) |
+|---|---|---|---|---|
+| uniform | 101.6 | 3.0 | 104.6 | 48.2% |
+| LP per scenario + quantile | 179.5 | 11.6 | 191.1 | 5.4% |
+| IPOPT per scenario + quantile | 172.4 | 6.5 | 179.0 | 11.4% |
+| **multi-scenario OPF (reference)** | 189.4 | 12.7 | 202.1 | 0 |
+| **GENCO-style graph model** | 187.7 | 11.9 | 199.6 | 1.2% |
+| MLP | 186.3 | 12.0 | 198.3 | 1.9% |
+
+**Criteria (amendment 2), GENCO-style model; day-block bootstrap over the 20 test days, 2,000 replicates, seed 0.**
+
+| Criterion | Result | Verdict |
+|---|---|---|
+| 1. Hosting ≥ 95% of the reference | 98.8% [98.6, 98.9] | met |
+| 2. Hosting ≥ 1.05 × LP | 1.044 [1.041, 1.048] | **not met** (short by 0.6 points; the interval excludes 1.05) |
+| 3. Held-out P(ok) ≥ reference − 0.005 (mean), share ≥ 0.95 within 1 point | 0.733 vs 0.722; share 0.65 vs 0.49 | met |
+| 4. Proposal + check wall-clock below the reference | 0.02 s vs 28.1 s per interval and direction, CPU | met |
+| Graph structure: GENCO-style − MLP ≥ 2 points of the reference, bootstrap lower bound > 0 | +0.64 points [0.54, 0.78] | **not met** (positive, but below 2 points) |
+
+**Verdict: "GENCO-OPF positive" is not met** (criterion 2). The supported claim is narrower:
+
+> "A GENCO-style graph model trained from scratch amortises the multi-scenario AC-OPF to within 1.2% of its hosting after the exact check, with held-out feasibility no worse than the reference, at about 1/1000 of its CPU cost. It hosts 4.4% more than the LinDistFlow LP after the same check, short of the preregistered 5% bar, and the graph structure adds 0.6 points over an MLP on the same features, short of the 2-point bar."
+
+**Also observed.**
+- **Import is largely a zero problem.** 72.5% of import intervals end at a zero envelope for every method (the passive load violates the undervoltage limit in more than 4 of 200 design scenarios; the sentinel). The comparison is therefore driven by export. Held-out P(ok) in import is about 0.49 for every method including uniform, because a zero envelope's held-out share is the base case's feasibility on fresh draws; it says nothing about the methods.
+- **The reference is the least conservative on fresh draws.** Export held-out P(ok): reference 0.956 with 69% of intervals ≥ 0.95, against 0.974–0.977 and 96–99% for the scaled-down methods. The reference uses the full design sample and lands close to the nominal 1 − ε; every other method is scaled down by the exact check and ends more conservative. Criterion 3 passing partly reflects this.
+- Per-scenario IPOPT + quantile remains the worst optimiser after the check (11.4% gap), the finding that motivated amendment 2; the LP is at 5.4%.
+- Timing is serial CPU for every method (1 task per day). The reference costs 49 s per export and 7 s per import interval; per-scenario IPOPT 8.7 s serial for 200 solves; LP 0.4 s; learned models 0.02 s including the check.
+- Training labels: 4,800 intervals, 69% import zero-sentinel, one IPOPT failure (day 67 h 1 export, labelled 0). Both models learned the sentinel (predicted 0.3% of cap on sentinel validation intervals); validation weighted MSE 0.0035 (graph) and 0.0037 (MLP).

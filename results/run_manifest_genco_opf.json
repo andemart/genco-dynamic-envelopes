@@ -1,0 +1,15 @@
+{
+ "study": "GENCO-OPF stage A (case33bw), frozen test-day evaluation (docs/genco_opf_protocol.md, amendment 2)",
+ "date": "2026-10-21",
+ "cluster": "VUB Hydra zen4, AMD EPYC 9384X, 1 CPU and 8 GB per task, JULIA_NUM_THREADS=1, OMP_NUM_THREADS=1",
+ "software": {"julia": "1.13.2", "PowerModels": "0.21.6", "Ipopt": "1.15.0", "torch": "2.11.0+cu126 (CPU used)", "python": "3.12.3"},
+ "jobs": {
+  "labels": {"slurm": "scripts/hydra_opf_labels.slurm", "jobs": ["13359329 (day 99)", "13359330 (days 0-98)"], "commit": "44ee439", "days": "0-99 (train 0-79, val 80-99)"},
+  "fits": {"slurm": "scripts/hydra_opf_fit.slurm", "job": "13360254", "commit": "ec18686", "runs": ["gnn_final (best epoch 60/75, val 0.00354)", "mlp_final (best epoch 24/39, val 0.00366)"], "failed_attempt": "13360157 (label shape bug, fixed in ec18686, no test day touched)"},
+  "smoke": {"job": "13360326", "commit": "eae6857", "what": "val day 80 hour 13, all six methods (data_out/opf_case33/smoke_val80_h13.json)"},
+  "test": {"slurm": "scripts/hydra_opf_test.slurm", "job": "13360327", "commit": "eae6857", "days": "100-119, 24 h, both directions, methods uniform lp ipopt multi gnn mlp", "elapsed_per_task": "28-38 min"},
+  "report": {"module": "gencodoe.opf_report", "commit": "6fb268b", "where": "laptop, on the 20 day files copied from hydra", "out": "results/genco_opf_stageA_report.json"}
+ },
+ "label_set": {"intervals": 4800, "zero_sentinel_share": {"export": 0.0, "import": 0.69}, "ipopt_failures": "1 (day 67 h1 export, labelled 0)", "kept_scenarios_min": 196},
+ "note": "Test days 100-119 were evaluated once. The per-scenario IPOPT timing is serial (1 CPU, 200 solves); criterion 4 compares against the multi-scenario reference as amended."
+}
