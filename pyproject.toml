@@ -9,7 +9,7 @@ description = "Probabilistic dynamic operating envelopes with GENCO (GridFM GENC
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10,<3.13"
-dependencies = ["numpy>=1.24", "scipy>=1.10", "pandas>=2.0", "pyyaml>=6.0", "tabulate>=0.9"]
+dependencies = ["numpy>=1.24", "scipy>=1.10", "pandas>=2.0", "pyyaml>=6.0", "tabulate>=0.9", "scikit-learn>=1.3"]
 
 [project.optional-dependencies]
 genco = ["gridfm-datakit", "gridfm-graphkit"]
@@ -22,3 +22,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.uv]
+# torch-scatter (pulled in by gridfm-graphkit) imports torch in its setup.py, so it cannot build in an
+# isolated build environment. Install everything else first, then build it against the installed torch:
+#   uv sync --all-extras --no-install-package torch-scatter && uv sync --all-extras
+no-build-isolation-package = ["torch-scatter"]

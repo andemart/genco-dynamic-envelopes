@@ -22,7 +22,7 @@
 
 | Criterion | Where to look |
 |---|---|
-| **Originality and impact** | §1: DOEs on a four-wire LV feeder with real Flemish households; capacity a static limit cannot release; balanced models shown to be unsafe |
+| **Originality and impact** | §1: DOEs on a four-wire LV feeder with real Flemish households; capacity a static limit cannot release; balanced models shown to be unsafe. §8: the path from LV envelopes to TSO–DSO coordination with one model across voltage levels |
 | **Technical quality** | §2 and §5: exact four-wire verification, pre-registered evaluation, frozen protocols, 72 tests, byte-for-byte reproduction |
 | **Exploration of GENCO** | §3–§4: three LV failure modes found and fixed, two tooling bugs, a four-wire GENCO-style extension, and GENCO in four roles benchmarked against classical baselines |
 | **Communication** | One-pager, figures and slides; claims stated with their limits (§6) |
@@ -147,8 +147,23 @@ Test dates were also used during development, so all post-hoc results are explor
 - **Run manifests** record commits, Slurm job IDs and SHA-256 hashes of every artifact.
 - **Artifacts.** Model checkpoints and four-wire labels: [dataset link, pending]. Raw Fluvius data is not redistributed.
 
-## 8. What GENCO would need for LV
+## 8. Where this goes: one model across LV, MV and HV for TSO–DSO coordination (impact)
 
-1. Four-wire pretraining (phase and neutral states).
-2. MV networks, where balanced physics is a fair approximation.
-3. Multi-network generalisation. That is the foundation-model promise; it is what a single feeder cannot test, and what we would test next.
+Flexible connections are not an LV problem alone. The sum of the household envelopes on a feeder is the flexibility range that the DSO can offer upward at the MV/LV transformer, and the sum over feeders is what the TSO sees at the transmission bus. Today each level runs its own tool with its own physics, and the ranges are passed by hand or not at all. A grid foundation model that reads every level as one graph is the natural candidate to close that loop, and this entry already contains the first two tiers of it:
+
+| Tier | What this entry has | Role in coordination |
+|---|---|---|
+| **LV** (four-wire) | per-household envelopes on ENWL1, exactly verified | the envelopes sum to a transformer-level P/Q flexibility range |
+| **MV** (balanced) | GENCO-OPF on case33bw with the substation as root (exploratory, in progress) | hosts the transformer ranges as dispatchable units; passes the aggregate up |
+| **HV** (positive-sequence, meshed) | GENCO's native pretraining domain | consumes the aggregate as a flexibility envelope at the transmission bus |
+
+The interface between tiers is a boundary equivalent at the root. We already fit a Thevenin equivalent at the LV root from training labels, which is the same device a learned model would need to carry between levels.
+
+**What our results say a single cross-level model must solve.** The LV failures in §3 are not LV quirks; they are what a model sees when its training domain is three orders of magnitude away in impedance and power:
+1. **Scale.** Stock GENCO's edge encoder normalised away admittance magnitude. Across LV to HV, |Y| spans several orders of magnitude, so magnitude-preserving edge features (our asinh fix) are a requirement, not an option.
+2. **Representation.** LV needs phase and neutral states; HV is positive-sequence. Our four-wire extension showed that balanced embeddings do not transfer downward. A cross-level model needs level-typed nodes and edges with a shared processor, not one state vector forced on every level.
+3. **Verification.** Every tier keeps an exact gate of its own physics. The model proposes; the gate decides. That is the only way the finite-sample safety rule survives aggregation.
+
+**What we would test next, with no new data needed first.** Aggregate the ENWL1 envelopes to a transformer P/Q range per interval, feed that range as the unit bounds of the case33bw GENCO-OPF stage, and measure the hosted flexibility and safety of the two-tier chain against a two-tier IPOPT reference. A multi-network, multi-level pretraining run is the step after, and the one that would turn this outlook into a claim.
+
+We do not claim any of this works. We claim the LV result tells you what it would take.

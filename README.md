@@ -61,6 +61,8 @@ All numbers regenerate from committed results (`scripts/reproduce_check.py`). Wo
 
 What GENCO would need here: four-wire pretraining, MV networks, and multi-network generalisation.
 
+**Where this goes.** The household envelopes sum to a transformer-level flexibility range, which is what a DSO offers upward to the TSO. This entry has the LV tier (four-wire ENWL1) and an exploratory MV tier (GENCO-OPF on case33bw, branch `ander-genco-opf`). One model across LV, MV and HV is the foundation-model promise for TSO–DSO coordination; our LV results say such a model must keep admittance magnitude, carry level-specific states and keep an exact gate per tier. See section 8 of [`docs/hf_post.md`](docs/hf_post.md).
+
 ## How the workflow fits together
 
 ```
@@ -78,9 +80,22 @@ Fluvius smart-meter profiles ──► forecast scenarios (200 per interval)
 
 ## Reproducing
 
+With [uv](https://docs.astral.sh/uv/) (recommended; `uv.lock` pins every package, `.python-version` pins Python 3.12):
+
+```bash
+uv sync --all-extras --no-install-package torch-scatter   # everything except torch-scatter
+uv sync --all-extras                                      # torch-scatter, built against the installed torch
+uv run pytest                                             # 72 tests
+GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
+```
+
+The two `uv sync` steps are needed because torch-scatter imports torch in its build script (see `[tool.uv]` in `pyproject.toml`). The first `import juliacall` (OPF modules, gridfm-datakit) downloads Julia and the pinned PowerModels/Ipopt packages into `.venv/julia_env`; this takes a few minutes once.
+
+With pip:
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev,feeders,unbalanced,genco]" scikit-learn   # see env-snapshot-*.txt for the exact versions used
+pip install -e ".[dev,feeders,unbalanced,genco]"   # see env-snapshot-*.txt for the exact versions used
 pytest                                     # 72 tests
 GENCODOE_VOLTAGE_LIMITS=uk_esqcr python scripts/reproduce_check.py
 ```
