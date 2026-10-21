@@ -1,0 +1,40 @@
+# gridfm-datakit config: amendment 5 option 1, 500 held-out case118_flex AC-OPF scenarios (seed 888), same load
+# settings as configs/datakit_opf_case118_flex.yaml; never used for training or selection.
+#   gridfm_datakit generate configs/datakit_opf_case118_flex_heldout.yaml
+network:
+  name: "case118_flex"
+  source: "file"
+  network_dir: "./grids"
+
+load:
+  generator: "agg_load_profile"
+  agg_profile: "default"
+  scenarios: 500
+  sigma: 0.2
+  change_reactive_power: true
+  global_range: 0.4
+  max_scaling_factor: 2.0
+  step_size: 0.1
+  start_scaling_factor: 1.0
+
+topology_perturbation:
+  type: "none"
+
+generation_perturbation:
+  type: "none"                # keep the flexible units' negative cost (cost permutation would shuffle it)
+
+admittance_perturbation:
+  type: "none"
+
+settings:
+  num_processes: 8
+  data_dir: "./data_out/case118_heldout"   # amendment 5 option 1: 500 held-out scenarios, used for nothing else
+  large_chunk_size: 500
+  overwrite: true
+  mode: "opf"
+  include_dc_res: false
+  enable_solver_logs: false
+  pf_fast: true
+  dcpf_fast: true
+  max_iter: 200
+  seed: 888
