@@ -36,7 +36,7 @@
 \vspace{3pt}
 
 \colorbox{pale}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
-\textbf{In one sentence.} On a four-wire LV benchmark feeder with real Flemish smart-meter households, dynamic envelopes free several MWh of capacity per household per year where a static limit frees none. We made GENCO work on LV, put it inside an exact four-wire check, extended a GENCO-style model to explicit phase and neutral states, and benchmarked every GENCO role against strong classical methods. We report honestly where it adds value.
+\textbf{In one sentence.} On a four-wire LV benchmark feeder with real Flemish smart-meter households, dynamic envelopes free several MWh of capacity per household per year where a constant optional add-on frees none. We made GENCO work on LV, put it inside an exact four-wire check, extended a GENCO-style model to explicit phase and neutral states, and benchmarked every GENCO role against strong classical methods. We report honestly where it adds value.
 }}
 
 \vspace{3pt}
@@ -47,8 +47,8 @@
 Operators must host EVs, heat pumps and rooftop PV without reinforcing the grid. A \textbf{dynamic operating envelope} (DOE) gives each household a time-varying import/export limit.
 \begin{itemize}
   \item \textbf{Feeder:} ENWL1, 800\,kVA, 200 single-phase customers, populated with Fluvius 2024 profiles.
-  \item \textbf{Scenarios:} 200 forecast scenarios per interval.
-  \item \textbf{Acceptance:} every issued envelope must pass an \textbf{exact four-wire OpenDSS check} of a frozen rule ($\geq$98\% of scenarios feasible).
+  \item \textbf{Scenarios:} 200 per interval, resampled real meters.
+  \item \textbf{Acceptance:} every envelope from the exact search or a gated variant must pass an \textbf{exact four-wire OpenDSS check} of a frozen rule ($\geq$98\% of scenarios feasible).
 \end{itemize}
 
 \begin{center}
@@ -56,17 +56,17 @@ Operators must host EVs, heat pumps and rooftop PV without reinforcing the grid.
 \textbf{$\rightarrow$ exact four-wire check $\rightarrow$ envelope}
 \end{center}
 
-\sect{Impact: capacity a static limit cannot free}
+\sect{Impact: capacity a constant add-on cannot free}
 
 \begin{center}
 \metric{4.81 MWh}{export envelope-hours / household / yr}\hfill
 \metric{2.50 MWh}{import envelope-hours / household / yr}\\[6pt]
-\metric{0}{static year-round allowance}\hfill
+\metric{0}{constant optional add-on}\hfill
 \metric{2--3$\times$}{balanced-model envelopes: four-wire unsafe}
 \end{center}
 
 \begin{itemize}
-  \item 36 held-out days; intervals export 4.35--5.30 and import 2.11--2.87\,MWh.
+  \item 36 test-split days; intervals export 4.35--5.30 and import 2.11--2.87\,MWh.
   \item Robust across 5 household placements. The headline placement is the most conservative.
   \item Idealised three-phase HP/EV connection lifts capacity 2--2.5$\times$.
 \end{itemize}
@@ -85,7 +85,7 @@ Result: voltage MAE \textbf{1.0e-3\,pu}. We also found a graphkit best-model exp
 
 \sect{Four-wire GENCO-style extension (exploratory)}
 
-A GNN on the 397-bus \textbf{four-wire} graph (phases a, b, c and neutral, full $4{\times}4$ impedances) corrects a one-step four-wire sweep prior. On 2,968 held-out states:
+A GNN on the 397-bus \textbf{four-wire} graph (phases a, b, c and neutral, full $4{\times}4$ impedances) corrects a one-step four-wire sweep prior. On 2,968 test-split states:
 
 \begin{center}
 \metric{$-$91\%}{phase-to-neutral voltage error}\hfill
@@ -114,7 +114,7 @@ Classical physics & An iterated four-wire sweep is 80$\times$ more accurate than
 \begin{itemize}
   \item Pre-registered core evaluation. Every other study was frozen before its results were seen, with all deviations disclosed as amendments.
   \item Incidents found and disclosed: wrong voltage base, OpenDSS engine poisoning, stale cluster caches.
-  \item 72 automated tests. \texttt{reproduce\_check.py} regenerates every headline result byte for byte. Run manifests hash every artifact.
+  \item 84 automated tests. \texttt{reproduce\_check.py} regenerates every headline result byte for byte. Run manifests hash every artifact.
 \end{itemize}
 
 \textbf{Potential:} one model across LV, MV and HV for TSO--DSO coordination; LV envelopes sum to the flexibility a DSO offers the TSO.
@@ -127,6 +127,6 @@ Classical physics & An iterated four-wire sweep is 80$\times$ more accurate than
 \end{center}
 
 \vfill
-{\footnotesize\color{muted}\textbf{Project:} Four-wire-verified dynamic operating envelopes with GENCO \hfill \textbf{Team:} EVERGi, Vrije Universiteit Brussel \hfill GridFM GENCO Challenge 2026}
+{\footnotesize\color{muted}\textbf{Team:} A.~Martinez Alonso, E.~Genov (EVERGi, VUB), R.~Cleenwerck (VUB, UGent) \hfill GridFM GENCO Challenge 2026}
 
 \end{document}

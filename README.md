@@ -6,7 +6,7 @@ An entry for the [GridFM GENCO Challenge](https://huggingface.co/spaces/gridfm/g
 
 | If you want… | Read |
 |---|---|
-| The story in five minutes | [`docs/hf_post.md`](docs/hf_post.md) (Hugging Face post draft), [`docs/genco_challenge_onepager.pdf`](docs/genco_challenge_onepager.pdf) |
+| The story in five minutes | [`docs/hf_post.md`](docs/hf_post.md) (Hugging Face post), [`docs/genco_challenge_onepager.pdf`](docs/genco_challenge_onepager.pdf) |
 | What was done, where it is, what is open | [`docs/HANDOFF.md`](docs/HANDOFF.md) |
 | What we claim and do not claim | [`docs/claims.md`](docs/claims.md) |
 | Every experiment, result and incident | [`docs/experiment_log.md`](docs/experiment_log.md) |
@@ -17,14 +17,14 @@ An entry for the [GridFM GENCO Challenge](https://huggingface.co/spaces/gridfm/g
 ## In one paragraph
 
 A **dynamic operating envelope** (DOE) is a time-varying import/export limit per household that a distribution operator can issue instead of a fixed connection limit.
-- **What we computed:** DOEs on the four-wire **ENWL1** low-voltage benchmark feeder (UK, 800 kVA, 200 single-phase customers), populated with real **Fluvius 2024** smart-meter profiles. Every issued envelope is checked against an exact four-wire OpenDSS model under a frozen finite-sample acceptance rule.
-- **The DOE result:** dynamic envelopes free several MWh of optional import/export capacity per household per year where a single static limit frees none. A balanced (three-phase-averaged) model would issue envelopes that are badly unsafe on the four-wire benchmark feeder.
+- **What we computed:** DOEs on the four-wire **ENWL1** low-voltage benchmark feeder (UK, 800 kVA, 200 single-phase customers), populated with real **Fluvius 2024** smart-meter profiles. Every envelope issued by the exact search and its gated variants is checked against an exact four-wire OpenDSS model under a frozen finite-sample acceptance rule.
+- **The DOE result:** dynamic envelopes free several MWh of optional import/export capacity per household per year where a constant optional add-on above the passive demand frees none. A balanced (three-phase-averaged) model would issue envelopes that are badly unsafe on the four-wire benchmark feeder.
 - **What we did with GENCO:**
   - adapted it to LV networks, where the stock model fails;
   - put it inside the verified envelope workflow;
   - extended a GENCO-style model to an explicit four-wire (phase + neutral) representation;
   - benchmarked every GENCO role against strong classical baselines.
-- **The honest bottom line:** GENCO-style learning helps when it corrects a cheap four-wire physics prior. Pretrained balanced-GENCO representations add no value on this problem, and specialised classical four-wire physics remains the accuracy leader.
+- **The honest bottom line:** GENCO-style learning helps when it corrects a cheap four-wire physics prior. Frozen embeddings from our feeder-specific balanced GENCO add no value on this problem, and specialised classical four-wire physics remains the accuracy leader.
 
 ## Headline results
 
@@ -32,18 +32,18 @@ All numbers regenerate from committed results (`scripts/reproduce_check.py`). Wo
 
 | What | Result |
 |---|---|
-| Optional capacity, exact four-wire-verified DOEs (36 held-out days, hourly) | **4.81 MWh export** (4.35–5.30) and **2.50 MWh import** (2.11–2.87) envelope-hours per household per year. A static year-round allowance: **0** |
+| Optional capacity, exact four-wire-verified DOEs (36 test-split days, hourly) | **4.81 MWh export** (4.35–5.30) and **2.50 MWh import** (2.11–2.87) envelope-hours per household per year. A constant optional add-on: **0** |
 | Balanced-model envelopes | about 2–3× larger, and four-wire feasible in only 2% (export) / 24% (import) of draws on a summer day |
 | Robustness to which households own HP/EV/PV (5 placements) | export 4.81–6.18, import 2.50–3.22 MWh. The headline placement is the most conservative |
-| Idealised three-phase connection of HP/EV homes | capacity about 2–2.5× higher |
-| Spatial (feeder × phase) envelopes | import 2.14×, export +11%, at lower held-out robustness and 11–12× the exact calls, with fairness trade-offs |
+| Idealised three-phase connection of HP/EV homes (two placements) | capacity about 2–2.5× higher: single-phase connection is a major contributor to congestion |
+| Spatial (feeder × phase) envelopes | import 2.14×, export +11%, at lower out-of-sample robustness and 11–12× the exact calls, with fairness trade-offs |
 | Learned envelope proposal + one exact check | about 79% of exact capacity with about **6.7% of the exact OpenDSS calls** (about 90% with about 21%). An exact-call reduction, not a measured speed-up |
 | Balanced GENCO screen + exact gate (C+) | identical envelopes to the exact search, 6% fewer exact calls. Classical screens do as well |
 | Four-wire GENCO-style GNN (exploratory) | against a one-step four-wire sweep: voltage error **−91%**, OpenDSS fallbacks **35.8% → 5.8%**, zero observed false-safe decisions. Frozen balanced-GENCO embeddings made it **worse** (+6.0 points). An iterated four-wire sweep is about 80× more accurate |
 
 **What "verified" means here.** Each envelope passes the exact four-wire check of a frozen design-sample rule (≥ 98% of 200 scenarios).
 - That is not unconditional or 95%-confidence safety.
-- Non-zero envelopes reach 97.4% mean held-out four-wire feasibility, but only 47% pass a one-sided 95% lower-bound test.
+- Non-zero envelopes reach 97.4% mean four-wire feasibility on fresh draws, but only 47% pass a one-sided 95% lower-bound test.
 
 ## GENCO in this project
 
@@ -51,7 +51,7 @@ All numbers regenerate from committed results (`scripts/reproduce_check.py`). Wo
    - The stock model cannot see impedance magnitude, because the edge encoder's final LayerNorm cancels |Y|. It collapses on LV.
    - We added asinh admittance features, a linear physics prior with a zero-initialised correction head, and KCL-based branch flows. Result: voltage MAE 1.0e-3 pu.
    - We also found a graphkit best-model export bug and a datakit slack-voltage bug.
-2. **Application: inside a verified DOE workflow.** GENCO with a conformal four-wire screen (C), plus a final exact gate (C+), reproduces the exact envelopes.
+2. **Application: inside a verified DOE workflow.** GENCO with a conformal four-wire screen (C), plus a final exact gate (C+), reproduces the exact envelopes. C alone, without the final gate, had one material false acceptance.
 3. **Extension: four-wire, phase-aware GENCO-style model.** A GNN on the 397-bus four-wire graph with explicit phase and neutral states corrects a one-step four-wire sweep prior and cuts OpenDSS fallbacks six-fold.
 4. **Honest benchmarks.** In every GENCO-specific comparison, GENCO is neutral or negative on this feeder:
    - screening against classical screens;
@@ -61,12 +61,12 @@ All numbers regenerate from committed results (`scripts/reproduce_check.py`). Wo
 
 What GENCO would need here: four-wire pretraining, MV networks, and multi-network generalisation.
 
-**Where this goes.** The household envelopes sum to a transformer-level flexibility range, which is what a DSO offers upward to the TSO. This entry has the LV tier (four-wire ENWL1) and an exploratory MV tier (GENCO-OPF on case33bw, branch `ander-genco-opf`). One model across LV, MV and HV is the foundation-model promise for TSO–DSO coordination; our LV results say such a model must keep admittance magnitude, carry level-specific states and keep an exact gate per tier. See section 8 of [`docs/hf_post.md`](docs/hf_post.md).
+**Where this goes.** The household envelopes sum to a transformer-level flexibility range, which is what a DSO offers upward to the TSO. This entry is the LV tier (four-wire ENWL1); exploratory MV work (GENCO-OPF on case33bw) is also on this branch, and a case118 test of the official pretrained GENCO is on branch `ander-case118` (the post's additional experiment). Our LV results say a cross-level model must keep admittance magnitude, carry level-specific states and keep an exact gate per tier.
 
 ## How the workflow fits together
 
 ```
-Fluvius smart-meter profiles ──► forecast scenarios (200 per interval)
+Fluvius smart-meter profiles ──► resampled-meter scenarios (200 per interval)
             │
             ▼
   candidate envelope levels ──► proposal (exact search | GENCO-screened | learned proposal)
@@ -75,7 +75,7 @@ Fluvius smart-meter profiles ──► forecast scenarios (200 per interval)
   exact four-wire OpenDSS check of the frozen design-sample rule ──► issued envelope
             │
             ▼
-  held-out verification on fresh scenarios (reported separately)
+  verification on fresh scenarios (reported separately)
 ```
 
 ## Reproducing
@@ -85,7 +85,7 @@ With [uv](https://docs.astral.sh/uv/) (recommended; `uv.lock` pins every package
 ```bash
 uv sync --all-extras --no-install-package torch-scatter   # everything except torch-scatter
 uv sync --all-extras                                      # torch-scatter, built against the installed torch
-uv run pytest                                             # 72 tests
+uv run pytest                                             # 84 tests
 GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
 ```
 
@@ -96,12 +96,12 @@ With pip:
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev,feeders,unbalanced,genco]"   # see env-snapshot-*.txt for the exact versions used
-pytest                                     # 72 tests
+pytest                                     # 84 tests
 GENCODOE_VOLTAGE_LIMITS=uk_esqcr python scripts/reproduce_check.py
 ```
 
 - `reproduce_check.py` regenerates every headline result file from its recorded inputs and compares it byte for byte with the committed version. The A100-only four-wire evaluation is checked against the SHA-256 in its run manifest.
-- **Artifacts.** The run outputs (`data_out/`: DOE runs, labels, features, checkpoints) and the 6 GB Fluvius input are not in git, and **are not yet published** for download.
+- **Artifacts.** The run outputs (`data_out/`: DOE runs, labels, features, checkpoints) and the 6 GB Fluvius input are not in git. Fluvius-derived artifacts (checkpoints, four-wire labels, per-day DOE runs) are **not published** until Fluvius confirms that its licence permits redistributing data derived from individual meters.
   - Every run is recorded with commits, job IDs and file hashes in `results/run_manifest_*.json`.
   - Raw Fluvius data access follows Fluvius's terms.
 
