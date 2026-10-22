@@ -43,6 +43,18 @@ Over **36 test-split days** of 2024:
 - **What "verified" means.** On fresh draws, non-zero exact envelopes reach 97.4% mean four-wire feasibility, but only 47% pass a one-sided 95% lower-bound test: 200 verification draws are too few to prove 95%. This is not certified or unconditional safety.
 - **Robustness (exploratory).** Across five household-technology placements, capacity is 4.8–6.2 MWh (export) and 2.5–3.2 MWh (import); the headline placement is the lowest. In an idealised sensitivity on two placements, connecting HP/EV homes three-phase raises capacity about 2–2.5×, so single-phase connection is a major contributor to congestion here.
 
+**Where the capacity sits.** Export envelopes close around midday from spring to autumn, when rooftop PV already pushes phase voltages up, and import envelopes vanish on winter evenings, when heat pumps and EVs load the single-phase circuits. In about 45% (export) and 49% (import) of test-split hours no positive envelope can be verified at all, so a single constant add-on that must hold in every hour is zero.
+
+![Envelope heatmap](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/7a88cb022cb35ab675b0ca2613d35099cfb4f038/figures/fig6_envelope_heatmap.png)
+
+*Four-wire-verified envelope per household for every hour of the 36 test-split days (rows by date). Grey: no positive envelope verified.*
+
+**Balanced is unsafe in every hour, not just on one day.** Checking the balanced model's envelopes against the four-wire model over all test-split hours (a descriptive analysis on the same days): not one positive balanced envelope meets 0.95 four-wire feasibility (0 of 864 export, 0 of 823 import hours), and in about 380–390 hours per direction the four-wire check admits no envelope at all while the balanced model issues one.
+
+![Balanced-model safety](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/7a88cb022cb35ab675b0ca2613d35099cfb4f038/figures/fig7_balanced_safety.png)
+
+*(a, b) Balanced-model envelope against the four-wire-verified envelope for the same hour; dashed line = equal. (c) Four-wire feasibility on fresh draws of every non-zero envelope; dotted line = 0.95.*
+
 **Evidence status.** The exact search (B) and the GENCO-screened search (C) were pre-registered. Everything else (C+, placements, spatial envelopes, envelope proposals, the four-wire extension) is exploratory, with protocols frozen before results were produced. The test dates were also used during development.
 
 ## 3. Making the GENCO architecture work on LV
