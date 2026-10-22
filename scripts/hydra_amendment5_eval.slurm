@@ -20,7 +20,7 @@ PY="$MAIN/.venv/bin/python"
 RUNS=()
 for exp in a5_finetune_N100 a5_scratch_N100 a5_finetune_N1000 a5_scratch_N1000 a5_finetune_N10000 a5_scratch_N10000; do
   d=""
-  for m in mlruns/*/meta.yaml; do grep -q "name: $exp" "$m" && d=$(dirname "$m"); done
+  for m in mlruns/*/meta.yaml; do grep -qx "name: $exp" "$m" && d=$(dirname "$m"); done
   [ -n "$d" ] || { echo "ABORT: no mlflow experiment $exp"; exit 4; }
   r=$(ls -td "$d"/*/artifacts/model/best_model_state_dict.pt | head -1 | xargs dirname | xargs dirname | xargs dirname)
   echo "$exp -> $r"; sha256sum "$r/artifacts/model/best_model_state_dict.pt"
