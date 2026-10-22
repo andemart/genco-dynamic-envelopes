@@ -203,7 +203,7 @@ def fig_heatmap():
     ticks = [i for i in range(len(days)) if i == 0 or month[i] != month[i - 1]]
     axes[0].set_yticks(ticks, [days[i][:7] for i in ticks])
     axes[0].set_ylabel("Test day (2024)")
-    fig.text(0.13, -0.02, "grey = no positive envelope verified (the passive demand alone already fails the acceptance rule)",
+    fig.text(0.13, -0.02, "grey = no positive envelope verified",
              fontsize=6.5, color=INK2)
     save(fig, "heatmap")
 
