@@ -254,8 +254,104 @@
    },
    "verdict": "criterion not met: at N = 1,000 fine-tuned 89.4% of the reference (bar 95%); fine-tuned minus scratch +6.9 points [5.9, 7.8] (bar 2, lower bound > 0, met)",
    "seed_replicates": {
-    "status": "queued: train 13381147 (seed 1), 13381148 (seed 2), eval 13381149, 13381150 at 1eb6ea5; exploratory addendum"
+    "status": "training done (13381147, 13381148, all tasks COMPLETED); N = 1,000 and 10,000 evaluations 13381149, 13381150 running at 1eb6ea5"
    }
   }
+ },
+ "amendment6": {
+  "protocol": "amendment 6 (14b7cf5), frozen before any evaluation of sorted test positions 1000-2999 and before any seed-replicate result; eval job runs from a second checkout (A6_DIR, 322664a) because the queued training jobs pinned the main checkout at 1eb6ea5",
+  "training": {
+   "commit": "1eb6ea5 for seeds 1-4 (seed 0: amendment 5 runs)",
+   "gpu": "NVIDIA A100-PCIE-40GB",
+   "epochs": 80,
+   "runs": {
+    "seed0": {
+     "finetune": {
+      "run": "mlruns/650037275175672480/4ef07e9d42c544a6be2b3a9b0db3c65b",
+      "best_model_state_dict_sha256": "08f9598a0037cec0b97935ae118c9cf563df9db84f28fe00daea92eb817c411e",
+      "job": "13363423_0 at bd9087b"
+     },
+     "scratch": {
+      "run": "mlruns/191851025545340341/183b0c0358cb4257aa2d95ebf6243208",
+      "best_model_state_dict_sha256": "63582c408cf6b420552dd7910cee18e88f3d7635222adb0d53c41e2e72ef0bc7",
+      "job": "13362565_1 at 1c7309d"
+     }
+    },
+    "seed1": {
+     "finetune": {
+      "run": "mlruns/437151085032140100/aa1822c72b634212bc0b6a9b03399c77",
+      "best_model_state_dict_sha256": "49258d3ac84212245e5aa94ecf3b9e1c9e5420a0554648ab78198317fb981f8f",
+      "job": "13381147_0"
+     },
+     "scratch": {
+      "run": "mlruns/528549530021172862/27d9b4729911499db4848332e90d2acd",
+      "best_model_state_dict_sha256": "10db90a73d67f3a32f42f1aeb097602ba1380da1afb5282293571f08dd98e5f2",
+      "job": "13381147_1"
+     }
+    },
+    "seed2": {
+     "finetune": {
+      "run": "mlruns/491344491676176751/ca3e957021064ad9979996025f777832",
+      "best_model_state_dict_sha256": "2c9b8f53716bb4bf9a282f1ed3014a21bf72e2a74f7429a1733ed611c72de281",
+      "job": "13381148_0"
+     },
+     "scratch": {
+      "run": "mlruns/840030099790584338/02bf059af85f4aaa8b264fa7cfd467eb",
+      "best_model_state_dict_sha256": "6d967e591f5b193adeda7c3445afb2baab3035db1c5f06de91ed4f8c4b58bd7d",
+      "job": "13381148_1"
+     }
+    },
+    "seed3": {
+     "finetune": {
+      "run": "mlruns/624298454044780451/9433c0886bb94a20bd050e6e014a1ee0",
+      "best_model_state_dict_sha256": "4d37ba8895affc0cb3905fdd35ff16889e4308c17c2ba3cad1af38c43f909b94",
+      "job": "13381216_0"
+     },
+     "scratch": {
+      "run": "mlruns/355511811693517007/ffdfe820a21f4fac8af65f2dc7e1d637",
+      "best_model_state_dict_sha256": "b1dc27e45176d5c3db9960670ffbb3047b367b1b769c3ec5d372b68ab4e5613c",
+      "job": "13381216_1"
+     }
+    },
+    "seed4": {
+     "finetune": {
+      "run": "mlruns/124785150144585993/63e4cd76fff64c36880524635eae47c0",
+      "best_model_state_dict_sha256": "6004d079bfed2a13c6446b93f718b1fcbbea3ffa85753f01d1bd1fe0a3eebf6d",
+      "job": "13381217_0"
+     },
+     "scratch": {
+      "run": "mlruns/536581758590204419/a00e315af4b944748857bacf1b316a4e",
+      "best_model_state_dict_sha256": "484b705ecf1aba181d291d42e51397cfe4bedc6bfa6b4da82e924bdb9322e971",
+      "job": "13381217_1"
+     }
+    }
+   }
+  },
+  "evaluation": {
+   "slurm": "scripts/hydra_amendment6_eval.slurm",
+   "commit": "322664a",
+   "checkout": "$VSC_DATA/genco-case118-a6 (data_out and mlruns symlinked to the main checkout)",
+   "jobs": {
+    "seed0": "13381345",
+    "seed1": "13381346",
+    "seed2": "13381347",
+    "seed3": "13381348",
+    "seed4": "13381349"
+   },
+   "elapsed": "01:18-01:24 each, zen4",
+   "test": "sorted test-split positions 1000-2999 (2,000 scenarios)",
+   "test_ids_sha256": "cff1fa5133df228138bd697ca987d71b593b81adda9d1cfbd5dd8f32efd9070d",
+   "analysis": "scripts/amendment6_analysis.py",
+   "results_sha256": {
+    "results/genco_opf_amendment6.json": "fe1ef80c24259c4a58b4d3d7a9ee37b3e577973fcc452f8986605620ec39b592",
+    "results/genco_opf_amendment6_seed0.json": "eca434c6cf8262f3267acaac8fd2324e1e752a7388aebeb91dac9398ad690b55",
+    "results/genco_opf_amendment6_seed1.json": "72b0681312e377932670de717f6c62ab8981f01cd832a2061be00d09e8100cc0",
+    "results/genco_opf_amendment6_seed2.json": "bc201228aa375cff972c8da84bf3895821f25b116776e54d7558d0214925f8f9",
+    "results/genco_opf_amendment6_seed3.json": "307ad928b1c2e657b014a78c0ea1873cd1a239d059f8f54dc3f4d9f71de7c4d6",
+    "results/genco_opf_amendment6_seed4.json": "c3e7f794f4cc74f5dd655e3b4d4800536ba3905cfe75e2ba42f8bad4f5869202"
+   },
+   "logs": "results/logs_amendment6/"
+  },
+  "verdict": "criterion not met: mean fine-tuned 94.7% of the reference (bar 95%); mean gain +11.4 points, two-level bootstrap [9.8, 12.5]; fine-tuned better in 5 of 5 seeds"
  }
 }

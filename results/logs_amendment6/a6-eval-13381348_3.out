@@ -1,0 +1,28 @@
+CPU(s):                                  64
+Model name:                              AMD EPYC 9384X 32-Core Processor
+a5_finetune_N100_s3 -> mlruns/624298454044780451/9433c0886bb94a20bd050e6e014a1ee0
+4d37ba8895affc0cb3905fdd35ff16889e4308c17c2ba3cad1af38c43f909b94  mlruns/624298454044780451/9433c0886bb94a20bd050e6e014a1ee0/artifacts/model/best_model_state_dict.pt
+a5_scratch_N100_s3 -> mlruns/355511811693517007/ffdfe820a21f4fac8af65f2dc7e1d637
+b1dc27e45176d5c3db9960670ffbb3047b367b1b769c3ec5d372b68ab4e5613c  mlruns/355511811693517007/ffdfe820a21f4fac8af65f2dc7e1d637/artifacts/model/best_model_state_dict.pt
+commit=322664a199ce9042948fa139b5be483a8cbb68ed (verified) seed=3 node=node600.hydra.os
+/data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/lib/python3.12/site-packages/juliacall/__init__.py:61: UserWarning: torch was imported before juliacall. This may cause a segfault. To avoid this, import juliacall before importing torch. For updates, see https://github.com/pytorch/pytorch/issues/78829.
+  warnings.warn(
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+a5_finetune_N100 {"hosting_share_of_reference": 0.9601723817974078, "raw_proposal_feasible_share": 0.071, "raw_proposal_share_of_reference": 0.9790171961960136, "lambda_mean": 0.979375, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08315513278849539, "check_s_per_scenario": 0.5935617053508758, "check_evals_mean": 1.0825, "flex_unit_mae_mw": 5.814248419260721}
+a5_scratch_N100 {"hosting_share_of_reference": 0.8455069866280965, "raw_proposal_feasible_share": 0.024, "raw_proposal_share_of_reference": 0.9139051691836999, "lambda_mean": 0.925, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08143607659899862, "check_s_per_scenario": 0.773136427640915, "check_evals_mean": 1.3, "flex_unit_mae_mw": 20.185339969605923}
+{
+ "100": {
+  "finetuned_share": 0.9601723817974078,
+  "scratch_share": 0.8455069866280965,
+  "diff_points": 11.466539516931128,
+  "diff_lo": 11.124617443375893,
+  "diff_hi": 11.82222837654139
+ }
+}
+307ad928b1c2e657b014a78c0ea1873cd1a239d059f8f54dc3f4d9f71de7c4d6  results/genco_opf_amendment6_seed3.json

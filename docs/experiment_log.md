@@ -982,3 +982,23 @@ Qualifications:
 
 **Supported sentence.** "On case118 with 99 flexible export units, fine-tuning the official pretrained GENCO exceeded training from scratch by 14.2, 6.9 and 8.4 points of reference hosting at 100, 1,000 and 10,000 labels (one seed each, IPOPT redispatch gate), but at the preregistered 1,000-label point it kept 89.4% of the reference, below the 95% bar."
 
+## GENCO-OPF amendment 6: data-informed confirmation at N = 100 on unopened scenarios (`results/genco_opf_amendment6.json`, branch `ander-case118`)
+
+Protocol amendment 6 (14b7cf5), frozen before any evaluation of sorted test positions 1000–2999 and before any seed-replicate result. Official checkpoint fine-tuned versus scratch at N = 100 labels, training seeds 0–4 (seed 0 = the amendment 5 pair; seeds 1–4 trained at 1eb6ea5), the amendment 5 gate unchanged, 2,000 scenarios never evaluated before. Evaluation jobs 13381345–13381349 at 322664a from a second checkout (the queued training jobs pinned the main checkout; the evaluation code is the frozen one). Run, checkpoint, test-ID and result hashes: `results/run_manifest_genco_opf.json` under `amendment6`.
+
+| Seed | Fine-tuned (% of reference) | Scratch | Fine-tuned − scratch (points) |
+|---|---|---|---|
+| 0 | 95.6 | 83.7 | +11.9 |
+| 1 | 92.1 | 83.7 | +8.4 |
+| 2 | 95.2 | 82.2 | +13.0 |
+| 3 | 96.0 | 84.6 | +11.5 |
+| 4 | 94.7 | 82.6 | +12.1 |
+| **Mean** | **94.7** | 83.4 | **+11.4** [9.8, 12.5] |
+
+**Criterion: not met.** (1) mean fine-tuned ≥ 95%: **94.7%, not met**; (2) mean gain ≥ 2 points: met; (3) paired seed-and-scenario bootstrap lower bound > 0: met (9.8); (4) fine-tuned better in ≥ 4 of 5 seeds: met (5 of 5).
+
+- The pretraining gain replicates on unseen scenarios and across training seeds: about 11 points, in every seed. The absolute bar is missed by 0.3 points on the mean; seed 1 (92.1%) is the low one, and three of five seeds are at or above 95% individually. The verdict is a fail.
+- Context, not a rescue: the IPOPT reference through the same gate keeps 96.7% on these scenarios (267 of 2,000 scaled down; now recorded per scenario). The criterion was frozen against the ungated reference and is reported as such. The amendment 5 qualifications (redispatch gate, coarse grid, hybrid rather than standalone neural OPF, same base network as the checkpoint) apply unchanged.
+
+**Supported sentence.** "In a frozen follow-up at 100 labels on 2,000 unseen scenarios with five training seeds, fine-tuning the official GENCO beat training from scratch by 11.4 points [9.8, 12.5], in 5 of 5 seeds, but kept 94.7% of the reference, missing the 95% bar."
+
