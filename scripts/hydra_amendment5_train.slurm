@@ -2,6 +2,7 @@
 # Amendment 5 option 2, step 2: six runs on one A100 each: array task -> (arm, N) in
 # 0 finetune_N100, 1 scratch_N100, 2 finetune_N1000, 3 scratch_N1000, 4 finetune_N10000, 5 scratch_N10000.
 #   sbatch --export=ALL,GENCODOE_COMMIT=<sha> --array=0-5 scripts/hydra_amendment5_train.slurm
+#   seed replicates: --export=ALL,GENCODOE_COMMIT=<sha>,SEED=1 (experiment names get _s1)
 #SBATCH --job-name=a5-train
 #SBATCH --partition=ampere_gpu
 #SBATCH --gpus=1
@@ -19,8 +20,14 @@ HEAD=$(git rev-parse HEAD)
 git diff --quiet HEAD -- src scripts configs results grids || { echo "ABORT: tracked files modified relative to HEAD"; exit 3; }
 ARMS=(finetune scratch finetune scratch finetune scratch); NS=(100 100 1000 1000 10000 10000)
 ARM=${ARMS[$SLURM_ARRAY_TASK_ID]}; N=${NS[$SLURM_ARRAY_TASK_ID]}; CFG=configs/amendment5/${ARM}_N${N}.yaml; EXP=a5_${ARM}_N${N}
+SEED=${SEED:-0}                                  # seed replicates (exploratory addendum): same config, seed line changed
+if [ "$SEED" != 0 ]; then
+  sed -e "s/^seed: 0$/seed: $SEED/" "$CFG" > /tmp/a5_${ARM}_N${N}_s${SEED}_$SLURM_JOB_ID.yaml
+  CFG=/tmp/a5_${ARM}_N${N}_s${SEED}_$SLURM_JOB_ID.yaml; EXP=${EXP}_s$SEED
+  grep -qx "seed: $SEED" "$CFG" || { echo "ABORT: seed not set in $CFG"; exit 5; }
+fi
 HUB=data_out/hub/genco-opf-datakit/case118_ieee/base/seed0
-echo "commit=$HEAD (verified) arm=$ARM N=$N cfg=$CFG node=$(hostname)"
+echo "commit=$HEAD (verified) arm=$ARM N=$N seed=$SEED cfg=$CFG node=$(hostname)"
 sha256sum data_out/case118_flex/splits/N$N/train.pt $HUB/last.pt
 export PYTHONPATH="$PWD/src" MLFLOW_ALLOW_FILE_STORE=true MLFLOW_DISABLE_AGENT_HINT=1
 PY="$MAIN/.venv/bin/python"

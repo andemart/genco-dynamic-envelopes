@@ -1,6 +1,7 @@
 #!/bin/bash
 # Amendment 5 option 2, step 3: evaluate the six runs (and the reference) on the first 1,000 test-split scenarios.
 #   sbatch --export=ALL,GENCODOE_COMMIT=<sha> scripts/hydra_amendment5_eval.slurm      (in $VSC_DATA/genco-case118)
+#   seed replicates: SEED=1 evaluates the *_s1 runs into results/genco_opf_amendment5_transfer_s1.json
 #SBATCH --job-name=a5-eval
 #SBATCH --partition=zen4
 #SBATCH --cpus-per-task=4
@@ -17,16 +18,17 @@ HEAD=$(git rev-parse HEAD)
 git diff --quiet HEAD -- src scripts configs results grids || { echo "ABORT: tracked files modified relative to HEAD"; exit 3; }
 export PYTHONPATH="$PWD/src" OMP_NUM_THREADS=1 JULIA_NUM_THREADS=1
 PY="$MAIN/.venv/bin/python"
+SEED=${SEED:-0}; SUFFIX=""; [ "$SEED" = 0 ] || SUFFIX="_s$SEED"
 RUNS=()
 for exp in a5_finetune_N100 a5_scratch_N100 a5_finetune_N1000 a5_scratch_N1000 a5_finetune_N10000 a5_scratch_N10000; do
   d=""
-  for m in mlruns/*/meta.yaml; do grep -qx "name: $exp" "$m" && d=$(dirname "$m"); done
-  [ -n "$d" ] || { echo "ABORT: no mlflow experiment $exp"; exit 4; }
+  for m in mlruns/*/meta.yaml; do grep -qx "name: $exp$SUFFIX" "$m" && d=$(dirname "$m"); done
+  [ -n "$d" ] || { echo "ABORT: no mlflow experiment $exp$SUFFIX"; exit 4; }
   r=$(ls -td "$d"/*/artifacts/model/best_model_state_dict.pt | head -1 | xargs dirname | xargs dirname | xargs dirname)
-  echo "$exp -> $r"; sha256sum "$r/artifacts/model/best_model_state_dict.pt"
+  echo "$exp$SUFFIX -> $r"; sha256sum "$r/artifacts/model/best_model_state_dict.pt"
   RUNS+=("$exp=$r")
 done
 echo "commit=$HEAD (verified) node=$(hostname)"
 "$PY" -m gencodoe.opf_transfer --raw data_out/case118_flex/raw --case grids/case118_flex.m --splits data_out/case118_flex/splits \
-  --runs "${RUNS[@]}" --n 1000 --out results/genco_opf_amendment5_transfer.json
-sha256sum results/genco_opf_amendment5_transfer.json
+  --runs "${RUNS[@]}" --n 1000 --out results/genco_opf_amendment5_transfer$SUFFIX.json
+sha256sum results/genco_opf_amendment5_transfer$SUFFIX.json
