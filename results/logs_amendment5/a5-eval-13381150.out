@@ -1,0 +1,55 @@
+CPU(s):                                  64
+Model name:                              AMD EPYC 9384X 32-Core Processor
+a5_finetune_N100_s2 -> mlruns/491344491676176751/ca3e957021064ad9979996025f777832
+2c9b8f53716bb4bf9a282f1ed3014a21bf72e2a74f7429a1733ed611c72de281  mlruns/491344491676176751/ca3e957021064ad9979996025f777832/artifacts/model/best_model_state_dict.pt
+a5_scratch_N100_s2 -> mlruns/840030099790584338/02bf059af85f4aaa8b264fa7cfd467eb
+6d967e591f5b193adeda7c3445afb2baab3035db1c5f06de91ed4f8c4b58bd7d  mlruns/840030099790584338/02bf059af85f4aaa8b264fa7cfd467eb/artifacts/model/best_model_state_dict.pt
+a5_finetune_N1000_s2 -> mlruns/713242825470918790/24fba27fda604077afd2412006ca926f
+960e78bcdb7cdb2cfc98820107af199838c1bbee1bc35cccd4cd3e97111c03bf  mlruns/713242825470918790/24fba27fda604077afd2412006ca926f/artifacts/model/best_model_state_dict.pt
+a5_scratch_N1000_s2 -> mlruns/781924660362549846/d7376afbfdca48e0b6b1a5bde15651fc
+7490d75eeb8b153a40e2eb2bf03aea954658f3a99442a6365d1163fd50334643  mlruns/781924660362549846/d7376afbfdca48e0b6b1a5bde15651fc/artifacts/model/best_model_state_dict.pt
+a5_finetune_N10000_s2 -> mlruns/200260734542488668/5f48ab52bf654c6089e7ffc10471f941
+1ae451ba189a5b0eef9653a3f691cac30c9bb7dac45ef429d485151627b558a5  mlruns/200260734542488668/5f48ab52bf654c6089e7ffc10471f941/artifacts/model/best_model_state_dict.pt
+a5_scratch_N10000_s2 -> mlruns/356502030354984858/63779eaeeab640be92a2bdcc2acada65
+4deba31b01f29e583ebb03392e144ab9ec76e0044b46a5f8fbafd89f1316af34  mlruns/356502030354984858/63779eaeeab640be92a2bdcc2acada65/artifacts/model/best_model_state_dict.pt
+commit=1eb6ea530ee21c71bee40321f84dacbf5f07c2f4 (verified) node=node600.hydra.os
+/data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/lib/python3.12/site-packages/juliacall/__init__.py:61: UserWarning: torch was imported before juliacall. This may cause a segfault. To avoid this, import juliacall before importing torch. For updates, see https://github.com/pytorch/pytorch/issues/78829.
+  warnings.warn(
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+a5_finetune_N100 {"hosting_share_of_reference": 0.9503857053987552, "raw_proposal_feasible_share": 0.113, "raw_proposal_share_of_reference": 0.9652812582848275, "lambda_mean": 0.9835, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08135933426799602, "check_s_per_scenario": 0.5760005834102631, "check_evals_mean": 1.066, "flex_unit_mae_mw": 7.870377333067602}
+a5_scratch_N100 {"hosting_share_of_reference": 0.7918679074778766, "raw_proposal_feasible_share": 0.0, "raw_proposal_share_of_reference": 0.9716073064746799, "lambda_mean": 0.815, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08156464758899529, "check_s_per_scenario": 1.1503028512001037, "check_evals_mean": 1.74, "flex_unit_mae_mw": 20.201770473562156}
+a5_finetune_N1000 {"hosting_share_of_reference": 0.9529354055257309, "raw_proposal_feasible_share": 0.006, "raw_proposal_share_of_reference": 0.9918597575534478, "lambda_mean": 0.96, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08252246341799037, "check_s_per_scenario": 0.7605541605949402, "check_evals_mean": 1.16, "flex_unit_mae_mw": 3.4797862986487598}
+a5_scratch_N1000 {"hosting_share_of_reference": 0.7804255368286991, "raw_proposal_feasible_share": 0.004, "raw_proposal_share_of_reference": 0.9811569907251991, "lambda_mean": 0.79425, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08298298597399843, "check_s_per_scenario": 1.4080890371799468, "check_evals_mean": 1.823, "flex_unit_mae_mw": 13.432638938614279}
+a5_finetune_N10000 {"hosting_share_of_reference": 0.9907939548692084, "raw_proposal_feasible_share": 0.036, "raw_proposal_share_of_reference": 0.9944033618778826, "lambda_mean": 0.9965, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08207475898202392, "check_s_per_scenario": 0.5790095889568329, "check_evals_mean": 1.014, "flex_unit_mae_mw": 2.1989211851934773}
+a5_scratch_N10000 {"hosting_share_of_reference": 0.880918675983032, "raw_proposal_feasible_share": 0.043, "raw_proposal_share_of_reference": 0.9906249791156972, "lambda_mean": 0.88675, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08190980680598295, "check_s_per_scenario": 0.9862162046432495, "check_evals_mean": 1.453, "flex_unit_mae_mw": 5.712608358584251}
+{
+ "100": {
+  "finetuned_share": 0.9503857053987552,
+  "scratch_share": 0.7918679074778766,
+  "diff_points": 15.851779792087852,
+  "diff_lo": 15.226188601095542,
+  "diff_hi": 16.496078653390637
+ },
+ "1000": {
+  "finetuned_share": 0.9529354055257309,
+  "scratch_share": 0.7804255368286991,
+  "diff_points": 17.25098686970317,
+  "diff_lo": 16.52707788973063,
+  "diff_hi": 17.9793076951306
+ },
+ "10000": {
+  "finetuned_share": 0.9907939548692084,
+  "scratch_share": 0.880918675983032,
+  "diff_points": 10.987527888617638,
+  "diff_lo": 10.242104434310452,
+  "diff_hi": 11.710633374828795
+ },
+ "pass": true
+}
+9522c3393cf4a47eda21d1503e4fa689ca4d62a41e0def2c1d84dae8b541bf14  results/genco_opf_amendment5_transfer_s2.json

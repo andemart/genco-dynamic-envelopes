@@ -1002,3 +1002,22 @@ Protocol amendment 6 (14b7cf5), frozen before any evaluation of sorted test posi
 
 **Supported sentence.** "In a frozen follow-up at 100 labels on 2,000 unseen scenarios with five training seeds, fine-tuning the official GENCO beat training from scratch by 11.4 points [9.8, 12.5], in 5 of 5 seeds, but kept 94.7% of the reference, missing the 95% bar."
 
+## GENCO-OPF amendment 5, exploratory addendum: training-seed replicates of option 2 (`results/genco_opf_amendment5_transfer_s{1,2}.json`)
+
+Frozen before any replicate result (1eb6ea5): all six option 2 arms refitted with seeds 1 and 2, same configs, splits, epochs, gate and the same first 1,000 test scenarios (training jobs 13381147, 13381148; evaluations 13381149, 13381150 at 1eb6ea5). **Post-hoc and exploratory; the preregistered verdict stays the seed-0 result (fail).**
+
+Hosting after the check, % of the reference: fine-tuned / scratch / difference (points).
+
+| Labels N | Seed 0 | Seed 1 | Seed 2 | Fine-tuned range | Scratch range |
+|---|---|---|---|---|---|
+| 100 | 96.2 / 82.1 / +14.2 | 92.5 / 82.3 / +10.2 | 95.0 / 79.2 / +15.9 | 92.5–96.2 | 79.2–82.3 |
+| 1,000 | 89.4 / 82.5 / +6.9 | 84.0 / 91.1 / -7.1 | 95.3 / 78.0 / +17.3 | 84.0–95.3 | 78.0–91.1 |
+| 10,000 | 98.5 / 90.1 / +8.4 | 98.9 / 88.2 / +10.7 | 99.1 / 88.1 / +11.0 | 98.5–99.1 | 88.1–90.1 |
+
+- **At 100 and 10,000 labels, fine-tuning beats scratch in all three seeds** (+10.2 to +15.9 and +8.4 to +11.0 points).
+- **At 1,000 labels, the training seed dominates**: the difference ranges from −7.1 (seed 1, scratch better) to +17.3 (seed 2). Fine-tuned hosting spans 84.0–95.3% and scratch 78.0–91.1%. The seed-0 verdict at the preregistered point is not a stable property of the method.
+- **The N = 100 > N = 1,000 ordering of the fine-tuned arm** holds in seeds 0 and 1 but not in seed 2 (95.0 vs 95.3). It is training noise, not a property of the label budget.
+- Seed 2 alone would have met the option 2 criterion at N = 1,000 (95.3%, +17.3). It is reported, not used.
+
+**Supported sentence.** "Across three training seeds, fine-tuning the official GENCO beat scratch at 100 and 10,000 labels in every seed, but at 1,000 labels the outcome depended on the seed (−7.1 to +17.3 points); single-seed results at that budget are not reliable."
+
