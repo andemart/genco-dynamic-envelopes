@@ -94,6 +94,10 @@ Only B, C+ and the proposal path end with a final exact gate; C alone does not.
   **What is not released, and why.** Until Fluvius confirms that its licence permits redistributing data derived from individual meters, we do not publish the model checkpoints (trained on Fluvius-derived states), the four-wire power-flow labels, or the per-day DOE run files. Their SHA-256 hashes are recorded in the run manifests (`results/run_manifest_*.json`), so a party with Fluvius data access can verify a regenerated artifact against ours. Everything needed to regenerate them (code, configs, seeds, date splits, Slurm scripts) is in the repository.
 - Raw Fluvius data is not redistributed.
 
+## Additional experiment: the official pretrained GENCO on case118
+
+In a separate frozen transfer test on case118 with 99 flexible export units, using the official `gridfm/genco-opf-datakit` checkpoint, fine-tuning beat training from scratch by 14.2, 6.9 and 8.4 percentage points of reference hosting at 100, 1,000 and 10,000 labels. The preregistered primary criterion nevertheless failed: at 1,000 labels, the fine-tuned model kept 89.4% of the raw IPOPT reference, below the required 95%. These results use one training seed per arm and an IPOPT corrective-redispatch gate. Protocol, result, logs and hashes: [branch `ander-case118` @ f034a0c](https://github.com/ujohn33/genco-dynamic-envelopes/blob/f034a0c3d3cd3cc516c5e63f31c6e5298dc36fea/docs/experiment_log.md).
+
 ## 7. Next step
 
 The household envelopes on a feeder sum to a flexibility range at the MV/LV transformer. The natural next test is a two-tier chain: feed that range into an MV envelope stage and check hosted flexibility and safety against a two-tier exact reference. Our LV results say what a cross-level model would need: magnitude-preserving edge features, level-specific (phase-aware) representations, and an exact gate at every tier.
