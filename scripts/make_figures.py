@@ -57,14 +57,15 @@ def fig_capacity():
         ax.text(0, 0.25, "0", ha="center", va="bottom", fontsize=12, fontweight="bold", color=INK)
         ax.text(1, hi / 1e3 + 0.3, f"{vals[1]:.2f} MWh", ha="center", color=INK, fontweight="bold")
         ax.text(2, vals[2] + 0.3, f"{vals[2]:.1f} MWh\nfour-wire unsafe", ha="center", color=INK2, fontsize=9)
-        ax.set_xticks(xs, ["Static\nyear-round limit", "Dynamic, exact\nfour-wire-verified", "Dynamic,\nbalanced model"])
+        ax.set_xticks(xs, ["Constant\nadd-on", "Dynamic,\nfour-wire-\nverified", "Dynamic,\nbalanced\nmodel"], fontsize=8.5)
         ax.set_title(f"{d.capitalize()}", color=INK)
         ax.set_ylim(0, 19 if d == "export" else 10)
         ax.set_ylabel("Envelope-hours per household per year (MWh)" if d == "export" else "")
         ax.grid(axis="x", visible=False)
-    title(fig, "Dynamic envelopes free capacity a static limit cannot",
-          "ENWL1 four-wire benchmark, Fluvius 2024 households, 36 held-out days; bars = annual estimate, whisker = season-stratified day-bootstrap 95% interval")
-    fig.subplots_adjust(top=0.78, wspace=0.25)
+    title(fig, "Dynamic envelopes free capacity a constant add-on cannot",
+          "ENWL1 four-wire benchmark, Fluvius 2024 households, 36 test-split days; constant add-on = one optional allowance above the\n"
+          "passive demand, valid in every interval; bars = annual estimate, whisker = season-stratified day-bootstrap 95% interval")
+    fig.subplots_adjust(top=0.72, wspace=0.25)
     save(fig, "fig1_capacity")
 
 
@@ -92,7 +93,7 @@ def fig_robustness():
         ax.set_ylabel("MWh per household per year" if d == "export" else "")
         ax.grid(axis="x", visible=False)
     fig.legend(*axes[0].get_legend_handles_labels(), loc="lower center", ncol=2, fontsize=9, bbox_to_anchor=(0.5, -0.04))
-    title(fig, "Robust to which homes own HP/EV/PV; single-phase connection is the binding constraint",
+    title(fig, "Robust to which homes own HP/EV/PV; single-phase connection is a major contributor",
           "Exact four-wire-verified envelopes, 36 days; five household-technology placements (W1) and idealised three-phase HP/EV connection (W2)")
     fig.subplots_adjust(top=0.76, bottom=0.24, wspace=0.22)
     save(fig, "fig2_robustness")
@@ -123,7 +124,8 @@ def fig_adaptation():
     a2.set_title("On envelope states: 5.4× better than its prior", color=INK, fontsize=10)
     a2.grid(axis="x", visible=False)
     title(fig, "GENCO development: what it took to make GENCO work on an LV feeder",
-          "Left: 1,000 validation states (v1 screen, 15 epochs). Right: 1,000 envelope-augmented validation states (v2, A100 run). Orange = fails or classical reference")
+          "Left: 1,000 validation states (v1 screen, 15 epochs). Right: 1,000 envelope-augmented validation states (v2, A100 run).\n"
+          "Separate runs on different state sets, not one ablation sequence; one training seed each. Orange = fails or classical reference")
     fig.subplots_adjust(top=0.76, wspace=0.22)
     save(fig, "fig3_genco_adaptation")
 
@@ -154,10 +156,11 @@ def fig_fourwire():
     a2.set_xlim(1e-6, 5e-2)
     a2.set_yticks(y2, [n for _, n, _ in o2])
     a2.set_xlabel("phase-to-neutral voltage MAE (pu, log scale)")
-    a2.set_title("State accuracy (converged held-out states)", color=INK, fontsize=10)
+    a2.set_title("State accuracy (2,699 converged test states)", color=INK, fontsize=10)
     a2.grid(axis="y", visible=False)
     title(fig, "Four-wire extension: a GENCO-style GNN corrects a cheap four-wire prior; GENCO embeddings do not help",
-          "2,968 held-out states; zero observed false-safe decisions for every method. Blue = learned model that helps; orange = GENCO variants that do not; grey = physics baselines")
+          "Test split: fallbacks on 2,968 screening states, voltage MAE on the 2,699 converged ones; zero observed false-safe decisions for every\n"
+          "method; one training seed per model. Blue = learned model that helps; orange = GENCO variants that do not; grey = physics baselines")
     fig.subplots_adjust(top=0.78, wspace=0.75)
     save(fig, "fig4_fourwire")
 
