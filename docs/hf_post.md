@@ -1,6 +1,6 @@
 # Four-wire-verified dynamic operating envelopes with GENCO: where a grid foundation model helps on LV networks, and where it does not
 
-*GridFM GENCO Challenge 2026. Ander Martinez Alonso, Evgenii Genov (EVERGi, VUB) and Remy Cleerckewer (VUB, UGent). Code, protocols, figures and result files: [github.com/ujohn33/genco-dynamic-envelopes @ COMMIT_SHA](https://github.com/ujohn33/genco-dynamic-envelopes/tree/COMMIT_SHA). Contact: ander.martinez.alonso@vub.be.*
+*GridFM GENCO Challenge 2026. Ander Martinez Alonso, Evgenii Genov (EVERGi, VUB) and Remy Cleerckewer (VUB, UGent). Code, protocols, figures and result files: [github.com/ujohn33/genco-dynamic-envelopes @ 1c172c82e54edeeb17b67d897f1b03ebe68fcac2](https://github.com/ujohn33/genco-dynamic-envelopes/tree/1c172c82e54edeeb17b67d897f1b03ebe68fcac2). Contact: ander.martinez.alonso@vub.be.*
 
 ---
 
@@ -17,7 +17,7 @@
 
 A **dynamic operating envelope** (DOE) gives each household a time-varying import and export allowance instead of a fixed connection limit. Computing one is a search over power flows, and on European LV feeders those power flows are **four-wire**.
 
-![Feeder](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/COMMIT_SHA/figures/fig0_feeder.png)
+![Feeder](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/1c172c82e54edeeb17b67d897f1b03ebe68fcac2/figures/fig0_feeder.png)
 
 *ENWL feeder 1. (a) Customer phase. (b, c) One validation state with 186 kW net export. The balanced model puts every customer at 240–247 V; the four-wire solution of the same injections ranges from 205 V (phase c) to above 270 V (phase a).*
 
@@ -35,7 +35,7 @@ Fluvius meters → 200 scenarios per interval → proposal → exact four-wire O
 
 Over **36 test-split days** of 2024:
 
-![Capacity](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/COMMIT_SHA/figures/fig1_capacity.png)
+![Capacity](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/1c172c82e54edeeb17b67d897f1b03ebe68fcac2/figures/fig1_capacity.png)
 
 - **Dynamic, four-wire-verified envelopes:** 4.81 MWh export (season-stratified day-bootstrap interval 4.35–5.30) and 2.50 MWh import (2.11–2.87) envelope-hours per household per year. These are envelope-hours, not delivered energy.
 - **Constant add-on:** no positive constant optional allowance above the passive demand passes in every sampled interval. This is narrower than a conventional fixed connection capacity, and we do not claim every static connection policy yields zero.
@@ -49,7 +49,7 @@ Over **36 test-split days** of 2024:
 
 Unless stated otherwise, "GENCO" here is graphkit's GENCO architecture (`GNS_heterogeneous`) **trained from scratch on this feeder**, not the official pretrained weights.
 
-![Adaptation](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/COMMIT_SHA/figures/fig3_genco_adaptation.png)
+![Adaptation](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/1c172c82e54edeeb17b67d897f1b03ebe68fcac2/figures/fig3_genco_adaptation.png)
 
 The stock model did worse than predicting the training mean. Three causes, each fixed:
 
@@ -63,7 +63,7 @@ The result is a voltage MAE of 1.0e-3 pu on envelope states, 5.4× better than t
 
 GENCO is balanced, and on this feeder what binds is single-phase, four-wire physics. We therefore built a GENCO-style encode–process–decode GNN on the explicit four-wire graph (conductors a, b, c, n; full 4×4 impedances; edge-conditioned TransformerConv), predicting a zero-initialised residual on a **one-step four-wire sweep**.
 
-![Four-wire](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/COMMIT_SHA/figures/fig4_fourwire.png)
+![Four-wire](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/1c172c82e54edeeb17b67d897f1b03ebe68fcac2/figures/fig4_fourwire.png)
 
 Under the same exact gate, on the test split (fallbacks on 2,968 screening states, voltage error on the 2,699 converged ones; one training seed per model, so intervals exclude training variability):
 
@@ -84,11 +84,11 @@ Only B, C+ and the proposal path end with a final exact gate; C alone does not.
 
 **We claim** that, on this benchmark feeder, dynamic four-wire-verified envelopes release capacity a constant add-on cannot; that balanced-model envelopes are unsafe; that the GENCO architecture can be adapted to LV and guarded by an exact gate; and that a four-wire GNN residual corrects a cheap four-wire prior.
 
-**We do not claim** unconditional safety, a GENCO advantage over specialised classical solvers, a wall-clock speed-up, or generalisation beyond this one feeder. All post-hoc results are exploratory. The full list is in [`docs/claims.md`](https://github.com/ujohn33/genco-dynamic-envelopes/blob/COMMIT_SHA/docs/claims.md).
+**We do not claim** unconditional safety, a GENCO advantage over specialised classical solvers, a wall-clock speed-up, or generalisation beyond this one feeder. All post-hoc results are exploratory. The full list is in [`docs/claims.md`](https://github.com/ujohn33/genco-dynamic-envelopes/blob/1c172c82e54edeeb17b67d897f1b03ebe68fcac2/docs/claims.md).
 
 ## 6. Open science
 
-- Code, protocols, numbered amendments, the [experiment log](https://github.com/ujohn33/genco-dynamic-envelopes/blob/COMMIT_SHA/docs/experiment_log.md), configs, date splits, run manifests with SHA-256 hashes, and aggregate result files are in the repository (Apache-2.0); 84 automated tests.
+- Code, protocols, numbered amendments, the [experiment log](https://github.com/ujohn33/genco-dynamic-envelopes/blob/1c172c82e54edeeb17b67d897f1b03ebe68fcac2/docs/experiment_log.md), configs, date splits, run manifests with SHA-256 hashes, and aggregate result files are in the repository (Apache-2.0); 84 automated tests.
 - `scripts/reproduce_check.py` regenerates every headline number byte for byte **from the recorded per-day run files**. Those run files, the model checkpoints and the four-wire labels are derived from Fluvius smart-meter data.
 
   **What is not released, and why.** Until Fluvius confirms that its licence permits redistributing data derived from individual meters, we do not publish the model checkpoints (trained on Fluvius-derived states), the four-wire power-flow labels, or the per-day DOE run files. Their SHA-256 hashes are recorded in the run manifests (`results/run_manifest_*.json`), so a party with Fluvius data access can verify a regenerated artifact against ours. Everything needed to regenerate them (code, configs, seeds, date splits, Slurm scripts) is in the repository.
