@@ -111,7 +111,7 @@ def fig_adaptation():
     a1.set_ylim(1e-4, 4e-2)
     a1.set_xticks(range(4), names, fontsize=8.5)
     a1.set_ylabel("voltage MAE (pu, log scale)")
-    a1.set_title("Stock GENCO cannot see LV impedance", color=INK, fontsize=10)
+    a1.set_title("Representation fixes alone are not enough", color=INK, fontsize=10)
     a1.grid(axis="x", visible=False)
     names2 = ["physics prior\nalone", "GENCO-LV\n(selected)", "5 fixed-point\niterations"]
     vals2 = [5.43e-3, 1.01e-3, 1.2e-4]
@@ -123,7 +123,7 @@ def fig_adaptation():
     a2.set_xticks(range(3), names2, fontsize=8.5)
     a2.set_title("On envelope states: 5.4× better than its prior", color=INK, fontsize=10)
     a2.grid(axis="x", visible=False)
-    title(fig, "GENCO development: what it took to make GENCO work on an LV feeder",
+    title(fig, "Making GENCO work on an LV feeder: the physics prior is the decisive step",
           "Left: 1,000 validation states (v1 screen, 15 epochs). Right: 1,000 envelope-augmented validation states (v2, A100 run).\n"
           "Separate runs on different state sets, not one ablation sequence; one training seed each. Orange = fails or classical reference")
     fig.subplots_adjust(top=0.76, wspace=0.22)
@@ -190,10 +190,56 @@ def fig_frontier():
     save(fig, "fig5_proposal_frontier")
 
 
+def fig_workflow():
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+    fig, ax = plt.subplots(figsize=(10, 3.3))
+    ax.set_xlim(0, 10), ax.set_ylim(0, 3.2), ax.axis("off")
+    boxes = [(0.1, "Household\nscenarios", "200 per interval,\nresampled real meters", MUTED),
+             (2.6, "Candidate\nenvelope", "uniform kW per household,\nsearched or proposed", MUTED),
+             (5.1, "Phase-aware\nGENCO screen", "four-wire GNN residual\non a one-step sweep:\nsafe / unsafe / unsure", BLUE),
+             (7.6, "Full four-wire\nOpenDSS gate", "all 200 design scenarios,\n>= 98% feasible\n-> envelope issued", ORANGE)]
+    for x, head, body, c in boxes:
+        ax.add_patch(FancyBboxPatch((x, 0.9), 2.2, 1.75, boxstyle="round,pad=0.03,rounding_size=0.12", fc=SURFACE, ec=c, lw=2))
+        ax.text(x + 1.1, 2.25, head, ha="center", va="center", fontsize=9.5, fontweight="bold", color=INK, linespacing=1.15)
+        ax.text(x + 1.1, 1.35, body, ha="center", va="center", fontsize=8.3, color=INK2, linespacing=1.25)
+    for x in (2.3, 4.8, 7.3):
+        ax.add_patch(FancyArrowPatch((x, 1.67), (x + 0.3, 1.67), arrowstyle="-|>", mutation_scale=14, color=INK2, lw=1.4))
+    ax.add_patch(FancyArrowPatch((6.2, 0.9), (8.7, 0.9), connectionstyle="arc3,rad=0.35", arrowstyle="-|>", mutation_scale=12,
+                                 color=INK2, lw=1.1, ls="--"))
+    ax.text(7.45, 0.18, "unsure states go to OpenDSS (5.8% with the GNN, 35.8% with the prior alone)", ha="center", fontsize=8.5,
+            color=INK2)
+    ax.text(0.1, 3.0, "Every issued envelope passes the full four-wire gate on its design scenarios: a design-set check, not a "
+            "certificate of future safety", fontsize=8.5, color=INK2)
+    save(fig, "fig8_workflow")
+
+
+def fig_fallback():
+    e = load("results/fourwire_eval_test.json")
+    order = [("BS", "balanced model sweep", MUTED), ("BG", "balanced GENCO", ORANGE),
+             ("U1", "four-wire one-step prior", MUTED), ("PhaseGENCO", "+ GNN + balanced GENCO embeddings", ORANGE),
+             ("PhaseGraph", "+ phase-aware GENCO-style GNN", BLUE), ("U3", "iterated four-wire sweep (classical)", MUTED)]
+    fig, ax = plt.subplots(figsize=(8.2, 3.6))
+    fb = [100 * e["screen"][k]["fallback_mean"] for k, _, _ in order]
+    y = list(range(len(order)))[::-1]
+    ax.barh(y, fb, color=[c for _, _, c in order], height=0.62, zorder=2)
+    for yi, v in zip(y, fb):
+        ax.text(v + 1, yi, f"{v:.1f}%", va="center", color=INK, fontsize=10)
+    ax.set_yticks(y, [n for _, n, _ in order], fontsize=10)
+    ax.set_xlim(0, 75)
+    ax.set_xlabel("evaluation states sent to the full OpenDSS solver (%)")
+    ax.grid(axis="y", visible=False)
+    title(fig, "How often each screen must call OpenDSS",
+          "2,968 evaluation states, same final gate for every method; zero observed false-safe decisions for all")
+    fig.subplots_adjust(top=0.8)
+    save(fig, "fig4a_fallback")
+
+
 if __name__ == "__main__":
     fig_capacity()
     fig_robustness()
     fig_adaptation()
     fig_fourwire()
     fig_frontier()
+    fig_workflow()
+    fig_fallback()
     print(sorted(p.name for p in OUT.glob("*.png")))
