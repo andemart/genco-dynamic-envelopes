@@ -161,14 +161,16 @@ def main():
     ap.add_argument("--splits", type=Path, required=True, help="splits dir; the test split of N100 is used (identical for every N)")
     ap.add_argument("--runs", nargs="+", required=True, help="name=run_dir (names a5_{finetune,scratch}_N{N}); config from configs/amendment5")
     ap.add_argument("--n", type=int, default=1000)
+    ap.add_argument("--offset", type=int, default=0, help="first sorted test position (amendment 6: 1000)")
     ap.add_argument("--out", type=Path, default=Path("results/genco_opf_amendment5_transfer.json"))
     a = ap.parse_args()
     import torch
-    test = np.sort(torch.load(a.splits / "N100/test.pt").numpy())[: a.n]
+    test = np.sort(torch.load(a.splits / "N100/test.pt").numpy())[a.offset: a.offset + a.n]
     runs = {k: Path(v) for k, v in (r.split("=", 1) for r in a.runs)}
     cfgs = {k: Path("configs/amendment5") / (k.removeprefix("a5_") + ".yaml") for k in runs}
     out = evaluate_models(a.raw, a.case, test, runs, cfgs)
     out["test_ids_sha256"] = hashlib.sha256(test.tobytes()).hexdigest()
+    out["test_positions"] = [a.offset, a.offset + len(test)]
     out["criterion"] = criteria(out)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     tmp = a.out.with_name("." + a.out.name + ".partial")

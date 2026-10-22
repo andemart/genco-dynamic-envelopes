@@ -318,3 +318,14 @@ Also disclosed: three fine-tune runs (job 13362565, tasks 0, 2, 4, commit 1c7309
 
 The option 2 criterion failed at N = 1,000 (fine-tuned 89.4% of the reference against the 95% bar; gain over scratch +6.9 points, interval [5.9, 7.8]), and the fine-tuned model hosted more at N = 100 (96.2%) than at N = 1,000. Each arm was fitted once, so the bootstrap covers test scenarios only. To measure training-seed variability we refit all six arms with seeds 1 and 2: same configs, splits, epochs and evaluation, only the `seed:` line changed (`SEED` in `scripts/hydra_amendment5_train.slurm`); each seed is evaluated separately into `results/genco_opf_amendment5_transfer_s{1,2}.json`. **This is post-hoc and exploratory. The preregistered verdict stays the seed-0 result (fail) whatever the replicates show.** We will report, per N and arm, the three hosting shares and their range, and whether the N = 100 > N = 1,000 ordering of the fine-tuned arm holds in each seed.
 
+## Amendment 6 (2026-10-22, before any evaluation on sorted test positions 1000–2999 and before any seed-replicate result): data-informed confirmation of the N = 100 transfer result
+
+Amendment 5 failed its primary N = 1,000 criterion, and that verdict stands. It also produced a positive N = 100 result on the first 1,000 test scenarios (fine-tuned 96.2% of the reference, +14.2 points over scratch, one seed). This amendment is a **data-informed follow-up**: the label budget was chosen after seeing that result. Before any evaluation of the remaining 2,000 test scenarios, and before any result of the seed replicates, we freeze a confirmatory comparison:
+
+- **Comparison:** the official checkpoint fine-tuned versus trained from scratch, both at N = 100 labels.
+- **Training seeds 0–4**, fixed now, all reported. Seed 0 is the existing amendment 5 pair; seeds 1 and 2 are the pairs already queued under the exploratory addendum (job 13381147, 13381148, tasks 0 and 1); seeds 3 and 4 are trained here with the same script (`SEED`, array tasks 0–1). Configurations, splits and epochs unchanged.
+- **Test set:** sorted test-split positions 1000–2999 (2,000 scenarios, none evaluated before; `opf_transfer --offset 1000 --n 2000`, `scripts/hydra_amendment6_eval.slurm`).
+- **Gate:** the amendment 5 IPOPT redispatch gate, unchanged, so the result replicates the original finding directly.
+- **Success requires all four** (`scripts/amendment6_analysis.py`, committed with this amendment): (1) mean fine-tuned hosting ≥ 95% of the raw reference; (2) mean improvement over scratch ≥ 2 points; (3) a paired two-level bootstrap over seeds and scenarios with 2.5th percentile > 0; (4) fine-tuned better than scratch in at least 4 of 5 seeds.
+- Every seed is reported, including failures. Amendment 5's verdict is unchanged whatever this shows.
+
