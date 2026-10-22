@@ -1,6 +1,6 @@
 # Four-wire-verified dynamic operating envelopes with GENCO: where a grid foundation model helps on LV networks, and where it does not
 
-*GridFM GENCO Challenge 2026. Ander Martinez Alonso, Evgenii Genov (EVERGi, VUB) and Remy Cleerckewer (VUB, UGent). Code, protocols, figures and result files: [github.com/ujohn33/genco-dynamic-envelopes @ 1c172c82e54edeeb17b67d897f1b03ebe68fcac2](https://github.com/ujohn33/genco-dynamic-envelopes/tree/1c172c82e54edeeb17b67d897f1b03ebe68fcac2). Contact: ander.martinez.alonso@vub.be.*
+*GridFM GENCO Challenge 2026. Ander Martinez Alonso, Evgenii Genov (EVERGi, VUB) and Remy Cleenwerck (VUB, UGent). Code, protocols, figures and result files: [github.com/ujohn33/genco-dynamic-envelopes @ 1c172c82e54edeeb17b67d897f1b03ebe68fcac2](https://github.com/ujohn33/genco-dynamic-envelopes/tree/1c172c82e54edeeb17b67d897f1b03ebe68fcac2). Contact: ander.martinez.alonso@vub.be.*
 
 ---
 
@@ -120,6 +120,6 @@ The household envelopes on a feeder sum to a flexibility range at the MV/LV tran
 
 - **Ander Martinez Alonso**, EVERGi, Vrije Universiteit Brussel (VUB). Contact: ander.martinez.alonso@vub.be
 - **Evgenii Genov**, EVERGi, Vrije Universiteit Brussel (VUB)
-- **Remy Cleerckewer**, Vrije Universiteit Brussel (VUB) and Ghent University (UGent)
+- **Remy Cleenwerck**, Vrije Universiteit Brussel (VUB) and Ghent University (UGent)
 
 Built on GENCO with gridfm-graphkit 0.9.0.3 and gridfm-datakit 1.1.0.
