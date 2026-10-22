@@ -960,3 +960,25 @@ GENCO inference on CPU adds 0.082 s per scenario, not counted above.
 **Criterion (≥ 20% median wall-clock cut against the previous-solution start, bootstrap lower bound > 0): not met.** The GENCO start is **22% slower** than the previous-solution start, scenario-bootstrap interval [-26%, -20%], and 23% more iterations; it is also slower than the flat start. The 5a quality guard also fails: the GENCO-started solve lands within 1e-4 of the flat-start objective in 56% of scenarios (bar 99%); the previous-solution start manages only 38%, which says the flex OPF has many nearby local optima, so objective agreement at this tolerance is a property of the problem, not of the start. Convergence is 500 of 500 for every start.
 
 **Supported sentence.** "On case118 with 99 flexible export units, starting IPOPT from the official pretrained GENCO's dispatch and voltages gives no material warm-start gain: the median solve is 22% slower than starting from the previous scenario's solution and slower than a flat start, on one zen4 core, with convergence unchanged." The zero-shot checkpoint's flex dispatch is 37% below the optimum on this case (step 0), which is consistent: a start far from the optimum in the flexible units costs IPOPT iterations rather than saving them. The from-scratch arm (iv) was not run: no checkpoint is committed on the branch.
+
+## GENCO-OPF amendment 5, option 2: official pretrained GENCO fine-tuned versus trained from scratch at scarce labels (`results/genco_opf_amendment5_transfer.json`, branch `ander-case118`)
+
+Protocol amendment 5 with 5a (freeze) and 5b (the exact check), and 5c (implementation incident: the first evaluation, job 13363424, loaded the N = 10,000 checkpoints for every N and is void; its output is kept as `*_buggy.json`). Official checkpoint `gridfm/genco-opf-datakit` case118_ieee/base/seed0. 30,000 case118_flex AC-OPF labels (job 13362542), nested splits; six A100 runs, one seed each, 80 epochs; evaluation on the first 1,000 test-split scenarios on one zen4 node (job 13375605, commit 567caa6). Hashes of labels, splits, test IDs, checkpoints and result are in `results/run_manifest_genco_opf.json` under `amendment5.option2_transfer`.
+
+| Labels N | Fine-tuned: hosting after the check (% of reference) | From scratch | Fine-tuned − scratch [scenario bootstrap 95%] |
+|---|---|---|---|
+| 100 | 96.2 | 82.1 | +14.2 [13.6, 14.8] |
+| **1,000** | **89.4** | 82.5 | **+6.9 [5.9, 7.8]** |
+| 10,000 | 98.5 | 90.1 | +8.4 [7.7, 9.2] |
+
+**Criterion (at N = 1,000: fine-tuned − scratch ≥ 2 points with lower bound > 0, and fine-tuned ≥ 95% of the reference): not met.** The gain over scratch is met; the 95% bar is not (89.4%).
+
+Qualifications:
+- **The check is an IPOPT convergence-and-redispatch gate.** The flexible units are fixed at λ × proposal and the AC-OPF re-solved; λ is the largest value on {1, 0.75, 0.5, 0.25} that converges. The reference (IPOPT label dispatch) passed through the same gate keeps only 96.4% (λ mean 0.9635), so the gate also scales back valid optimal dispatches, and the 95% bar sits 1.4 points below the reference's own gated share. Hosting shares are relative to the ungated reference.
+- **The grid is coarse.** Every model's λ was 1 or 0.75 in every scenario; no level below 0.75 was used. One non-convergence at full scale costs 25% in that scenario, which likely amplifies differences between models. Per-scenario reference λ is saved from this commit on (`per_scenario.reference_lambda`).
+- **Raw proposals are almost never feasible on their own** (0.1–4.9% of scenarios across the six models). The result is a hybrid: the network proposes the flexible dispatch and IPOPT redispatches the rest. It is not a standalone neural OPF.
+- **One training seed per arm.** The intervals cover test scenarios conditional on the six fits, not training variability. The fine-tuned arm is non-monotone in N (96.2, 89.4, 98.5): at N = 100 every proposal passed at λ = 1 (flexible-unit MAE 8.5 MW), at N = 1,000 414 of 1,000 were cut to 0.75 (MAE 3.3 MW). Why is not established; distance from the pretrained weights was not measured. Seed replicates are running (exploratory addendum).
+- **Transfer, not generalisation.** The checkpoint was trained on the same case118 base system with a closely related load distribution; this tests transfer to the flexible-hosting formulation, not to an unseen network, and overlap with the checkpoint's training profiles is not ruled out.
+
+**Supported sentence.** "On case118 with 99 flexible export units, fine-tuning the official pretrained GENCO exceeded training from scratch by 14.2, 6.9 and 8.4 points of reference hosting at 100, 1,000 and 10,000 labels (one seed each, IPOPT redispatch gate), but at the preregistered 1,000-label point it kept 89.4% of the reference, below the 95% bar."
+

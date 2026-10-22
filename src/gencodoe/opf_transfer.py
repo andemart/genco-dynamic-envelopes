@@ -109,6 +109,7 @@ def evaluate_models(raw: Path, case: Path, test_ids: np.ndarray, runs: dict[str,
            "models": {}, "per_scenario": {"reference_flex_mw": ref.tolist()}}
     # the reference itself through the check (labels are IPOPT solutions; reports how exact the check is)
     lam_r, v_r, ev_r, s_r, pok_r = (np.asarray(x) for x in scale_batch(pm.d, pm.d_pf, PD, QD, PG_true, VM_true, fl, LEVELS))
+    out["per_scenario"]["reference_lambda"] = lam_r.tolist()
     out["reference_check"] = {"raw_feasible_share": float((v_r <= TOL).mean()), "lambda_mean": float(lam_r.mean()),
                               "hosting_after_check_share": float((lam_r * ref).sum() / ref.sum()),
                               "plain_start_converged_share": float(pok_r.mean()), "check_s_per_scenario": float(s_r.mean())}

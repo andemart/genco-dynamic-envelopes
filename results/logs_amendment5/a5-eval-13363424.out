@@ -1,0 +1,218 @@
+CPU(s):                                  64
+Model name:                              AMD EPYC 9384X 32-Core Processor
+a5_finetune_N100 -> mlruns/936749873877822567/8ccac227f83449e0bacf2854f3ab9e0b
+2457bce534746babdca6dc8a2ecf19f9c77b364eb5d203c622472dd257296007  mlruns/936749873877822567/8ccac227f83449e0bacf2854f3ab9e0b/artifacts/model/best_model_state_dict.pt
+a5_scratch_N100 -> mlruns/816349542892007620/f7a0876d93ed4c0cafce0f99572b5667
+2c2a714d6d4d43e0a3576710c449b3dc319f5ce9961a0c9b9b586c0d1489acc2  mlruns/816349542892007620/f7a0876d93ed4c0cafce0f99572b5667/artifacts/model/best_model_state_dict.pt
+a5_finetune_N1000 -> mlruns/936749873877822567/8ccac227f83449e0bacf2854f3ab9e0b
+2457bce534746babdca6dc8a2ecf19f9c77b364eb5d203c622472dd257296007  mlruns/936749873877822567/8ccac227f83449e0bacf2854f3ab9e0b/artifacts/model/best_model_state_dict.pt
+a5_scratch_N1000 -> mlruns/816349542892007620/f7a0876d93ed4c0cafce0f99572b5667
+2c2a714d6d4d43e0a3576710c449b3dc319f5ce9961a0c9b9b586c0d1489acc2  mlruns/816349542892007620/f7a0876d93ed4c0cafce0f99572b5667/artifacts/model/best_model_state_dict.pt
+a5_finetune_N10000 -> mlruns/936749873877822567/8ccac227f83449e0bacf2854f3ab9e0b
+2457bce534746babdca6dc8a2ecf19f9c77b364eb5d203c622472dd257296007  mlruns/936749873877822567/8ccac227f83449e0bacf2854f3ab9e0b/artifacts/model/best_model_state_dict.pt
+a5_scratch_N10000 -> mlruns/816349542892007620/f7a0876d93ed4c0cafce0f99572b5667
+2c2a714d6d4d43e0a3576710c449b3dc319f5ce9961a0c9b9b586c0d1489acc2  mlruns/816349542892007620/f7a0876d93ed4c0cafce0f99572b5667/artifacts/model/best_model_state_dict.pt
+commit=bd9087b20f30e1fa4caf7453f25f9867241d9f4e (verified) node=node600.hydra.os
+/data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/lib/python3.12/site-packages/juliacall/__init__.py:61: UserWarning: torch was imported before juliacall. This may cause a segfault. To avoid this, import juliacall before importing torch. For updates, see https://github.com/pytorch/pytorch/issues/78829.
+  warnings.warn(
+    Updating registry at `~/.julia/registries/General.toml`
+   Resolving package versions...
+    Updating `/vscmnt/brussel_pixiu_data/_data_brussel/107/vsc10719/genco-dynamic-envelopes/.venv/julia_env/Project.toml`
+⌅ [b6b21f68] + Ipopt v1.15.0
+  [f28f55f0] + Memento v1.5.0
+⌅ [c36e90e8] + PowerModels v0.21.6
+⌅ [6099a3de] + PythonCall v0.9.36
+  [458c3c95] ~ OpenSSL_jll ⇒ v3.5.8+0
+    Updating `/vscmnt/brussel_pixiu_data/_data_brussel/107/vsc10719/genco-dynamic-envelopes/.venv/julia_env/Manifest.toml`
+  [47edcb42] + ADTypes v1.24.0
+  [79e6a3ab] + Adapt v4.7.4
+  [4fba245c] + ArrayInterface v7.30.2
+  [523fee87] + CodecBzip2 v0.8.5
+  [944b1d66] + CodecZlib v0.7.9
+  [bbf7d656] + CommonSubexpressions v0.3.1
+  [992eb4ea] + CondaPkg v0.2.38
+  [187b0558] + ConstructionBase v1.6.0
+  [9a962f9c] + DataAPI v1.16.0
+  [e2d170a0] + DataValueInterfaces v1.0.0
+  [163ba53b] + DiffResults v1.1.0
+  [b552c78f] + DiffRules v1.16.0
+  [a0c0ee7d] + DifferentiationInterface v0.7.21
+  [b4f34e82] + Distances v0.10.12
+  [ffbed154] + DocStringExtensions v0.10.2
+  [6a86dc24] + FiniteDiff v2.33.0
+  [f6369f11] + ForwardDiff v1.4.6
+  [2030c09a] + InfrastructureModels v0.7.9
+⌅ [b6b21f68] + Ipopt v1.15.0
+  [92d709cd] + IrrationalConstants v0.2.7
+  [82899510] + IteratorInterfaceExtensions v1.0.0
+  [692b3bcd] + JLLWrappers v1.8.0
+  [682c06a0] + JSON v1.11.0
+  [4076af6c] + JuMP v1.32.1
+⌃ [d3d80556] + LineSearches v7.5.1
+  [2ab3a3ac] + LogExpFunctions v1.0.3
+  [1914dd2f] + MacroTools v0.5.16
+  [b8f27783] + MathOptInterface v1.54.0
+  [f28f55f0] + Memento v1.5.0
+  [0b3b1443] + MicroMamba v0.1.15
+  [d8a4904e] + MutableArithmetics v1.9.0
+⌅ [d41bc354] + NLSolversBase v7.10.0
+⌅ [2774e3e8] + NLsolve v4.5.1
+  [77ba4419] + NaNMath v1.1.5
+  [bac558e1] + OrderedCollections v2.0.3
+  [69de0a69] + Parsers v3.0.0
+⌅ [c36e90e8] + PowerModels v0.21.6
+  [aea7be01] + PrecompileTools v1.3.4
+  [21216c6a] + Preferences v1.6.1
+⌅ [6099a3de] + PythonCall v0.9.36
+  [189a3867] + Reexport v1.2.2
+  [ae029012] + Requires v1.3.1
+  [6c6a2e73] + Scratch v1.3.0
+  [efcf1570] + Setfield v1.1.2
+  [276daf66] + SpecialFunctions v2.9.0
+  [1e83bf80] + StaticArraysCore v1.4.4
+  [10745b16] + Statistics v1.11.5
+  [82ae8749] + StatsAPI v1.8.0
+  [ec057cc2] + StructUtils v2.10.0
+  [3783bdb8] + TableTraits v1.0.1
+  [bd369af6] + Tables v1.14.0
+  [3bb67fe8] + TranscodingStreams v0.11.3
+  [e17b2a0c] + UnsafePointers v1.0.0
+  [ae81ac8f] + ASL_jll v0.1.5+0
+  [6e34b625] + Bzip2_jll v1.0.9+0
+  [e33a78d0] + Hwloc_jll v2.15.0+0
+⌅ [9cc047cb] + Ipopt_jll v300.1400.1902+0
+  [94ce4f54] + Libiconv_jll v1.18.0+0
+  [d00139f3] + METIS_jll v5.1.4+0
+  [d7ed1dd3] + MUMPS_seq_jll v500.900.100+0
+  [656ef2d0] + OpenBLAS32_jll v0.3.34+0
+  [efe28fd5] + OpenSpecFun_jll v0.5.6+0
+  [319450e9] + SPRAL_jll v2025.9.18+1
+  [02c8fc9c] + XML2_jll v2.15.4+0
+  [a65dc6b1] + Xorg_libpciaccess_jll v0.19.0+0
+  [f8abcde7] + micromamba_jll v2.3.1+0
+  [4d7b5844] + pixi_jll v0.76.2+0
+  [0dad84c5] + ArgTools v1.1.2
+  [56f22d72] + Artifacts v1.11.0
+  [2a0f44e3] + Base64 v1.11.0
+  [ade2ca70] + Dates v1.11.0
+  [8ba89e20] + Distributed v1.11.0
+  [f43a241f] + Downloads v1.7.0
+  [7b1f6079] + FileWatching v1.11.0
+  [9fa8497b] + Future v1.11.0
+  [b77e0a4c] + InteractiveUtils v1.11.0
+  [ac6e5ff7] + JuliaSyntaxHighlighting v1.12.0
+  [4af54fe1] + LazyArtifacts v1.11.0
+  [b27032c2] + LibCURL v1.0.0
+  [76f85450] + LibGit2 v1.11.0
+  [8f399da3] + Libdl v1.11.0
+  [37e2e46d] + LinearAlgebra v1.13.0
+  [56ddb016] + Logging v1.11.0
+  [d6f4376e] + Markdown v1.11.0
+  [ca575930] + NetworkOptions v1.3.0
+  [44cfe95a] + Pkg v1.13.0
+  [de0858da] + Printf v1.11.0
+  [9a3f8284] + Random v1.11.0
+  [ea8e919c] + SHA v1.0.0
+  [9e88b42a] + Serialization v1.11.0
+  [6462fe0b] + Sockets v1.11.0
+  [2f01184e] + SparseArrays v1.13.0
+  [f489334b] + StyledStrings v1.11.0
+  [fa267f1f] + TOML v1.0.3
+  [a4e569a6] + Tar v1.10.0
+  [8dfed614] + Test v1.11.0
+  [cf7118a7] + UUIDs v1.11.0
+  [4ec0a83e] + Unicode v1.11.0
+  [e66e0078] + CompilerSupportLibraries_jll v1.5.5+2
+  [deac9b47] + LibCURL_jll v8.22.0+0
+  [e37daf67] + LibGit2_jll v1.9.7+0
+  [29816b5a] + LibSSH2_jll v1.11.104+0
+  [14a3606d] + MozillaCACerts_jll v2026.8.13
+  [4536629a] + OpenBLAS_jll v0.3.30+0
+  [05823500] + OpenLibm_jll v0.8.7+0
+  [458c3c95] ~ OpenSSL_jll ⇒ v3.5.8+0
+  [efcefdf7] + PCRE2_jll v10.46.0+0
+  [bea87d4a] + SuiteSparse_jll v7.10.1+0
+  [83775a58] + Zlib_jll v1.3.2+0
+  [3161d3a3] + Zstd_jll v1.5.7+1
+  [8e850b90] + libblastrampoline_jll v5.15.0+0
+  [8e850ede] + nghttp2_jll v1.70.0+0
+  [3f19e933] + p7zip_jll v17.8.3+0
+        Info Packages marked with ⌃ and ⌅ have new versions available. Those with ⌃ may be upgradable, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`
+     Project No packages added to or removed from `/vscmnt/brussel_pixiu_data/_data_brussel/107/vsc10719/genco-dynamic-envelopes/.venv/julia_env/Project.toml`
+    Manifest No packages added to or removed from `/vscmnt/brussel_pixiu_data/_data_brussel/107/vsc10719/genco-dynamic-envelopes/.venv/julia_env/Manifest.toml`
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+[juliapkg] Found dependencies: /data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/lib/python3.12/site-packages/juliapkg/juliapkg.json
+[juliapkg] Found dependencies: /data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/lib/python3.12/site-packages/juliacall/juliapkg.json
+[juliapkg] Found dependencies: /data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/lib/python3.12/site-packages/gridfm_datakit/juliapkg.json
+[juliapkg] Locating Julia ^1.10.3
+[juliapkg] Querying Julia versions from https://julialang-s3.julialang.org/bin/versions.json
+[juliapkg] Using Julia 1.13.2 at /data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/julia_env/pyjuliapkg/install/bin/julia
+[juliapkg] Finding libjulia and bindir:
+           | using Libdl
+           | print(abspath(Libdl.dlpath("libjulia")), '\0', Sys.BINDIR)
+[juliapkg] Using Julia project at /data/brussel/107/vsc10719/genco-dynamic-envelopes/.venv/julia_env
+[juliapkg] Writing Project.toml:
+           | [deps]
+           | PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+           | OpenSSL_jll = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
+           | PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
+           | Ipopt = "b6b21f68-93f8-5de0-b562-5493be1d77c9"
+           | Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
+           | 
+           | [compat]
+           | PythonCall = "=0.9.36"
+           | OpenSSL_jll = "3.0.0 - 3.5"
+           | PowerModels = "=0.21.6"
+           | Ipopt = "=1.15.0"
+           | Memento = "=1.5.0"
+           | 
+           | [preferences]
+[juliapkg] Installing packages:
+           | import Pkg
+           | Pkg.Registry.update()
+           | Pkg.add([
+           |   Pkg.PackageSpec(name="PythonCall", uuid="6099a3de-0909-46bc-b1f4-468b9a2dfc0d"),
+           |   Pkg.PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"),
+           |   Pkg.PackageSpec(name="PowerModels", uuid="c36e90e8-916a-50a6-bd94-075b64ef4655"),
+           |   Pkg.PackageSpec(name="Ipopt", uuid="b6b21f68-93f8-5de0-b562-5493be1d77c9"),
+           |   Pkg.PackageSpec(name="Memento", uuid="f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"),
+           | ])
+           | Pkg.resolve()
+           | Pkg.precompile()
+a5_finetune_N100 {"hosting_share_of_reference": 0.9849573405096762, "raw_proposal_feasible_share": 0.005, "raw_proposal_share_of_reference": 0.9957049454638028, "lambda_mean": 0.98875, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08324367444799281, "check_s_per_scenario": 0.6364013257026673, "check_evals_mean": 1.045, "flex_unit_mae_mw": 2.181514379704078}
+a5_scratch_N100 {"hosting_share_of_reference": 0.900733118124409, "raw_proposal_feasible_share": 0.049, "raw_proposal_share_of_reference": 0.9937083717447454, "lambda_mean": 0.904, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.1245947896669968, "check_s_per_scenario": 0.9303309886455536, "check_evals_mean": 1.384, "flex_unit_mae_mw": 3.506432952822201}
+a5_finetune_N1000 {"hosting_share_of_reference": 0.9849573405096762, "raw_proposal_feasible_share": 0.005, "raw_proposal_share_of_reference": 0.9957049454638028, "lambda_mean": 0.98875, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08331917934199737, "check_s_per_scenario": 0.625614260673523, "check_evals_mean": 1.045, "flex_unit_mae_mw": 2.181514379704078}
+a5_scratch_N1000 {"hosting_share_of_reference": 0.900733118124409, "raw_proposal_feasible_share": 0.049, "raw_proposal_share_of_reference": 0.9937083717447454, "lambda_mean": 0.904, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08374849134299439, "check_s_per_scenario": 0.9140732386112214, "check_evals_mean": 1.384, "flex_unit_mae_mw": 3.506432952822201}
+a5_finetune_N10000 {"hosting_share_of_reference": 0.9849573405096762, "raw_proposal_feasible_share": 0.005, "raw_proposal_share_of_reference": 0.9957049454638028, "lambda_mean": 0.98875, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.08254153539700201, "check_s_per_scenario": 0.6313556590080261, "check_evals_mean": 1.045, "flex_unit_mae_mw": 2.181514379704078}
+a5_scratch_N10000 {"hosting_share_of_reference": 0.900733118124409, "raw_proposal_feasible_share": 0.049, "raw_proposal_share_of_reference": 0.9937083717447454, "lambda_mean": 0.904, "lambda_zero_share": 0.0, "proposal_s_per_scenario": 0.13958193297099206, "check_s_per_scenario": 0.9128933420181274, "check_evals_mean": 1.384, "flex_unit_mae_mw": 3.506432952822201}
+{
+ "100": {
+  "finetuned_share": 0.9849573405096762,
+  "scratch_share": 0.900733118124409,
+  "diff_points": 8.422422238526716,
+  "diff_lo": 7.655127364441304,
+  "diff_hi": 9.178041371632839
+ },
+ "1000": {
+  "finetuned_share": 0.9849573405096762,
+  "scratch_share": 0.900733118124409,
+  "diff_points": 8.422422238526716,
+  "diff_lo": 7.711320602748916,
+  "diff_hi": 9.146009104794693
+ },
+ "10000": {
+  "finetuned_share": 0.9849573405096762,
+  "scratch_share": 0.900733118124409,
+  "diff_points": 8.422422238526716,
+  "diff_lo": 7.662042176661353,
+  "diff_hi": 9.185443140240494
+ },
+ "pass": true
+}
+a922aa87c82e81db6dd43caaea51691dadb8f1f6aacbbf9a5416fd3877c8e76f  results/genco_opf_amendment5_transfer.json
