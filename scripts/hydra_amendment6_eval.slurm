@@ -2,6 +2,7 @@
 # Amendment 6: confirmation at N = 100 on the unopened sorted test positions 1000-2999 (2,000 scenarios), one task per
 # training seed 0-4: fine-tuned and scratch N = 100 of that seed, same gate as amendment 5.
 #   sbatch --export=ALL,GENCODOE_COMMIT=<sha> --array=0-4 scripts/hydra_amendment6_eval.slurm      (in $VSC_DATA/genco-case118)
+#   or one seed per job from a second checkout (shares data_out and mlruns by symlink): A6_DIR=<checkout>, --array=S-S
 # then: python scripts/amendment6_analysis.py
 #SBATCH --job-name=a6-eval
 #SBATCH --partition=zen4
@@ -10,7 +11,7 @@
 #SBATCH --time=08:00:00
 #SBATCH --output=logs/%x-%A_%a.out
 set -euo pipefail
-MAIN="$VSC_DATA/genco-dynamic-envelopes"; cd "$VSC_DATA/genco-case118"
+MAIN="$VSC_DATA/genco-dynamic-envelopes"; cd "${A6_DIR:-$VSC_DATA/genco-case118}"   # A6_DIR: a second checkout at this commit
 module load Python/3.12.3-GCCcore-13.3.0
 lscpu | grep -E "Model name|^CPU\(s\)"
 : "${GENCODOE_COMMIT:?GENCODOE_COMMIT must be set}"
