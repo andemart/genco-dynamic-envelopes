@@ -24,6 +24,7 @@ OUT = Path("paper/figures")
 TEAL, CORAL, VIOLET, YELLOW = "#1a9e8a", "#e05a47", "#5b3fa6", "#c9a227"   # validated categorical set (dataviz validator, light mode)
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1"
 PHASE = (VIOLET, CORAL, TEAL)                     # phases a, b, c
+BALANCED = "#0a84ff"                              # bright blue: the balanced model, drawn on top
 SEQ = LinearSegmentedColormap.from_list("seq_teal", ["#eaf6f3", "#8fd0c2", "#1a9e8a", "#0b4f45"])
 COL, DCOL = 3.5, 7.16                                    # IEEE single / double column width (in)
 VMIN_PU, VMAX_PU = 216.2 / 240.18, 253.0 / 240.18
@@ -160,9 +161,9 @@ def fig_feeder():
 
     for ph in range(3):
         m = fw.customer_phase == ph
-        ax3.scatter(cdist[m], volts[m], s=9, color=PHASE[ph], edgecolor="white", linewidth=0.3, zorder=3,
+        ax3.scatter(cdist[m], volts[m], s=9, color=PHASE[ph], alpha=0.45, edgecolor="none", zorder=2,
                     label=f"four-wire, phase {'abc'[ph]}")
-    ax3.scatter(cdist, vm_bal[s] * 240.18, s=9, facecolor="none", edgecolor=MUTED, linewidth=0.6, zorder=2,
+    ax3.scatter(cdist, vm_bal[s] * 240.18, s=13, color=BALANCED, edgecolor="white", linewidth=0.4, zorder=4,
                 label="balanced model")
     net = [p_kw[s][fw.customer_phase == ph].sum() for ph in range(3)]
     ax3.text(0.02, 0.02, "net load per phase (kW): " + ", ".join(f"{'abc'[ph]} {net[ph]:+.0f}" for ph in range(3)),
@@ -374,12 +375,12 @@ def fig_concept():
         a1.scatter([x, x], [top, ys[3]], s=7, color=[PHASE[ph], MUTED], zorder=4)
     a1.text(0.2, 7.0, "Four-wire: each home on one phase + neutral", fontsize=7, color=INK, fontweight="bold")
     a1.add_patch(FancyBboxPatch((0.2, 0.25), 9.6, 2.65, boxstyle="round,pad=0.02,rounding_size=0.15", fc="#f3f3f1", ec="none"))
-    a1.plot([1.1, 9.6], [1.35, 1.35], color=INK2, lw=2.2)
-    a1.add_patch(Rectangle((0.35, 0.95), 0.75, 0.8, fc="white", ec=INK2, lw=1))
+    a1.plot([1.1, 9.6], [1.35, 1.35], color=BALANCED, lw=2.2)
+    a1.add_patch(Rectangle((0.35, 0.95), 0.75, 0.8, fc="white", ec=BALANCED, lw=1))
     for x in (2.8, 5.0, 7.2, 9.0):
-        a1.plot([x, x], [1.35, 1.85], color=INK2, lw=0.9)
-        a1.add_patch(Rectangle((x - 0.32, 1.85), 0.64, 0.4, fc=MUTED, ec="white", lw=0.6))
-    a1.text(0.4, 2.5, "Balanced model (GENCO's view)", fontsize=7, color=INK2, fontweight="bold")
+        a1.plot([x, x], [1.35, 1.85], color=BALANCED, lw=0.9)
+        a1.add_patch(Rectangle((x - 0.32, 1.85), 0.64, 0.4, fc=BALANCED, ec="white", lw=0.6))
+    a1.text(0.4, 2.5, "Balanced model (GENCO's view)", fontsize=7, color=BALANCED, fontweight="bold")
     a1.text(0.4, 0.45, "neutral Kron-reduced: per-phase voltages averaged away", fontsize=6.3, color=INK2, style="italic")
     panel(a1, "a")
 
