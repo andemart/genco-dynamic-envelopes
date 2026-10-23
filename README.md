@@ -1,4 +1,4 @@
-# GENCO meets the neutral wire: four-wire-gated dynamic operating envelopes for low-voltage grids
+# GENCO meets the neutral wire: four-wire dynamic operating envelopes for low-voltage grids
 
 Extending the GENCO grid foundation model to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware extension repairs it. An entry for the [GridFM GENCO Challenge 2026](https://huggingface.co/spaces/gridfm/genco-challenge).
 
@@ -60,7 +60,8 @@ GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
 
 - The two `uv sync` steps are needed because torch-scatter imports torch in its build script (see `[tool.uv]` in `pyproject.toml`). The first `import juliacall` (OPF modules, gridfm-datakit) downloads Julia and the pinned PowerModels/Ipopt packages into `.venv/julia_env`, once.
 - `reproduce_check.py` regenerates every headline result file from its recorded inputs and compares it byte for byte with the committed version. The A100-only four-wire evaluation is checked against the SHA-256 in its run manifest.
-- **What is not released, and why.** The run outputs (`data_out/`: per-day DOE runs, four-wire labels, features, LV checkpoints) are derived from individual Fluvius smart meters. Until Fluvius confirms that its licence permits redistributing such data, they are not published. Every run is recorded with commits, Slurm job IDs and SHA-256 hashes in `results/run_manifest_*.json`, and everything needed to regenerate them is in this repository.
+- **Public inputs.** The ENWL1 feeder files are in `data/feeder_topology/ENWL1/`, and the household profiles are the public Fluvius open dataset (see below; download the CSVs into `data/load_profiles/`). Every result can be regenerated from these public inputs.
+- **Derived files not yet redistributed.** The run outputs (`data_out/`: per-day DOE runs, four-wire labels, features, LV checkpoints) are not published while we check the open-data licence terms for redistributing meter-level derivatives. Every run is recorded with commits, Slurm job IDs and SHA-256 hashes in `results/run_manifest_*.json`.
 - **Environment.** `env-snapshot-laptop.txt` (macOS) and `env-snapshot-hydra.txt` (Linux A100 cluster) record the exact package versions used. They are snapshots, not installable locks.
 
 ## Repository layout
@@ -78,6 +79,14 @@ GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
 | `figures/` | All figures used in the post |
 | `docs/` | The post, claims, experiment log, pre-registration, protocols and amendments; `docs/archive/` earlier post drafts; `docs/internal/` working handoff notes |
 | `data/feeder_topology/ENWL1/` | Public ENWL1 feeder files: four-wire line codes, neutral earthed only at the transformer (TT) |
+
+## Data and sources
+
+- **Household profiles:** Fluvius Open Data, *Verbruiksprofielen digitale elektriciteitsmeters: kwartierwaarden voor een volledig jaar* (2,400 anonymised residential meters, quarter-hourly, 2024, eight technology groups): https://opendata.fluvius.be/explore/assets/1_50-verbruiksprofielen-dm-elek-kwartierwaarden-voor-een-volledig-jaar/
+- **GENCO:** arXiv:2608.09921 (https://arxiv.org/abs/2608.09921); tooling https://github.com/gridfm/gridfm-graphkit and https://github.com/gridfm/gridfm-datakit; official checkpoint https://huggingface.co/gridfm/genco-opf-datakit
+- **Challenge:** https://huggingface.co/spaces/gridfm/genco-challenge
+- **Solvers:** OpenDSS (EPRI, https://www.epri.com/pages/sa/opendss), PowerModels.jl with Ipopt (case118 studies).
+- The full reference list is at the end of [`docs/hf_post.md`](docs/hf_post.md).
 
 ## Status of the evidence
 

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this work, please cite it as below."
-title: "GENCO meets the neutral wire: four-wire-gated dynamic operating envelopes for low-voltage grids"
+title: "GENCO meets the neutral wire: four-wire dynamic operating envelopes for low-voltage grids"
 abstract: >-
   Extending the GENCO grid foundation model to three-phase four-wire low-voltage networks for dynamic
   operating envelopes, with a full four-wire OpenDSS check. GridFM GENCO Challenge 2026 entry.
