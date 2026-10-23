@@ -22,7 +22,7 @@ from gencodoe.fourwire_net import load_fourwire  # noqa: E402
 from gencodoe.unbalanced import UnbalancedENWL1, diagnose  # noqa: E402
 
 V_BASE, VMIN, VMAX = 240.18, 216.2, 253.0
-BLUE, ORANGE, AQUA, INK, INK2 = "#2a78d6", "#eb6834", "#1baf7a", "#0b0b0b", "#52514e"
+TEAL, CORAL, VIOLET, INK, INK2 = "#1a9e8a", "#e05a47", "#5b3fa6", "#0b0b0b", "#52514e"
 
 
 def state(n: int = 200, seed: int = 0):
@@ -59,10 +59,10 @@ def main():
     print(f"transformer LV neutral current: {fw['tr_lv_neutral_current_a']:.0f} A")
 
     fig, ax = plt.subplots(figsize=(7, 3.6))
-    for k, c in enumerate((BLUE, ORANGE, AQUA)):
+    for k, c in enumerate((VIOLET, CORAL, TEAL)):
         m = ph == k
         ax.scatter(cd[m], v4[m], s=14, color=c, edgecolor="white", linewidth=0.4, label=f"four-wire, phase {'abc'[k]}", zorder=3)
-    ax.scatter(cd, vb, s=8, color=INK, label="balanced model", zorder=4)
+    ax.scatter(cd, vb, s=14, facecolor="none", edgecolor="#8a8984", linewidth=0.8, label="balanced model", zorder=2)
     for v in (VMIN, VMAX):
         ax.axhline(v, color=INK2, lw=0.8, ls="--")
     ax.set_xlabel("Distance from transformer (m)")

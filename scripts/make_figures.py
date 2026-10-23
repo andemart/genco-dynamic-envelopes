@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 OUT = Path("figures")
-BLUE, ORANGE, AQUA, YELLOW = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"
+TEAL, CORAL, VIOLET, YELLOW = "#1a9e8a", "#e05a47", "#5b3fa6", "#c9a227"   # validated categorical set (dataviz validator, light mode)
 INK, INK2, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1", "#fcfcfb"
 
 plt.rcParams.update({
@@ -51,9 +51,9 @@ def fig_capacity():
         vals = [0.0, b["kwh_per_household_year"] / 1e3, ac["kwh_per_household_year"] / 1e3]
         lo, hi = b["ci95"]
         xs = [0, 1, 2]
-        ax.bar(1, vals[1], width=0.6, color=BLUE, zorder=2)
+        ax.bar(1, vals[1], width=0.6, color=TEAL, zorder=2)
         ax.errorbar(1, vals[1], yerr=[[vals[1] - lo / 1e3], [hi / 1e3 - vals[1]]], color=INK, capsize=4, lw=1.2, zorder=3)
-        ax.bar(2, vals[2], width=0.6, color="none", edgecolor=ORANGE, hatch="///", linewidth=1.5, zorder=2)
+        ax.bar(2, vals[2], width=0.6, color="none", edgecolor=CORAL, hatch="///", linewidth=1.5, zorder=2)
         ax.text(0, 0.25, "0", ha="center", va="bottom", fontsize=12, fontweight="bold", color=INK)
         ax.text(1, hi / 1e3 + 0.3, f"{vals[1]:.2f} MWh", ha="center", color=INK, fontweight="bold")
         ax.text(2, vals[2] + 0.3, f"{vals[2]:.1f} MWh\nfour-wire unsafe", ha="center", color=INK2, fontsize=9)
@@ -77,8 +77,8 @@ def fig_robustness():
         single = [w["W1_placement"][s][d]["kwh_per_household_year"] / 1e3 for s in seeds]
         three = {s: w["W2_three_phase"][s][d]["kwh_per_household_year"] / 1e3 for s in ("101", "202")}
         x = list(range(5))
-        ax.scatter(x, single, s=70, color=BLUE, zorder=3, edgecolor=SURFACE, linewidth=2, label="single-phase (as built)")
-        ax.scatter([0, 1], [three["101"], three["202"]], s=70, color=AQUA, marker="D", zorder=3, edgecolor=SURFACE,
+        ax.scatter(x, single, s=70, color=TEAL, zorder=3, edgecolor=SURFACE, linewidth=2, label="single-phase (as built)")
+        ax.scatter([0, 1], [three["101"], three["202"]], s=70, color=VIOLET, marker="D", zorder=3, edgecolor=SURFACE,
                    linewidth=2, label="HP/EV homes three-phase (idealised)")
         for xi, v in zip(x, single):
             ax.text(xi, v - (0.9 if d == "export" else 0.55), f"{v:.1f}", ha="center", color=INK2, fontsize=8.5)
@@ -103,7 +103,7 @@ def fig_adaptation():
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10.5, 3.9), gridspec_kw={"width_ratios": [1.5, 1]})
     names = ["predict the\ntraining mean", "stock\nGENCO", "+ impedance-\naware encoder", "+ linear prior\n(zero-init head)"]
     vals = [0.0093, 0.0107, 0.0119, 3.80e-4]
-    cols = [MUTED, ORANGE, ORANGE, BLUE]
+    cols = [MUTED, CORAL, CORAL, TEAL]
     a1.bar(range(4), vals, color=cols, width=0.62, zorder=2)
     for i, v in enumerate(vals):
         a1.text(i, v * 1.15, f"{v:.1e}", ha="center", color=INK, fontsize=8.5)
@@ -115,7 +115,7 @@ def fig_adaptation():
     a1.grid(axis="x", visible=False)
     names2 = ["physics prior\nalone", "GENCO-LV\n(selected)", "5 fixed-point\niterations"]
     vals2 = [5.43e-3, 1.01e-3, 1.2e-4]
-    a2.bar(range(3), vals2, color=[MUTED, BLUE, ORANGE], width=0.62, zorder=2)
+    a2.bar(range(3), vals2, color=[MUTED, TEAL, MUTED], width=0.62, zorder=2)
     for i, v in enumerate(vals2):
         a2.text(i, v * 1.15, f"{v:.1e}", ha="center", color=INK, fontsize=8.5)
     a2.set_yscale("log")
@@ -125,15 +125,15 @@ def fig_adaptation():
     a2.grid(axis="x", visible=False)
     title(fig, "Making GENCO work on an LV feeder: the physics prior is the decisive step",
           "Left: 1,000 validation states (v1 screen, 15 epochs). Right: 1,000 envelope-augmented validation states (v2, A100 run).\n"
-          "Separate runs on different state sets, not one ablation sequence; one training seed each. Orange = fails or classical reference")
+          "Separate runs on different state sets, not one ablation sequence; one training seed each. coral = fails; grey = baselines and the classical reference")
     fig.subplots_adjust(top=0.76, wspace=0.22)
     save(fig, "fig3_genco_adaptation")
 
 
 def fig_fourwire():
     e = load("results/fourwire_eval_test.json")
-    order = [("BG", "balanced GENCO", ORANGE), ("BS", "balanced exact sweep", MUTED), ("U1", "four-wire prior (1 step)", MUTED),
-             ("PhaseGENCO", "+ GNN + GENCO embeddings", ORANGE), ("PhaseGraph", "+ GNN residual", BLUE),
+    order = [("BG", "balanced GENCO", CORAL), ("BS", "balanced exact sweep", MUTED), ("U1", "four-wire prior (1 step)", MUTED),
+             ("PhaseGENCO", "+ GNN + GENCO embeddings", CORAL), ("PhaseGraph", "+ GNN residual", TEAL),
              ("U3", "iterated four-wire sweep", MUTED)]
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 4.0))
     fb = [100 * e["screen"][k]["fallback_mean"] for k, _, _ in order]
@@ -160,7 +160,7 @@ def fig_fourwire():
     a2.grid(axis="y", visible=False)
     title(fig, "Four-wire extension: a GENCO-style GNN corrects a cheap four-wire prior; GENCO embeddings do not help",
           "Test split: fallbacks on 2,968 screening states, voltage MAE on the 2,699 converged ones; zero observed false-safe decisions for every\n"
-          "method; one training seed per model. Blue = learned model that helps; orange = GENCO variants that do not; grey = physics baselines")
+          "method; one training seed per model. teal = learned model that helps; coral = GENCO variants that do not; grey = physics baselines")
     fig.subplots_adjust(top=0.78, wspace=0.75)
     save(fig, "fig4_fourwire")
 
@@ -169,7 +169,7 @@ def fig_frontier():
     f = load("results/envpred3_frontier_report.json")["frontier"]["points_calls_retention"]
     b_calls = load("results/envpred3_primary_q95.json")["strata"]["combined"]["arms"]["P"]["combined"]["exact_calls_B"]
     fig, ax = plt.subplots(figsize=(7.6, 4.3))
-    spec = [("P", "phase features", BLUE), ("PC", "+ classical", ORANGE), ("PG", "+ GENCO", AQUA), ("PCG", "+ classical + GENCO", YELLOW)]
+    spec = [("P", "phase features", TEAL), ("PC", "+ classical", CORAL), ("PG", "+ GENCO", VIOLET), ("PCG", "+ classical + GENCO", YELLOW)]
     for k, name, c in spec:
         pts = sorted(f[k])
         xs = [100 * x / b_calls for x, _ in pts]
@@ -196,8 +196,8 @@ def fig_workflow():
     ax.set_xlim(0, 10), ax.set_ylim(0, 3.2), ax.axis("off")
     boxes = [(0.1, "Household\nscenarios", "200 per interval,\nresampled real meters", MUTED),
              (2.6, "Candidate\nenvelope", "uniform kW per household,\nsearched or proposed", MUTED),
-             (5.1, "Phase-aware\nGENCO screen", "four-wire GNN residual\non a one-step sweep:\nsafe / unsafe / unsure", BLUE),
-             (7.6, "Full four-wire\nOpenDSS gate", "all 200 design scenarios,\n>= 98% feasible\n-> envelope issued", ORANGE)]
+             (5.1, "Phase-aware\nGENCO screen", "four-wire GNN residual\non a one-step sweep:\nsafe / unsafe / unsure", TEAL),
+             (7.6, "Full four-wire\nOpenDSS gate", "all 200 design scenarios,\n>= 98% feasible\n-> envelope issued", VIOLET)]
     for x, head, body, c in boxes:
         ax.add_patch(FancyBboxPatch((x, 0.9), 2.2, 1.75, boxstyle="round,pad=0.03,rounding_size=0.12", fc=SURFACE, ec=c, lw=2))
         ax.text(x + 1.1, 2.25, head, ha="center", va="center", fontsize=9.5, fontweight="bold", color=INK, linespacing=1.15)
@@ -215,9 +215,9 @@ def fig_workflow():
 
 def fig_fallback():
     e = load("results/fourwire_eval_test.json")
-    order = [("BS", "balanced model sweep", MUTED), ("BG", "balanced GENCO", ORANGE),
-             ("U1", "four-wire one-step prior", MUTED), ("PhaseGENCO", "+ GNN + balanced GENCO embeddings", ORANGE),
-             ("PhaseGraph", "+ phase-aware GENCO-style GNN", BLUE), ("U3", "iterated four-wire sweep (classical)", MUTED)]
+    order = [("BS", "balanced model sweep", MUTED), ("BG", "balanced GENCO", CORAL),
+             ("U1", "four-wire one-step prior", MUTED), ("PhaseGENCO", "+ GNN + balanced GENCO embeddings", CORAL),
+             ("PhaseGraph", "+ phase-aware GENCO-style GNN", TEAL), ("U3", "iterated four-wire sweep (classical)", MUTED)]
     fig, ax = plt.subplots(figsize=(8.2, 3.6))
     fb = [100 * e["screen"][k]["fallback_mean"] for k, _, _ in order]
     y = list(range(len(order)))[::-1]

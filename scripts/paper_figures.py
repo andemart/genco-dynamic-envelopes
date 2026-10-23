@@ -21,10 +21,10 @@ from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 
 sys.path.insert(0, "src")
 OUT = Path("paper/figures")
-BLUE, ORANGE, AQUA, YELLOW = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"
+TEAL, CORAL, VIOLET, YELLOW = "#1a9e8a", "#e05a47", "#5b3fa6", "#c9a227"   # validated categorical set (dataviz validator, light mode)
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1"
-PHASE = (BLUE, ORANGE, AQUA)
-SEQ = LinearSegmentedColormap.from_list("seq_blue", ["#eef4fc", "#9cc0ee", "#2a78d6", "#123f7a"])
+PHASE = (VIOLET, CORAL, TEAL)                     # phases a, b, c
+SEQ = LinearSegmentedColormap.from_list("seq_teal", ["#eaf6f3", "#8fd0c2", "#1a9e8a", "#0b4f45"])
 COL, DCOL = 3.5, 7.16                                    # IEEE single / double column width (in)
 VMIN_PU, VMAX_PU = 216.2 / 240.18, 253.0 / 240.18
 
@@ -107,9 +107,9 @@ def fig_feeder():
 
     from matplotlib.colors import TwoSlopeNorm
 
-    fig = plt.figure(figsize=(DCOL, 3.0))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 1.15], wspace=0.08)
-    ax1, ax2, ax3 = (fig.add_subplot(gs[0, k]) for k in range(3))
+    fig = plt.figure(figsize=(DCOL, 3.3))
+    gs = fig.add_gridspec(2, 3, width_ratios=[1, 1, 1.15], height_ratios=[3.2, 1], wspace=0.08, hspace=0.25)
+    ax1, ax2, ax3 = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[:, 2])
     for ax in (ax1, ax2):
         ax.add_collection(LineCollection(segs, colors=GRID, linewidths=1.0, zorder=1))
         tr = xy["trbus"]
@@ -123,16 +123,34 @@ def fig_feeder():
         m = fw.customer_phase == ph
         ax1.scatter(cxy[m, 0], cxy[m, 1], s=11, color=PHASE[ph], edgecolor="white", linewidth=0.5, zorder=3,
                     label=f"phase {name} ({m.sum()})")
-    ax1.legend(loc="upper center", bbox_to_anchor=(0.5, -0.02), ncol=3, handletextpad=0.0, columnspacing=0.3,
-               borderaxespad=0, fontsize=6)
+    # technologies per phase in the headline household placement (seed 101, doe_day.DayScenarios: one uniform draw
+    # per customer and technology against the 30/30/40 mix, Loads.dss order)
+    tech = np.random.default_rng(101).uniform(size=(len(fw.customer_phase), 3)) < np.array([0.3, 0.3, 0.4])
+    ins = fig.add_subplot(gs[1, 0])
+    w = 0.26
+    for k, (name, shade) in enumerate((("HP", INK2), ("EV", MUTED), ("PV", "#c9c8c3"))):
+        n = [int(tech[fw.customer_phase == ph, k].sum()) for ph in range(3)]
+        ins.bar(np.arange(3) + (k - 1) * w, n, width=w, color=shade, label=name)
+    ins.set_xticks(range(3), [f"phase {'abc'[ph]} ({(fw.customer_phase == ph).sum()})" for ph in range(3)], fontsize=6)
+    for t, c in zip(ins.get_xticklabels(), PHASE):
+        t.set_color(c)
+    ins.tick_params(axis="y", labelsize=5, length=2)
+    ins.tick_params(axis="x", length=0, pad=1)
+    ins.set_ylabel("homes", fontsize=6)
+    ins.legend(fontsize=5.5, ncol=3, loc="upper right", bbox_to_anchor=(1.0, 1.35), handlelength=0.8, handletextpad=0.3, columnspacing=0.6)
+    ins.spines[["top", "right"]].set_visible(False)
+    ins.grid(False)
+    ins.set_facecolor("none")
     ax1.set_title("Customer phase")
+    print("feeder: technologies per phase (seed 101):",
+          {"abc"[ph]: tech[fw.customer_phase == ph].sum(0).tolist() for ph in range(3)})
     panel(ax1, "a")
     volts = vpn[s] * 240.18
     order = np.argsort(np.abs(volts - 234.6))                            # out-of-limit customers drawn on top
     sc = ax2.scatter(cxy[order, 0], cxy[order, 1], c=volts[order], s=12, edgecolor="white", linewidth=0.4,
-                     zorder=3, cmap=LinearSegmentedColormap.from_list("div", [ORANGE, "#e6e5e1", BLUE]),
+                     zorder=3, cmap=LinearSegmentedColormap.from_list("div", [CORAL, "#e6e5e1", VIOLET]),
                      norm=TwoSlopeNorm(vcenter=234.6, vmin=200, vmax=270))
-    cax = ax2.inset_axes([0.1, -0.08, 0.8, 0.04])
+    cax = ax2.inset_axes([0.1, -0.12, 0.8, 0.045])
     cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
     cb.set_ticks([216.2, 253], labels=["216.2 V", "253 V"])
     cb.ax.tick_params(labelsize=6.5)
@@ -144,7 +162,12 @@ def fig_feeder():
         m = fw.customer_phase == ph
         ax3.scatter(cdist[m], volts[m], s=9, color=PHASE[ph], edgecolor="white", linewidth=0.3, zorder=3,
                     label=f"four-wire, phase {'abc'[ph]}")
-    ax3.scatter(cdist, vm_bal[s] * 240.18, s=5, color=INK, zorder=4, label="balanced model")
+    ax3.scatter(cdist, vm_bal[s] * 240.18, s=9, facecolor="none", edgecolor=MUTED, linewidth=0.6, zorder=2,
+                label="balanced model")
+    net = [p_kw[s][fw.customer_phase == ph].sum() for ph in range(3)]
+    ax3.text(0.02, 0.02, "net load per phase (kW): " + ", ".join(f"{'abc'[ph]} {net[ph]:+.0f}" for ph in range(3)),
+             transform=ax3.transAxes, fontsize=6, color=INK2)
+    print("feeder: net load per phase of the shown state (kW, + = import):", [round(x, 1) for x in net])
     for v, t in ((216.2, "216.2 V minimum"), (253.0, "253 V maximum")):
         ax3.axhline(v, color=INK2, lw=0.8, ls="--", zorder=2)
         ax3.text(cdist.max(), v + 0.8, t, ha="right", va="bottom", fontsize=6.5, color=INK2)
@@ -221,7 +244,7 @@ def fig_safety():
         hi = max(lb.max(), lx.max()) * 1.05
         ax.plot([0, hi], [0, hi], color=MUTED, lw=0.8, ls="--", zorder=1)
         ax.text(hi * 0.97, hi * 0.9, "equal", ha="right", fontsize=6.5, color=MUTED, rotation=45)
-        ax.scatter(lx, lb, s=9, color=ORANGE, edgecolor="white", linewidth=0.3, zorder=3)
+        ax.scatter(lx, lb, s=9, color=CORAL, edgecolor="white", linewidth=0.3, zorder=3)
         n_pos, n_zero = int((lb > 0).sum()), int(((lb > 0) & (lx == 0)).sum())
         ax.text(0.97, 0.05, f"{len(x)} intervals\n{int(meets.sum())} of {n_pos} balanced envelopes\nmeet 0.95 "
                 f"four-wire\n{n_zero} where four-wire allows 0", transform=ax.transAxes, ha="right",
@@ -238,7 +261,7 @@ def fig_safety():
     ax = axes[2]
     for d, ls in (("export", "-"), ("import", "--")):
         x = w.xs(d, level="direction")
-        for meth, c, lab in (("b_opendss_exact", BLUE, "four-wire-verified"), ("ac", ORANGE, "balanced")):
+        for meth, c, lab in (("b_opendss_exact", TEAL, "four-wire-verified"), ("ac", CORAL, "balanced")):
             v = x[("prob_ok_unbalanced", meth)][x[("limit_kw", meth)] > 0].to_numpy()
             v = np.sort(v)
             ax.step(v, np.arange(1, len(v) + 1) / len(v), where="post", color=c, ls=ls, lw=1.3)
@@ -273,13 +296,13 @@ def fig_surrogates():
         st = e["state"][m]
         vals = [st["vpn_mae"], st["vpn_p95"], st["vpn_p99"]]
         ax.plot(vals, [k] * 3, color=MUTED, lw=1, zorder=1)
-        for v, mk, c in zip(vals, ("o", "s", "^"), (BLUE, ORANGE, AQUA)):
+        for v, mk, c in zip(vals, ("o", "s", "^"), (TEAL, CORAL, VIOLET)):
             ax.scatter(v, k, marker=mk, s=22, color=c, edgecolor="white", linewidth=0.5, zorder=3)
     ax.set_xscale("log")
     ax.set_yticks(range(4), list(names.values()))
     ax.invert_yaxis()
     ax.set_xlabel("Phase–neutral voltage error (pu)")
-    for mk, c, lab in (("o", BLUE, "MAE"), ("s", ORANGE, "p95"), ("^", AQUA, "p99")):
+    for mk, c, lab in (("o", TEAL, "MAE"), ("s", CORAL, "p95"), ("^", VIOLET, "p99")):
         ax.scatter([], [], marker=mk, s=22, color=c, label=lab)
     ax.legend(loc="lower right", handletextpad=0.1, borderaxespad=0.1)
     ax.set_title("State accuracy")
@@ -289,7 +312,7 @@ def fig_surrogates():
     order = ["BS", "U1", "PhaseGENCO", "PhaseGraph", "U3"]
     lab = {"BS": "balanced screen", **names}
     yy = np.arange(len(order))
-    for d, c, off in (("import", ORANGE, 0.17), ("export", BLUE, -0.17)):
+    for d, c, off in (("import", CORAL, 0.17), ("export", TEAL, -0.17)):
         v = [e["screen"][m][d]["fallback"] * 100 for m in order]
         ax.barh(yy + off, v, height=0.32, color=c, label=d, zorder=2)
     for y, m in zip(yy, order):
@@ -308,8 +331,8 @@ def fig_surrogates():
 
     ax = axes[2]
     b_calls = f["cost_test"]["B_exact_calls"]
-    arms = {"P": ("phase features", BLUE, "o"), "PC": ("+ classical", AQUA, "s"),
-            "PG": ("+ GENCO", ORANGE, "^"), "PCG": ("+ both", YELLOW, "D")}
+    arms = {"P": ("phase features", TEAL, "o"), "PC": ("+ classical", VIOLET, "s"),
+            "PG": ("+ GENCO", CORAL, "^"), "PCG": ("+ both", YELLOW, "D")}
     for a, (lab, c, mk) in arms.items():
         pts = np.array(f["frontier"]["points_calls_retention"][a])
         ax.plot(pts[:, 0] / b_calls * 100, pts[:, 1] * 100, color=c, marker=mk, ms=4, lw=1.2,
