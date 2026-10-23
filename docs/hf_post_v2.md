@@ -2,8 +2,8 @@
 
 *Extending GENCO to three-phase four-wire low-voltage networks: what breaks, and how a phase-aware extension repairs it.*
 
-**Ander Martinez Alonso¹, Evgenii Genov¹, Rémy Cleenwerck¹,²**  
-¹ EVERGi research group, Vrije Universiteit Brussel · ² EnSy/Lemcko research group, Ghent University  
+**Ander Martinez Alonso¹,³, Evgenii Genov¹, Rémy Cleenwerck¹,²**  
+¹ EVERGi research group, Vrije Universiteit Brussel · ² EnSy/Lemcko research group, Ghent University · ³ Department of Wind and Energy Systems, Technical University of Denmark  
 *GridFM GENCO Challenge 2026. Code, protocols, figures and results: [release a02366f](https://github.com/ujohn33/genco-dynamic-envelopes/tree/a02366f15a8ab1d7ebf3bf8b6daf5f7b23338427); official-checkpoint experiments: [commit 994d5d4](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53). Contact: ander.martinez.alonso@vub.be.*
 
 ---
@@ -104,4 +104,4 @@ On this feeder, today, the right deployment is physics-first with a learned scre
 
 ---
 
-**Team:** Ander Martinez Alonso¹ (ander.martinez.alonso@vub.be), Evgenii Genov¹, Rémy Cleenwerck¹,². ¹ EVERGi research group, Vrije Universiteit Brussel; ² EnSy/Lemcko research group, Ghent University. Built on GENCO with gridfm-graphkit 0.9.0.3 and gridfm-datakit 1.1.0.
+**Team:** Ander Martinez Alonso¹,³ (ander.martinez.alonso@vub.be), Evgenii Genov¹, Rémy Cleenwerck¹,². ¹ EVERGi research group, Vrije Universiteit Brussel; ² EnSy/Lemcko research group, Ghent University; ³ Department of Wind and Energy Systems, Technical University of Denmark. Built on GENCO with gridfm-graphkit 0.9.0.3 and gridfm-datakit 1.1.0.
