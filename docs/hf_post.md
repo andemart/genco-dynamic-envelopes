@@ -5,7 +5,8 @@
 **Ander Martinez Alonso¹,³, Evgenii Genov¹, Rémy Cleenwerck¹,²**  
 ¹ EVERGi, Vrije Universiteit Brussel · ² EnSy/Lemcko, Ghent University · ³ DTU Wind and Energy Systems, Technical University of Denmark  
 **Repository:** [github.com/ujohn33/genco-dynamic-envelopes](https://github.com/ujohn33/genco-dynamic-envelopes)  
-*GridFM GENCO Challenge 2026 [1]. Code, protocols, figures and results as submitted: [release 7a0325d](https://github.com/ujohn33/genco-dynamic-envelopes/tree/7a0325de7136a4bc457f182b1e1a3cd758bd19ad); official-checkpoint experiments: [commit 994d5d4](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53). Contact: ander.martinez.alonso@vub.be.*
+**Contact:** ander.martinez.alonso@vub.be  
+*GridFM GENCO Challenge 2026 [1]. Code, protocols, figures and results as submitted: [release 7a0325d](https://github.com/ujohn33/genco-dynamic-envelopes/tree/7a0325de7136a4bc457f182b1e1a3cd758bd19ad); official-checkpoint experiments: [commit 994d5d4](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53).*
 
 ---
 
@@ -112,7 +113,7 @@ Dynamic envelopes release **4.81 MWh of export** (interval 4.35–5.30) and **2.
 ### 5.3 Transfer of GENCO representations
 
 - **Balanced embeddings do not help a four-wire model.** Adding embeddings from our feeder-specific balanced GENCO to the phase-aware model *increased* fallbacks from 5.8% to 11.8% (+6.0 points [5.3, 6.7]). We did not isolate the cause. The embeddings describe a balanced state that disagrees with the four-wire one precisely in the stressed states where screening matters, so they add no usable information there.
-- **The official pretrained GENCO helps on its native representation.** On case118 with 99 flexible export units, a network proposes the flexible dispatch and an AC optimal power flow (PowerModels [9] with IPOPT [8]) re-dispatches the rest. The reference is the IPOPT optimum. Fine-tuning the official [`gridfm/genco-opf-datakit`](https://huggingface.co/gridfm/genco-opf-datakit) checkpoint beat training from scratch at 100 labels by **+11.4 points of reference hosting [9.8, 12.5], in 5 of 5 seeds**, on 2,000 unseen scenarios. The gain also held at 10,000 labels in every seed, while at 1,000 labels it depended on the seed. Our pre-registered absolute target of 95% of the reference was narrowly missed (94.7%). ([log](https://github.com/ujohn33/genco-dynamic-envelopes/blob/994d5d416a0c45fdbf6045c7103f3cd9c7519b53/docs/experiment_log.md))
+- **The official pretrained GENCO helps on its native representation.** On case118 with 99 flexible export units, a network proposes the flexible dispatch and an AC optimal power flow (PowerModels [8] with IPOPT) re-dispatches the rest. The reference is the IPOPT optimum. Fine-tuning the official [`gridfm/genco-opf-datakit`](https://huggingface.co/gridfm/genco-opf-datakit) checkpoint beat training from scratch at 100 labels by **+11.4 points of reference hosting [9.8, 12.5], in 5 of 5 seeds**, on 2,000 unseen scenarios. The gain also held at 10,000 labels in every seed, while at 1,000 labels it depended on the seed. Our pre-registered absolute target of 95% of the reference was narrowly missed (94.7%). ([log](https://github.com/ujohn33/genco-dynamic-envelopes/blob/994d5d416a0c45fdbf6045c7103f3cd9c7519b53/docs/experiment_log.md))
 
 ### 5.4 Comparison with classical solvers
 
@@ -153,5 +154,4 @@ The iterated four-wire sweep is the accuracy leader on this feeder: 3.6e-6 pu er
 5. K. Petrou, A. T. Procopiou, L. Gutierrez-Lagos, M. Z. Liu, L. F. Ochoa, T. Langstaff, J. M. Theunissen. Ensuring distribution network integrity using dynamic operating limits for prosumers. *IEEE Transactions on Smart Grid* 12(5), 2021. https://doi.org/10.1109/TSG.2021.3081371
 6. EPRI. OpenDSS: open-source distribution system simulator. https://www.epri.com/pages/sa/opendss
 7. The Electricity Safety, Quality and Continuity Regulations 2002 (UK SI 2002/2665). https://www.legislation.gov.uk/uksi/2002/2665
-8. A. Wächter, L. T. Biegler. On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming. *Mathematical Programming*, 2006. https://doi.org/10.1007/s10107-004-0559-y
-9. C. Coffrin, R. Bent, K. Sundar, Y. Ng, M. Lubin. PowerModels.jl: an open-source framework for exploring power flow formulations. *PSCC* 2018. https://doi.org/10.23919/PSCC.2018.8442948
+8. C. Coffrin, R. Bent, K. Sundar, Y. Ng, M. Lubin. PowerModels.jl: an open-source framework for exploring power flow formulations. *PSCC* 2018. https://doi.org/10.23919/PSCC.2018.8442948
