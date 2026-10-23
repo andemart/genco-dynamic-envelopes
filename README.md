@@ -77,7 +77,7 @@ GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
 | `scripts/` | Figures (`make_figures.py`, `paper_figures.py`), demo, `reproduce_check.py`, Hydra job scripts |
 | `results/` | Committed result files and run manifests |
 | `figures/` | All figures used in the post |
-| `docs/` | The post, claims, experiment log, pre-registration, protocols and amendments; `docs/archive/` earlier post drafts; `docs/internal/` working handoff notes |
+| `docs/` | The post, claims, experiment log, pre-registration, reporting plan, work plan, protocols and amendments, one-page summary |
 | `data/feeder_topology/ENWL1/` | Public ENWL1 feeder files: four-wire line codes, neutral earthed only at the transformer (TT) |
 
 ## Data and sources

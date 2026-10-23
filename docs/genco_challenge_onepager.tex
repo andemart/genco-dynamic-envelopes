@@ -12,9 +12,9 @@
 \pagestyle{empty}
 
 \definecolor{navy}{HTML}{102A43}
-\definecolor{blue}{HTML}{1769AA}
-\definecolor{cyan}{HTML}{18A1AE}
-\definecolor{pale}{HTML}{EAF4F7}
+\definecolor{accent}{HTML}{127A6A}
+\definecolor{rule}{HTML}{5B3FA6}
+\definecolor{pale}{HTML}{EAF6F3}
 \definecolor{ink}{HTML}{243B53}
 \definecolor{muted}{HTML}{627D98}
 \setmainfont{Avenir Next}
@@ -25,108 +25,98 @@
 \setlist[itemize]{leftmargin=3.5mm,itemsep=0.4pt,topsep=1.2pt,parsep=0pt}
 \renewcommand{\arraystretch}{1.06}
 
-\newcommand{\sect}[1]{\vspace{1pt}{\color{navy}\normalsize\bfseries #1}\par\vspace{0.5pt}{\color{cyan}\rule{\linewidth}{0.7pt}}\vspace{0.5pt}}
-\newcommand{\metric}[2]{\begin{minipage}[t]{0.47\linewidth}\centering{\color{blue}\large\bfseries #1}\\[-1pt]{\scriptsize\color{muted}#2}\end{minipage}}
+\newcommand{\sect}[1]{\vspace{1pt}{\color{navy}\normalsize\bfseries #1}\par\vspace{0.5pt}{\color{rule}\rule{\linewidth}{0.7pt}}\vspace{0.5pt}}
+\newcommand{\metric}[2]{\begin{minipage}[t]{0.47\linewidth}\centering{\color{accent}\large\bfseries #1}\\[-1pt]{\scriptsize\color{muted}#2}\end{minipage}}
 
 \begin{document}
 
-{\color{navy}\fontsize{17.5}{19}\selectfont\bfseries Four-wire-verified dynamic operating envelopes with GENCO}\par
+{\raggedright\hyphenpenalty=10000\color{navy}\fontsize{16}{18}\selectfont\bfseries GENCO meets the neutral wire: four-wire dynamic operating envelopes for low-voltage grids}\par
 \vspace{2pt}
-{\color{blue}\normalsize Where a grid foundation model helps on four-wire LV networks, where it fails, and how we adapted it}\par
+{\color{accent}\small Extending GENCO to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware extension repairs it}\par
+\vspace{2pt}
+{\small\textbf{Ander Martinez Alonso\textsuperscript{1,3}, Evgenii Genov\textsuperscript{1}, Rémy Cleenwerck\textsuperscript{1,2}}\quad{\color{muted}\textsuperscript{1}EVERGi, Vrije Universiteit Brussel · \textsuperscript{2}EnSy/Lemcko, Ghent University · \textsuperscript{3}DTU Wind and Energy Systems}}\par
 \vspace{3pt}
 
 \colorbox{pale}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
-\textbf{In one sentence.} On a four-wire LV benchmark feeder with real Flemish smart-meter households, dynamic envelopes free several MWh of capacity per household per year where a constant optional add-on frees none. We made GENCO work on LV, put it inside an exact four-wire check, extended a GENCO-style model to explicit phase and neutral states, and benchmarked every GENCO role against strong classical methods. We report honestly where it adds value.
+\textbf{In brief.} GENCO models the grid as balanced, but European low-voltage networks are three-phase four-wire: every home sits on one phase and the neutral carries the imbalance. On a 200-customer benchmark feeder, envelopes from a balanced model met the four-wire feasibility target in none of the evaluated hours. We found three bottlenecks of GENCO at LV, extended its architecture to an explicit phase-and-neutral network model, and used it as a pre-screen in front of a full four-wire OpenDSS check: six-fold fewer OpenDSS simulations, with zero observed false-safe decisions.
 }}
 
 \vspace{3pt}
 \begin{multicols}{2}
 
-\sect{The application}
+\sect{The problem}
 
-Operators must host EVs, heat pumps and rooftop PV without reinforcing the grid. A \textbf{dynamic operating envelope} (DOE) gives each household a time-varying import/export limit.
+A \textbf{dynamic operating envelope} (DOE) gives each household a time-varying import and export allowance instead of a fixed connection limit, so that EVs, heat pumps and rooftop PV fit on the existing network.
 \begin{itemize}
-  \item \textbf{Feeder:} ENWL1, 800\,kVA, 200 single-phase customers, populated with Fluvius 2024 profiles.
-  \item \textbf{Scenarios:} 200 per interval, resampled real meters.
-  \item \textbf{Acceptance:} every envelope from the exact search or a gated variant must pass an \textbf{exact four-wire OpenDSS check} of a frozen rule ($\geq$98\% of scenarios feasible).
+  \item \textbf{Network:} open-source benchmark ENWL1 (three-phase four-wire, UK), 800\,kVA, 200 single-phase customers, neutral earthed only at the transformer (TT).
+  \item \textbf{Households:} Fluvius open data, 2024 quarter-hourly meters; 30\% heat pumps, 30\% EVs, 40\% PV.
+  \item \textbf{Limits:} $-$6\%/$+$10\%, i.e.\ 216.2--253.0\,V (UK ESQCR).
+  \item \textbf{Check:} an envelope is issued only if OpenDSS finds the network within limits in $\geq$98\% of 200 design scenarios.
 \end{itemize}
 
-\begin{center}
-\textbf{Scenarios $\rightarrow$ proposal (exact / GENCO-screened / learned)}\\
-\textbf{$\rightarrow$ exact four-wire check $\rightarrow$ envelope}
-\end{center}
+\sect{Three bottlenecks of GENCO at LV}
 
-\sect{Impact: capacity a constant add-on cannot free}
+The stock model did worse than predicting each bus's average training voltage. We found and fixed:
+\begin{itemize}
+  \item \textbf{Impedance magnitude:} the edge encoder's layer normalisation suppresses the admittances (10$\times$ admittances change the embedding by 0.2\%). Fix: asinh-scaled features.
+  \item \textbf{Physics-loss collapse} at LV scales. Fix: a residual head on a linear power-flow estimate, initialised at zero.
+  \item \textbf{Ill-conditioned flows} from voltage differences. Fix: Kirchhoff-current-law flows.
+\end{itemize}
+Result: voltage error \textbf{1.0e-3\,pu}, 5.4$\times$ below the physics estimate. We also found and fixed two bugs in the GridFM tooling (best-model export; unpinned slack in datakit).
+
+\sect{Operational value}
 
 \begin{center}
 \metric{4.81 MWh}{export envelope-hours / household / yr}\hfill
-\metric{2.50 MWh}{import envelope-hours / household / yr}\\[6pt]
-\metric{0}{constant optional add-on}\hfill
-\metric{2--3$\times$}{balanced-model envelopes: four-wire unsafe}
+\metric{2.50 MWh}{import envelope-hours / household / yr}
 \end{center}
-
 \begin{itemize}
-  \item 36 test-split days; intervals export 4.35--5.30 and import 2.11--2.87\,MWh.
-  \item Robust across 5 household placements. The headline placement is the most conservative.
-  \item Idealised three-phase HP/EV connection lifts capacity 2--2.5$\times$.
+  \item 36 evaluation days of 2024; day-bootstrap intervals 4.35--5.30 (export) and 2.11--2.87\,MWh (import). A fixed allowance valid in every hour would be zero.
+  \item Balanced-model envelopes are 2--3$\times$ larger and fail the four-wire check.
 \end{itemize}
-
-\sect{GENCO development: making it work on LV}
-
-Direct transfer to a 398-bus LV feeder failed. Stock GENCO collapsed and lost to predicting the training mean. We diagnosed and fixed three causes:
-\begin{itemize}
-  \item \textbf{Impedance blindness:} the edge encoder's final LayerNorm cancels $|Y|$. Fixed with asinh admittance features.
-  \item \textbf{Physics-loss collapse} at LV scales. Fixed by a linear power-flow prior with a zero-initialised correction head.
-  \item \textbf{Ill-conditioned flows} from voltage differences. Fixed with Kirchhoff-current-law flows.
-\end{itemize}
-Result: voltage MAE \textbf{1.0e-3\,pu}. We also found a graphkit best-model export bug and a datakit 1.5\,pu slack bug.
 
 \columnbreak
 
-\sect{Four-wire GENCO-style extension (exploratory)}
+\sect{Phase-aware extension as a pre-screen}
 
-A GNN on the 397-bus \textbf{four-wire} graph (phases a, b, c and neutral, full $4{\times}4$ impedances) corrects a one-step four-wire sweep prior. On 2,968 test-split states:
+The GENCO architecture, extended with a full three-phase four-wire network model (4$\times$4 line impedances, no Kron reduction), corrects a one-step four-wire sweep. On 2,968 evaluation states, under the same final check:
 
 \begin{center}
-\metric{$-$91\%}{phase-to-neutral voltage error}\hfill
-\metric{35.8\%$\rightarrow$5.8\%}{states sent to OpenDSS}
+\metric{35.8\%$\rightarrow$5.8\%}{states sent to OpenDSS}\hfill
+\metric{0}{observed false-safe decisions}
 \end{center}
 
-There were zero observed false-safe decisions under the exact gate. Balanced models send 63\% to OpenDSS.
+Voltage error falls by 91\%. Balanced screens, GENCO included, send 63\% of states to OpenDSS: \textbf{representing the phases is what makes screening useful.}
 
-\sect{Benchmarks: every GENCO role vs strong baselines}
-
-{\small\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash\bfseries\color{navy}}p{0.27\linewidth} >{\raggedright\arraybackslash}X}
-Screening (C/C+) & GENCO + exact gate matches the exact search on 100\% of intervals, 6\% fewer exact calls. Classical screens do as well.\\
-Learned proposals & 79\% of exact capacity with \textbf{6.7\% of the exact calls}, but phase features alone do the same. GENCO arm: $-$0.06\,pp.\\
-GENCO embeddings & Frozen balanced-GENCO embeddings made the four-wire model \textbf{worse} (+6.0\,pp fallbacks).\\
-Classical physics & An iterated four-wire sweep is 80$\times$ more accurate than any learned model. It remains the accuracy leader.\\
-\end{tabularx}}
-
-\sect{What we do not claim}
+\sect{Transfer of GENCO representations}
 \begin{itemize}
-  \item Unconditional safety. Envelopes pass a finite design-sample rule; only 47\% pass a 95\% lower-bound test on fresh draws.
-  \item A GENCO advantage over specialised classical solvers, or a wall-clock speed-up. We report exact-call reductions.
-  \item Generalisation beyond one benchmark feeder.
+  \item \textbf{Balanced embeddings} in the four-wire model: fallbacks 5.8\%$\rightarrow$11.8\%. They do not carry four-wire information.
+  \item \textbf{Official pretrained GENCO} on case118: fine-tuning beat training from scratch by \textbf{+11.4 points} of reference hosting, in 5 of 5 seeds, at 100 labels.
 \end{itemize}
 
-\sect{Open science and rigour}
+\sect{Classical solvers and limitations}
 \begin{itemize}
-  \item Pre-registered core evaluation. Every other study was frozen before its results were seen, with all deviations disclosed as amendments.
-  \item Incidents found and disclosed: wrong voltage base, OpenDSS engine poisoning, stale cluster caches.
-  \item 84 automated tests. \texttt{reproduce\_check.py} regenerates every headline result byte for byte. Run manifests hash every artifact.
+  \item An iterated four-wire sweep remains the accuracy leader (about 80$\times$ more accurate). The learned screen's value is six-fold fewer OpenDSS simulations.
+  \item A design-set check, not a certificate of future safety. Not checked: partial uptake, undervoltage during export, neutral current, voltage unbalance. One benchmark feeder.
 \end{itemize}
 
-\textbf{Potential:} one model across LV, MV and HV for TSO--DSO coordination; LV envelopes sum to the flexibility a DSO offers the TSO.
+\sect{Open science}
+\begin{itemize}
+  \item Public inputs (ENWL1, Fluvius open data); pre-registered core evaluation, frozen protocols, disclosed amendments and incidents.
+  \item 84 tests; \texttt{reproduce\_check.py} regenerates every headline result byte for byte; one-minute public demo.
+\end{itemize}
+
+\textbf{Outlook:} LV envelopes sum to the flexibility a DSO offers upstream; one model across LV, MV and HV needs the three changes identified here.
 
 \end{multicols}
 
-\vspace{2pt}
+\vspace{1pt}
 \begin{center}
-\includegraphics[width=0.92\linewidth]{../figures/fig4_fourwire.pdf}
+\includegraphics[width=0.66\linewidth]{../figures/fig4a_fallback.pdf}\\[-1pt]
+{\scriptsize\color{muted}Share of 2,968 evaluation states each screen sends to OpenDSS, all under the same final check; none made a false-safe decision.}
 \end{center}
 
 \vfill
-{\footnotesize\color{muted}\textbf{Team:} A.~Martinez Alonso, E.~Genov (EVERGi, VUB), R.~Cleenwerck (VUB, UGent) \hfill GridFM GENCO Challenge 2026}
+{\footnotesize\color{muted}github.com/ujohn33/genco-dynamic-envelopes · ander.martinez.alonso@vub.be \hfill GridFM GENCO Challenge 2026}
 
 \end{document}
