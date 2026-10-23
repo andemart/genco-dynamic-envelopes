@@ -4,7 +4,8 @@
 
 **Ander Martinez Alonso¹,³, Evgenii Genov¹, Rémy Cleenwerck¹,²**  
 ¹ EVERGi, Vrije Universiteit Brussel · ² EnSy/Lemcko, Ghent University · ³ DTU Wind and Energy Systems, Technical University of Denmark  
-*GridFM GENCO Challenge 2026 [1]. **Repository: [github.com/ujohn33/genco-dynamic-envelopes](https://github.com/ujohn33/genco-dynamic-envelopes)**. Code, protocols, figures and results as submitted: [release 7a0325d](https://github.com/ujohn33/genco-dynamic-envelopes/tree/7a0325de7136a4bc457f182b1e1a3cd758bd19ad); official-checkpoint experiments: [commit 994d5d4](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53). Contact: ander.martinez.alonso@vub.be.*
+**Repository:** [github.com/ujohn33/genco-dynamic-envelopes](https://github.com/ujohn33/genco-dynamic-envelopes)  
+*GridFM GENCO Challenge 2026 [1]. Code, protocols, figures and results as submitted: [release 7a0325d](https://github.com/ujohn33/genco-dynamic-envelopes/tree/7a0325de7136a4bc457f182b1e1a3cd758bd19ad); official-checkpoint experiments: [commit 994d5d4](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53). Contact: ander.martinez.alonso@vub.be.*
 
 ---
 
@@ -67,7 +68,7 @@ We also found two bugs in the official GridFM tooling and handled both before an
 
 ### 3.2 Making it phase-aware
 
-What decides feasibility on this feeder is the voltage on each phase and the neutral-point displacement. A balanced representation cannot represent them, however long it is trained. We therefore extended the GENCO architecture with a full three-phase four-wire network model: phase and neutral conductors, each line described by its 4×4 impedance matrix, with no Kron reduction. Its message-passing layers (TransformerConv [10], an attention-based graph layer that weighs each neighbour using the line's features) carry those impedances. As in step 1, the model predicts a correction to a cheap physics estimate, here the one-step four-wire sweep.
+What decides feasibility on this feeder is the voltage on each phase and the neutral-point displacement. A balanced representation cannot represent them, however long it is trained. We therefore extended the GENCO architecture with a full three-phase four-wire network model: phase and neutral conductors, each line described by its 4×4 impedance matrix, with no Kron reduction. Its message-passing layers (TransformerConv, an attention-based graph layer that weighs each neighbour using the line's features) carry those impedances. As in step 1, the model predicts a correction to a cheap physics estimate, here the one-step four-wire sweep.
 
 ### 3.3 GENCO pre-screening to reduce OpenDSS simulations
 
@@ -154,4 +155,3 @@ The iterated four-wire sweep is the accuracy leader on this feeder: 3.6e-6 pu er
 7. The Electricity Safety, Quality and Continuity Regulations 2002 (UK SI 2002/2665). https://www.legislation.gov.uk/uksi/2002/2665
 8. A. Wächter, L. T. Biegler. On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming. *Mathematical Programming*, 2006. https://doi.org/10.1007/s10107-004-0559-y
 9. C. Coffrin, R. Bent, K. Sundar, Y. Ng, M. Lubin. PowerModels.jl: an open-source framework for exploring power flow formulations. *PSCC* 2018. https://doi.org/10.23919/PSCC.2018.8442948
-10. Y. Shi, Z. Huang, S. Feng, H. Zhong, W. Wang, Y. Sun. Masked label prediction: unified message passing model for semi-supervised classification. *IJCAI* 2021. https://doi.org/10.24963/ijcai.2021/214
