@@ -129,7 +129,7 @@ def fig_feeder():
     tech = np.random.default_rng(101).uniform(size=(len(fw.customer_phase), 3)) < np.array([0.3, 0.3, 0.4])
     ins = fig.add_subplot(gs[1, 0])
     w = 0.26
-    for k, (name, shade) in enumerate((("HP", INK2), ("EV", MUTED), ("PV", "#c9c8c3"))):
+    for k, (name, shade) in enumerate((("HP", "#b35c1e"), ("EV", "#4d74b0"), ("PV", "#c99a0e"))):
         n = [int(tech[fw.customer_phase == ph, k].sum()) for ph in range(3)]
         ins.bar(np.arange(3) + (k - 1) * w, n, width=w, color=shade, label=name)
     ins.set_xticks(range(3), [f"phase {'abc'[ph]} ({(fw.customer_phase == ph).sum()})" for ph in range(3)], fontsize=6)
