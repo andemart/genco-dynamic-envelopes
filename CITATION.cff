@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "GENCO meets the neutral wire: four-wire-gated dynamic operating envelopes for low-voltage grids"
+abstract: >-
+  Extending the GENCO grid foundation model to three-phase four-wire low-voltage networks for dynamic
+  operating envelopes, with a full four-wire OpenDSS check. GridFM GENCO Challenge 2026 entry.
+authors:
+  - family-names: "Martinez Alonso"
+    given-names: "Ander"
+    email: "ander.martinez.alonso@vub.be"
+    affiliation: "EVERGi, Vrije Universiteit Brussel; DTU Wind and Energy Systems, Technical University of Denmark"
+  - family-names: "Genov"
+    given-names: "Evgenii"
+    affiliation: "EVERGi, Vrije Universiteit Brussel"
+  - family-names: "Cleenwerck"
+    given-names: "Rémy"
+    affiliation: "EVERGi, Vrije Universiteit Brussel; EnSy/Lemcko, Ghent University"
+repository-code: "https://github.com/ujohn33/genco-dynamic-envelopes"
+license: Apache-2.0
+date-released: "2026-10-23"
+keywords:
+  - dynamic operating envelopes
+  - four-wire distribution networks
+  - grid foundation models
+  - GENCO
+  - graph neural networks

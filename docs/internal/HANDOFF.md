@@ -1,6 +1,6 @@
 # Handoff: GENCO dynamic envelopes (state on 18 Oct 2026)
 
-For anyone picking this work up: a collaborator, a reviewer or a new Claude session. Start here, then read [`README.md`](../README.md), [`docs/claims.md`](claims.md) and [`docs/experiment_log.md`](experiment_log.md).
+For anyone picking this work up: a collaborator, a reviewer or a new Claude session. Start here, then read [`README.md`](../../README.md), [`docs/claims.md`](claims.md) and [`docs/experiment_log.md`](experiment_log.md).
 
 The detailed history of operating notes, incidents and run procedures is in [`docs/HANDOFF_2026-10-18.md`](HANDOFF_2026-10-18.md).
 

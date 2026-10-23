@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gencodoe"
 version = "0.0.1"
-description = "Probabilistic dynamic operating envelopes with GENCO (GridFM GENCO Challenge entry)"
+description = "Four-wire-gated dynamic operating envelopes: extending GENCO to three-phase four-wire LV networks (GridFM GENCO Challenge 2026)"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10,<3.13"

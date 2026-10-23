@@ -29,7 +29,12 @@ def load(p):
     return json.loads(Path(p).read_text())
 
 
+CAPTIONS_OUTSIDE = True   # titles and subtitles go into the post's captions, not the image
+
+
 def title(fig, main, sub):
+    if CAPTIONS_OUTSIDE:
+        return
     fig.text(0.01, 0.985, main, ha="left", va="top", fontsize=13, fontweight="bold", color=INK)
     fig.text(0.01, 0.925, sub, ha="left", va="top", fontsize=9.5, color=INK2)
 
@@ -57,7 +62,7 @@ def fig_capacity():
         ax.text(0, 0.25, "0", ha="center", va="bottom", fontsize=12, fontweight="bold", color=INK)
         ax.text(1, hi / 1e3 + 0.3, f"{vals[1]:.2f} MWh", ha="center", color=INK, fontweight="bold")
         ax.text(2, vals[2] + 0.3, f"{vals[2]:.1f} MWh\nfour-wire unsafe", ha="center", color=INK2, fontsize=9)
-        ax.set_xticks(xs, ["Constant\nadd-on", "Dynamic,\nfour-wire-\nverified", "Dynamic,\nbalanced\nmodel"], fontsize=8.5)
+        ax.set_xticks(xs, ["Fixed\nallowance", "Dynamic,\nfour-wire-\nchecked", "Dynamic,\nbalanced\nmodel"], fontsize=8.5)
         ax.set_title(f"{d.capitalize()}", color=INK)
         ax.set_ylim(0, 19 if d == "export" else 10)
         ax.set_ylabel("Envelope-hours per household per year (MWh)" if d == "export" else "")
@@ -197,7 +202,7 @@ def fig_workflow():
     boxes = [(0.1, "Household\nscenarios", "200 per interval,\nresampled real meters", MUTED),
              (2.6, "Candidate\nenvelope", "uniform kW per household,\nsearched or proposed", MUTED),
              (5.1, "Phase-aware\nGENCO screen", "four-wire GNN residual\non a one-step sweep:\nsafe / unsafe / unsure", TEAL),
-             (7.6, "Full four-wire\nOpenDSS gate", "all 200 design scenarios,\n>= 98% feasible\n-> envelope issued", VIOLET)]
+             (7.6, "Full four-wire\nOpenDSS check", "all 200 design scenarios,\n>= 98% feasible\n-> envelope issued", VIOLET)]
     for x, head, body, c in boxes:
         ax.add_patch(FancyBboxPatch((x, 0.9), 2.2, 1.75, boxstyle="round,pad=0.03,rounding_size=0.12", fc=SURFACE, ec=c, lw=2))
         ax.text(x + 1.1, 2.25, head, ha="center", va="center", fontsize=9.5, fontweight="bold", color=INK, linespacing=1.15)
@@ -208,8 +213,6 @@ def fig_workflow():
                                  color=INK2, lw=1.1, ls="--"))
     ax.text(7.45, 0.18, "unsure states go to OpenDSS (5.8% with the GNN, 35.8% with the prior alone)", ha="center", fontsize=8.5,
             color=INK2)
-    ax.text(0.1, 3.0, "Every issued envelope passes the full four-wire gate on its design scenarios: a design-set check, not a "
-            "certificate of future safety", fontsize=8.5, color=INK2)
     save(fig, "fig8_workflow")
 
 
