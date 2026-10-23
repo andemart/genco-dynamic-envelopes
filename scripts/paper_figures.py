@@ -350,7 +350,60 @@ def fig_surrogates():
     save(fig, "surrogates")
 
 
-FIGS = {"feeder": fig_feeder, "heatmap": fig_heatmap, "safety": fig_safety, "surrogates": fig_surrogates}
+# ------------------------------------------------------------------------------------------ concept
+def fig_concept():
+    """(a) the four-wire feeder and what a balanced model sees; (b) one day of verified envelopes (2024-07-28)."""
+    from matplotlib.patches import FancyBboxPatch, Polygon, Rectangle
+
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(DCOL, 2.7), gridspec_kw={"width_ratios": [1.2, 1], "wspace": 0.32})
+    a1.set_xlim(0, 10), a1.set_ylim(0, 7.2), a1.axis("off")
+    names, ys = ("a", "b", "c", "n"), (5.6, 5.0, 4.4, 3.8)
+    a1.add_patch(Rectangle((0.2, 3.5), 0.9, 2.4, fc="white", ec=INK, lw=1))
+    a1.text(0.65, 4.7, "trafo", ha="center", va="center", fontsize=6, color=INK)
+    for name, y, c in zip(names, ys, (*PHASE, MUTED)):
+        a1.plot([1.1, 9.6], [y, y], color=c, lw=1.6 if name != "n" else 1.2, ls="-" if name != "n" else "--")
+        a1.text(9.7, y, name, va="center", fontsize=7, color=c, fontweight="bold")
+    def house(x, y, c):
+        a1.add_patch(Polygon([(x - 0.28, y), (x + 0.28, y), (x + 0.28, y + 0.38), (x, y + 0.62), (x - 0.28, y + 0.38)],
+                             closed=True, fc=c, ec="white", lw=0.6, zorder=3))
+    for k, (x, ph) in enumerate(zip((2.2, 3.4, 4.6, 5.8, 7.0, 8.2), (0, 2, 0, 1, 0, 2))):
+        top = ys[ph]
+        a1.plot([x, x], [top, ys[3]], color=PHASE[ph], lw=0.9)
+        house(x, 6.25, PHASE[ph])
+        a1.plot([x, x], [top, 6.25], color=PHASE[ph], lw=0.9)
+        a1.scatter([x, x], [top, ys[3]], s=7, color=[PHASE[ph], MUTED], zorder=4)
+    a1.text(0.2, 7.0, "Four-wire: each home on one phase + neutral", fontsize=7, color=INK, fontweight="bold")
+    a1.add_patch(FancyBboxPatch((0.2, 0.25), 9.6, 2.65, boxstyle="round,pad=0.02,rounding_size=0.15", fc="#f3f3f1", ec="none"))
+    a1.plot([1.1, 9.6], [1.35, 1.35], color=INK2, lw=2.2)
+    a1.add_patch(Rectangle((0.35, 0.95), 0.75, 0.8, fc="white", ec=INK2, lw=1))
+    for x in (2.8, 5.0, 7.2, 9.0):
+        a1.plot([x, x], [1.35, 1.85], color=INK2, lw=0.9)
+        a1.add_patch(Rectangle((x - 0.32, 1.85), 0.64, 0.4, fc=MUTED, ec="white", lw=0.6))
+    a1.text(0.4, 2.5, "Balanced model (GENCO's view)", fontsize=7, color=INK2, fontweight="bold")
+    a1.text(0.4, 0.45, "neutral Kron-reduced: per-phase voltages averaged away", fontsize=6.3, color=INK2, style="italic")
+    panel(a1, "a")
+
+    d = load("data_out/doe/annual/2024-07-28_annual_4w_b_opendss_exact_sph1_seed101_uk_esqcr.json")
+    lim = {dr: [r["limit_kw"] for r in d["rows"] if r["method"] == "b_opendss_exact" and r["direction"] == dr]
+           for dr in ("import", "export")}
+    h = np.arange(24)
+    a2.bar(h, lim["import"], width=0.8, color=TEAL, label="import allowance")
+    a2.bar(h, [-v for v in lim["export"]], width=0.8, color=VIOLET, label="export allowance")
+    a2.axhline(0, color=INK, lw=0.8)
+    a2.axvspan(8.5, 17.5, color=GRID, alpha=0.5, zorder=0)
+    a2.text(13, -0.6, "no export\nallowance\nat midday", ha="center", fontsize=6.3, color=INK2)
+    a2.set_xticks(range(0, 24, 3), [f"{x:02d}" for x in range(0, 24, 3)])
+    a2.set_xlim(-0.6, 23.6), a2.set_ylim(-1.5, 1.3)
+    a2.set_xlabel("Hour, 28 July 2024")
+    a2.set_ylabel("Allowance per household (kW)", labelpad=8)
+    a2.set_yticks([-1, -0.5, 0, 0.5, 1], ["1.0", "0.5", "0", "0.5", "1.0"])
+    a2.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), fontsize=6.3, ncol=2, borderaxespad=0)
+    a2.set_title("A dynamic operating envelope, one day")
+    panel(a2, "b")
+    save(fig, "concept")
+
+
+FIGS = {"concept": fig_concept, "feeder": fig_feeder, "heatmap": fig_heatmap, "safety": fig_safety, "surrogates": fig_surrogates}
 
 if __name__ == "__main__":
     for name in sys.argv[1:] or FIGS:
