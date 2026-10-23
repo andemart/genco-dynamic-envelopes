@@ -47,6 +47,12 @@ class Stub:
         return r, np.hstack([np.repeat(v.mean(1, keepdims=True), 96, 1), np.repeat(v.max(1, keepdims=True), 96, 1)])
 
 
+def _needs_fluvius():
+    from gencodoe.fluvius import RAW_DIR
+    if not any(RAW_DIR.glob("*/P6269_Open_Data_*.csv")):
+        pytest.skip("Fluvius open data not downloaded (see README)")
+
+
 def _step():
     t0 = int((np.datetime64(DAY) - np.datetime64("2024-01-01")).astype(int)) * 96
     return t0 + 4 * HOUR
@@ -55,6 +61,7 @@ def _step():
 @pytest.fixture(scope="module")
 def baseline():
     pytest.importorskip("opendssdirect")
+    _needs_fluvius()
     st = Stub()
     return e3.extract_block(DAY, HH, st.oracle, st.embed, steps={_step()}), st
 
@@ -104,6 +111,7 @@ def test_inject_signs_and_caps():
 
 def test_zero_sentinel_failure_and_nonfinite_are_deterministic():
     pytest.importorskip("opendssdirect")
+    _needs_fluvius()
     from gencodoe import envelopes
 
     class Infeasible(Stub):

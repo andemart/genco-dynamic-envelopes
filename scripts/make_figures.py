@@ -163,7 +163,7 @@ def fig_fourwire():
     a2.set_xlabel("phase-to-neutral voltage MAE (pu, log scale)")
     a2.set_title("State accuracy (2,699 converged test states)", color=INK, fontsize=10)
     a2.grid(axis="y", visible=False)
-    title(fig, "Four-wire extension: a GENCO-style GNN corrects a cheap four-wire prior; GENCO embeddings do not help",
+    title(fig, "Four-wire extension: a four-wire GENCO corrects a cheap four-wire prior; GENCO embeddings do not help",
           "Test split: fallbacks on 2,968 screening states, voltage MAE on the 2,699 converged ones; zero observed false-safe decisions for every\n"
           "method; one training seed per model. teal = learned model that helps; coral = GENCO variants that do not; grey = physics baselines")
     fig.subplots_adjust(top=0.78, wspace=0.75)
@@ -220,7 +220,7 @@ def fig_fallback():
     e = load("results/fourwire_eval_test.json")
     order = [("BS", "balanced model sweep", MUTED), ("BG", "balanced GENCO", CORAL),
              ("U1", "four-wire one-step prior", MUTED), ("PhaseGENCO", "+ GNN + balanced GENCO embeddings", CORAL),
-             ("PhaseGraph", "+ phase-aware GENCO-style GNN", TEAL), ("U3", "iterated four-wire sweep (classical)", MUTED)]
+             ("PhaseGraph", "+ phase-aware GENCO (four-wire)", TEAL), ("U3", "iterated four-wire sweep (classical)", MUTED)]
     fig, ax = plt.subplots(figsize=(8.2, 3.6))
     fb = [100 * e["screen"][k]["fallback_mean"] for k, _, _ in order]
     y = list(range(len(order)))[::-1]

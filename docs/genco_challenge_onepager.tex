@@ -38,7 +38,7 @@
 \vspace{3pt}
 
 \colorbox{pale}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
-\textbf{In brief.} GENCO models the grid as balanced, but European low-voltage networks are three-phase four-wire: every home sits on one phase and the neutral carries the imbalance. On a 200-customer benchmark feeder, envelopes from a balanced model met the directional four-wire test in none of the evaluated hours. We found three bottlenecks of GENCO at LV, built a phase-aware GENCO-style model with an explicit phase-and-neutral representation, and used it as a pre-screen in front of a full four-wire OpenDSS check: six-fold fewer OpenDSS simulations, with zero observed false-safe decisions.
+\textbf{In brief.} GENCO models the grid as balanced, but European low-voltage networks are three-phase four-wire: every home sits on one phase and the neutral carries the imbalance. On a 200-customer benchmark feeder, envelopes from a balanced model met the directional four-wire test in none of the evaluated hours. We found three bottlenecks of GENCO at LV, built a phase-aware, four-wire GENCO with an explicit phase-and-neutral representation, and used it as a pre-screen in front of a full four-wire OpenDSS check: six-fold fewer OpenDSS simulations, with zero observed false-safe decisions.
 }}
 
 \vspace{3pt}
@@ -48,7 +48,7 @@
 
 A \textbf{dynamic operating envelope} (DOE) gives each household a time-varying import and export allowance instead of a fixed connection limit, so that EVs, heat pumps and rooftop PV fit on the existing network.
 \begin{itemize}
-  \item \textbf{Network:} open-source benchmark ENWL1 (three-phase four-wire, UK), 800\,kVA, 200 single-phase customers, neutral earthed only at the transformer (TT).
+  \item \textbf{Network:} open-source benchmark ENWL1 (ENWL Low Voltage Network Solutions; three-phase four-wire, UK), 800\,kVA, 200 single-phase customers, neutral earthed only at the transformer (TT).
   \item \textbf{Households:} Fluvius open data, 2024 quarter-hourly meters; 30\% heat pumps, 30\% EVs, 40\% PV.
   \item \textbf{Limits:} $-$6\%/$+$10\%, i.e.\ 216.2--253.0\,V (UK ESQCR).
   \item \textbf{Test:} an envelope passes if $\geq$196 of 200 design scenarios meet the directional OpenDSS limits (export: overvoltage, loading; import: undervoltage, loading; full uptake).
@@ -77,9 +77,9 @@ Result: voltage error \textbf{1.0e-3\,pu}, 5.4$\times$ below the physics estimat
 
 \columnbreak
 
-\sect{Phase-aware GENCO-style model as a pre-screen}
+\sect{Phase-aware GENCO as a pre-screen}
 
-A GENCO-style four-wire residual GNN (GENCO's processor family, explicit phase and neutral, 4$\times$4 impedances, no Kron reduction) corrects a one-step four-wire sweep. On 2,968 evaluation states, under the same final check:
+A four-wire GENCO (GENCO's architecture and processor on explicit phase and neutral conductors, 4$\times$4 impedances, no Kron reduction) corrects a one-step four-wire sweep. On 2,968 evaluation states, under the same final check:
 
 \begin{center}
 \metric{35.8\%$\rightarrow$5.8\%}{states sent to OpenDSS}\hfill

@@ -1,6 +1,6 @@
 # GENCO meets the neutral wire: four-wire dynamic operating envelopes for low-voltage grids
 
-Taking the GENCO grid foundation model to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware GENCO-style model repairs it. An entry for the [GridFM GENCO Challenge 2026](https://huggingface.co/spaces/gridfm/genco-challenge).
+Taking the GENCO grid foundation model to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware GENCO repairs it. An entry for the [GridFM GENCO Challenge 2026](https://huggingface.co/spaces/gridfm/genco-challenge).
 
 **Ander Martinez Alonso¹,³, Evgenii Genov¹, Rémy Cleenwerck¹,²**
 ¹ EVERGi, Vrije Universiteit Brussel · ² EnSy/Lemcko, Ghent University · ³ DTU Wind and Energy Systems, Technical University of Denmark
@@ -25,7 +25,7 @@ Contact: ander.martinez.alonso@vub.be
 Dynamic operating envelopes give each household a time-varying import and export allowance instead of a fixed connection limit. On European low-voltage networks every home sits on one phase and the neutral carries the imbalance, so envelopes depend on three-phase four-wire physics. GENCO represents the grid as balanced.
 
 - **On this feeder, a balanced model is not a usable proxy.** Across every hour of 36 evaluation days, no positive balanced-model envelope met the four-wire feasibility target (0 of 864 export, 0 of 823 import hours).
-- **A phase-aware GENCO-style model makes learned screening useful.** As a pre-screen it cuts full four-wire OpenDSS simulations six-fold (fallbacks 35.8% → 5.8%), with zero observed false-safe decisions on 2,968 evaluation states. Balanced screens, GENCO included, fall back on 63%.
+- **A phase-aware GENCO makes learned screening useful.** As a pre-screen it cuts full four-wire OpenDSS simulations six-fold (fallbacks 35.8% → 5.8%), with zero observed false-safe decisions on 2,968 evaluation states. Balanced screens, GENCO included, fall back on 63%.
 - **Dynamic envelopes release real headroom:** 4.81 MWh of export and 2.50 MWh of import envelope-hours per household per year, where a fixed allowance valid in every hour would be zero.
 - **The official pretrained GENCO helps where the representation matches.** On case118, fine-tuning beat training from scratch by +11.4 points [9.8, 12.5] in 5 of 5 seeds at 100 labels.
 - **Physics stays in charge.** An iterated four-wire sweep remains the most accurate method. Every issued envelope passes a directional four-wire OpenDSS test on its 200 design scenarios (export: overvoltage and loading; import: undervoltage and loading; full simultaneous uptake). It is a design-set test, not a certificate: opposite-side voltage, neutral current and partial uptake are not checked.
@@ -54,7 +54,7 @@ With [uv](https://docs.astral.sh/uv/) (`uv.lock` pins every package, `.python-ve
 ```bash
 uv sync --all-extras --no-install-package torch-scatter   # everything except torch-scatter
 uv sync --all-extras                                      # torch-scatter, built against the installed torch
-uv run pytest                                             # 84 tests
+uv run pytest                                             # 84 tests; on a fresh clone 74 run, 10 skip (need data)
 GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
 ```
 
@@ -82,6 +82,7 @@ GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
 
 ## Data and sources
 
+- **Feeder:** ENWL1 from Electricity North West's Low Voltage Network Solutions project: https://www.enwl.co.uk/future-energy/innovation/smaller-projects/low-carbon-networks-fund/low-voltage-network-solutions/
 - **Household profiles:** Fluvius Open Data, *Verbruiksprofielen digitale elektriciteitsmeters: kwartierwaarden voor een volledig jaar* (2,400 anonymised residential meters, quarter-hourly, 2024, eight technology groups): https://opendata.fluvius.be/explore/assets/1_50-verbruiksprofielen-dm-elek-kwartierwaarden-voor-een-volledig-jaar/
 - **GENCO:** arXiv:2608.09921 (https://arxiv.org/abs/2608.09921); tooling https://github.com/gridfm/gridfm-graphkit and https://github.com/gridfm/gridfm-datakit; official checkpoint https://huggingface.co/gridfm/genco-opf-datakit
 - **Challenge:** https://huggingface.co/spaces/gridfm/genco-challenge
