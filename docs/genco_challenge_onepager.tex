@@ -38,7 +38,7 @@
 \vspace{3pt}
 
 \colorbox{pale}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
-\textbf{In brief.} GENCO models the grid as balanced, but European low-voltage networks are three-phase four-wire: every home sits on one phase and the neutral carries the imbalance. On a 200-customer benchmark feeder, envelopes from a balanced model met the four-wire feasibility target in none of the evaluated hours. We found three bottlenecks of GENCO at LV, extended its architecture to an explicit phase-and-neutral network model, and used it as a pre-screen in front of a full four-wire OpenDSS check: six-fold fewer OpenDSS simulations, with zero observed false-safe decisions.
+\textbf{In brief.} GENCO models the grid as balanced, but European low-voltage networks are three-phase four-wire: every home sits on one phase and the neutral carries the imbalance. On a 200-customer benchmark feeder, envelopes from a balanced model met the directional four-wire test in none of the evaluated hours. We found three bottlenecks of GENCO at LV, built a phase-aware GENCO-style model with an explicit phase-and-neutral representation, and used it as a pre-screen in front of a full four-wire OpenDSS check: six-fold fewer OpenDSS simulations, with zero observed false-safe decisions.
 }}
 
 \vspace{3pt}
@@ -51,7 +51,7 @@ A \textbf{dynamic operating envelope} (DOE) gives each household a time-varying 
   \item \textbf{Network:} open-source benchmark ENWL1 (three-phase four-wire, UK), 800\,kVA, 200 single-phase customers, neutral earthed only at the transformer (TT).
   \item \textbf{Households:} Fluvius open data, 2024 quarter-hourly meters; 30\% heat pumps, 30\% EVs, 40\% PV.
   \item \textbf{Limits:} $-$6\%/$+$10\%, i.e.\ 216.2--253.0\,V (UK ESQCR).
-  \item \textbf{Check:} an envelope is issued only if OpenDSS finds the network within limits in $\geq$98\% of 200 design scenarios.
+  \item \textbf{Test:} an envelope passes if $\geq$196 of 200 design scenarios meet the directional OpenDSS limits (export: overvoltage, loading; import: undervoltage, loading; full uptake).
 \end{itemize}
 
 \sect{Three bottlenecks of GENCO at LV}
@@ -77,16 +77,16 @@ Result: voltage error \textbf{1.0e-3\,pu}, 5.4$\times$ below the physics estimat
 
 \columnbreak
 
-\sect{Phase-aware extension as a pre-screen}
+\sect{Phase-aware GENCO-style model as a pre-screen}
 
-The GENCO architecture, extended with a full three-phase four-wire network model (4$\times$4 line impedances, no Kron reduction), corrects a one-step four-wire sweep. On 2,968 evaluation states, under the same final check:
+A GENCO-style four-wire residual GNN (GENCO's processor family, explicit phase and neutral, 4$\times$4 impedances, no Kron reduction) corrects a one-step four-wire sweep. On 2,968 evaluation states, under the same final check:
 
 \begin{center}
 \metric{35.8\%$\rightarrow$5.8\%}{states sent to OpenDSS}\hfill
 \metric{0}{observed false-safe decisions}
 \end{center}
 
-Voltage error falls by 91\%. Balanced screens, GENCO included, send 63\% of states to OpenDSS: \textbf{representing the phases is what makes screening useful.}
+Voltage error falls by 91\%. Balanced screens, GENCO included, send 63\% of states to OpenDSS, supporting the importance of phase information.
 
 \sect{Transfer of GENCO representations}
 \begin{itemize}
@@ -97,13 +97,13 @@ Voltage error falls by 91\%. Balanced screens, GENCO included, send 63\% of stat
 \sect{Classical solvers and limitations}
 \begin{itemize}
   \item An iterated four-wire sweep remains the accuracy leader (about 80$\times$ more accurate). The learned screen's value is six-fold fewer OpenDSS simulations.
-  \item A design-set check, not a certificate of future safety. Not checked: partial uptake, undervoltage during export, neutral current, voltage unbalance. One benchmark feeder.
+  \item A directional design-set test, not a certificate. Not checked: opposite-side voltage (seen in 12.7\% of export and 24.8\% of import intervals in at least one fresh scenario), neutral current, partial uptake, unbalance. One feeder.
 \end{itemize}
 
 \sect{Open science}
 \begin{itemize}
   \item Public inputs (ENWL1, Fluvius open data); pre-registered core evaluation, frozen protocols, disclosed amendments and incidents.
-  \item 84 tests; \texttt{reproduce\_check.py} regenerates every headline result byte for byte; one-minute public demo.
+  \item 84 tests; \texttt{reproduce\_check.py} regenerates the aggregate reports from retained run artifacts (not yet redistributed); one-minute public demo.
 \end{itemize}
 
 \textbf{Outlook:} LV envelopes sum to the flexibility a DSO offers upstream; one model across LV, MV and HV needs the three changes identified here.

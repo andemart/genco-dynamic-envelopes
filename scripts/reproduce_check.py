@@ -1,5 +1,6 @@
-"""Regenerate every headline result file from its recorded inputs and compare it byte for byte with the
-committed version. Run from the repository root with the run artifacts present under data_out/.
+"""Regenerate the aggregate report files covered below from their recorded inputs and compare them byte for byte
+with the committed versions. Needs the locally retained run artifacts under data_out/ (not redistributed), so it
+does not run on a fresh clone. The case118 studies (branch ander-case118) are not covered here.
 
     GENCODOE_VOLTAGE_LIMITS=uk_esqcr .venv/bin/python scripts/reproduce_check.py [--include-slow]
 

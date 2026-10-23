@@ -1,6 +1,6 @@
 # GENCO meets the neutral wire: four-wire dynamic operating envelopes for low-voltage grids
 
-Extending the GENCO grid foundation model to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware extension repairs it. An entry for the [GridFM GENCO Challenge 2026](https://huggingface.co/spaces/gridfm/genco-challenge).
+Taking the GENCO grid foundation model to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware GENCO-style model repairs it. An entry for the [GridFM GENCO Challenge 2026](https://huggingface.co/spaces/gridfm/genco-challenge).
 
 **Ander Martinez Alonso¹,³, Evgenii Genov¹, Rémy Cleenwerck¹,²**
 ¹ EVERGi, Vrije Universiteit Brussel · ² EnSy/Lemcko, Ghent University · ³ DTU Wind and Energy Systems, Technical University of Denmark
@@ -17,18 +17,18 @@ Contact: ander.martinez.alonso@vub.be
 | What we claim and do not claim | [`docs/claims.md`](docs/claims.md) |
 | Every experiment, result and incident | [`docs/experiment_log.md`](docs/experiment_log.md) |
 | Protocols and pre-registration | [`docs/preregistration.md`](docs/preregistration.md) and the `docs/*_protocol.md` files |
-| The official-checkpoint experiments (case118) | tag [`genco-challenge-2026-case118`](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53) (branch `ander-case118`) |
+| The official-checkpoint experiments (case118) | commit [`994d5d4`](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53) on branch `ander-case118` |
 | One-page summary | [`docs/genco_challenge_onepager.pdf`](docs/genco_challenge_onepager.pdf) |
 
 ## In brief
 
 Dynamic operating envelopes give each household a time-varying import and export allowance instead of a fixed connection limit. On European low-voltage networks every home sits on one phase and the neutral carries the imbalance, so envelopes depend on three-phase four-wire physics. GENCO represents the grid as balanced.
 
-- **A balanced model is unsafe at LV.** Across every hour of 36 evaluation days, no positive balanced-model envelope met the four-wire feasibility target (0 of 864 export, 0 of 823 import hours).
-- **A phase-aware extension of the GENCO architecture makes it useful.** As a pre-screen it cuts full four-wire OpenDSS simulations six-fold (fallbacks 35.8% → 5.8%), with zero observed false-safe decisions on 2,968 evaluation states. Balanced screens, GENCO included, fall back on 63%.
+- **On this feeder, a balanced model is not a usable proxy.** Across every hour of 36 evaluation days, no positive balanced-model envelope met the four-wire feasibility target (0 of 864 export, 0 of 823 import hours).
+- **A phase-aware GENCO-style model makes learned screening useful.** As a pre-screen it cuts full four-wire OpenDSS simulations six-fold (fallbacks 35.8% → 5.8%), with zero observed false-safe decisions on 2,968 evaluation states. Balanced screens, GENCO included, fall back on 63%.
 - **Dynamic envelopes release real headroom:** 4.81 MWh of export and 2.50 MWh of import envelope-hours per household per year, where a fixed allowance valid in every hour would be zero.
 - **The official pretrained GENCO helps where the representation matches.** On case118, fine-tuning beat training from scratch by +11.4 points [9.8, 12.5] in 5 of 5 seeds at 100 labels.
-- **Physics stays in charge.** An iterated four-wire sweep remains the most accurate method, and every issued envelope passes a full OpenDSS check on its 200 design scenarios (a design-set check, not a certificate of future safety).
+- **Physics stays in charge.** An iterated four-wire sweep remains the most accurate method. Every issued envelope passes a directional four-wire OpenDSS test on its 200 design scenarios (export: overvoltage and loading; import: undervoltage and loading; full simultaneous uptake). It is a design-set test, not a certificate: opposite-side voltage, neutral current and partial uptake are not checked.
 
 ## Quick demo (public data only)
 
@@ -59,9 +59,9 @@ GENCODOE_VOLTAGE_LIMITS=uk_esqcr uv run python scripts/reproduce_check.py
 ```
 
 - The two `uv sync` steps are needed because torch-scatter imports torch in its build script (see `[tool.uv]` in `pyproject.toml`). The first `import juliacall` (OPF modules, gridfm-datakit) downloads Julia and the pinned PowerModels/Ipopt packages into `.venv/julia_env`, once.
-- `reproduce_check.py` regenerates every headline result file from its recorded inputs and compares it byte for byte with the committed version. The A100-only four-wire evaluation is checked against the SHA-256 in its run manifest.
-- **Public inputs.** The ENWL1 feeder files are in `data/feeder_topology/ENWL1/`, and the household profiles are the public Fluvius open dataset (see below; download the CSVs into `data/load_profiles/`). Every result can be regenerated from these public inputs.
-- **Derived files not yet redistributed.** The run outputs (`data_out/`: per-day DOE runs, four-wire labels, features, LV checkpoints) are not published while we check the open-data licence terms for redistributing meter-level derivatives. Every run is recorded with commits, Slurm job IDs and SHA-256 hashes in `results/run_manifest_*.json`.
+- `reproduce_check.py` deterministically regenerates the aggregate reports from locally retained run artifacts (`data_out/`) and verifies the A100 four-wire evaluation against its recorded SHA-256. It does not cover the case118 studies, which have their own manifests on branch `ander-case118`.
+- **Public inputs.** The ENWL1 feeder files are in `data/feeder_topology/ENWL1/`, and the household profiles are the public Fluvius open dataset (see below). Download it so the CSVs sit one level below `data/load_profiles/`, i.e. `data/load_profiles/<folder>/P6269_Open_Data_<group>.csv`.
+- **What a fresh clone cannot do yet.** The derived run files and LV checkpoints (`data_out/`, about 7 GB) are not yet redistributed while we check the licence terms for meter-level derivatives, so a fresh clone cannot reproduce every headline result end to end. Their SHA-256 hashes are in `results/run_manifest_*.json`.
 - **Environment.** `env-snapshot-laptop.txt` (macOS) and `env-snapshot-hydra.txt` (Linux A100 cluster) record the exact package versions used. They are snapshots, not installable locks.
 
 ## Repository layout
@@ -100,4 +100,4 @@ See [`CITATION.cff`](CITATION.cff).
 
 ## License
 
-Apache-2.0, matching the OpenGridFM toolkits.
+The project code is Apache-2.0, matching the OpenGridFM toolkits. Third-party data in this repository (ENWL1 feeder files, the Fluvius legend workbook) keep their own terms; see [`DATA_LICENSES.md`](DATA_LICENSES.md).
