@@ -147,7 +147,7 @@ The iterated four-wire sweep is the accuracy leader on this feeder: 3.6e-6 pu er
 
 1. GridFM GENCO Challenge 2026. https://huggingface.co/spaces/gridfm/genco-challenge
 2. GENCO – A Unified Neural Solver Embedded in a Development Framework for Steady-State Grid Analysis. arXiv:2608.09921, 2026. https://arxiv.org/abs/2608.09921
-3. gridfm-graphkit and gridfm-datakit (OpenGridFM). https://github.com/gridfm/gridfm-graphkit, https://github.com/gridfm/gridfm-datakit; official checkpoint https://huggingface.co/gridfm/genco-opf-datakit
+3. gridfm-graphkit and gridfm-datakit (OpenGridFM). https://github.com/gridfm/gridfm-graphkit, https://github.com/gridfm/gridfm-datakit (official checkpoint: checkpoint: https://huggingface.co/gridfm/genco-opf-datakit
 4. Fluvius Open Data. Verbruiksprofielen digitale elektriciteitsmeters: kwartierwaarden voor een volledig jaar. https://opendata.fluvius.be/explore/assets/1_50-verbruiksprofielen-dm-elek-kwartierwaarden-voor-een-volledig-jaar/
 5. K. Petrou, A. T. Procopiou, L. Gutierrez-Lagos, M. Z. Liu, L. F. Ochoa, T. Langstaff, J. M. Theunissen. Ensuring distribution network integrity using dynamic operating limits for prosumers. *IEEE Transactions on Smart Grid* 12(5), 2021. https://doi.org/10.1109/TSG.2021.3081371
 6. EPRI. OpenDSS: open-source distribution system simulator. https://www.epri.com/pages/sa/opendss
