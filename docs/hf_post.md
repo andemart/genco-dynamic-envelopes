@@ -1,12 +1,12 @@
 # GENCO meets the neutral wire: four-wire dynamic operating envelopes for low-voltage grids
 
-*Taking GENCO to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware GENCO-style model repairs it.*
+*Taking GENCO to three-phase four-wire low-voltage distribution networks: what breaks, and how a phase-aware GENCO repairs it.*
 
 **Ander Martinez Alonso¹,³, Evgenii Genov¹, Rémy Cleenwerck¹,²**  
 ¹ EVERGi, Vrije Universiteit Brussel · ² EnSy/Lemcko, Ghent University · ³ DTU Wind and Energy Systems, Technical University of Denmark  
 **Repository:** [github.com/ujohn33/genco-dynamic-envelopes](https://github.com/ujohn33/genco-dynamic-envelopes)  
 **Contact:** ander.martinez.alonso@vub.be  
-*GridFM GENCO Challenge 2026 [1]. Submitted snapshot: [release 62c2b98](https://github.com/ujohn33/genco-dynamic-envelopes/tree/62c2b98928a233815d7fb00ba32c8111a8feee94) (tag `genco-challenge-2026-entry`); official-checkpoint experiments: [commit 994d5d4](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53) (branch `ander-case118`).*
+*GridFM GENCO Challenge 2026 [1]. Submitted snapshot: [release 72e2b53](https://github.com/ujohn33/genco-dynamic-envelopes/tree/72e2b5395ae887c3df612d4c2f49d70e6fce6481); official-checkpoint experiments: [commit 994d5d4](https://github.com/ujohn33/genco-dynamic-envelopes/tree/994d5d416a0c45fdbf6045c7103f3cd9c7519b53) (branch `ander-case118`).*
 
 ---
 
@@ -15,7 +15,7 @@
 *GENCO represents the power grid as balanced. We take it to the low-voltage (LV) distribution level, where every household is connected to a single phase. To our knowledge, this is the first application of GENCO to three-phase four-wire LV networks. We test it on household dynamic operating envelopes, on one benchmark feeder.*
 
 - **On this feeder, a balanced model is not a usable proxy.** Across every hour of 36 evaluation days, not one positive envelope designed with the balanced model met the four-wire feasibility target.
-- **A phase-aware GENCO-style model makes learned screening useful.** As a pre-screen in front of OpenDSS, it cuts full four-wire simulations six-fold (fallbacks 35.8% → 5.8%), with zero observed false-safe decisions on 2,968 evaluation states.
+- **A phase-aware GENCO makes learned screening useful.** As a pre-screen in front of OpenDSS, it cuts full four-wire simulations six-fold (fallbacks 35.8% → 5.8%), with zero observed false-safe decisions on 2,968 evaluation states.
 - **The official pretrained GENCO helps on its native representation.** Fine-tuning the official checkpoint on case118 beat training from scratch by **+11.4 points [9.8, 12.5], in 5 of 5 seeds**, on 2,000 unseen scenarios.
 - **Dynamic envelopes release headroom:** 4.81 MWh of export and 2.50 MWh of import envelope-hours per household per year, where a fixed allowance valid in every hour would be zero.
 - **Toward integrated DSO–TSO tools (outlook).** Household envelopes add up at the MV/LV transformer into the flexibility a distribution system operator (DSO) can offer the transmission system operator (TSO). Our LV and case118 studies are separate demonstrations at the two ends of that chain. Together they identify what a single model across voltage levels would need.
@@ -26,7 +26,7 @@ Distribution operators are replacing fixed connection limits with **dynamic oper
 
 GENCO [2] is a grid foundation model, available pretrained on transmission cases. It represents the network as **balanced**: one equivalent line per bus, no neutral conductor. European LV networks are **three-phase four-wire**. Each home is connected between one phase and the neutral, the phases are loaded unevenly, and the neutral carries the imbalance. One phase can drop below the voltage limit while another rises above it. We asked: **what would it take to bring GENCO to four-wire LV networks, and can it then support household envelopes?**
 
-![Four-wire network and a dynamic envelope](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/62c2b98928a233815d7fb00ba32c8111a8feee94/figures/fig9_concept.png)
+![Four-wire network and a dynamic envelope](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/72e2b5395ae887c3df612d4c2f49d70e6fce6481/figures/fig9_concept.png)
 
 **Figure 1.** *(a) A four-wire LV network, and the balanced view GENCO works with: homes lumped per bus, neutral removed. (b) One day (28 July 2024) of envelopes on our feeder that passed the four-wire test, per household and hour, for import (up) and export (down).*
 
@@ -37,7 +37,7 @@ GENCO [2] is a grid foundation model, available pretrained on transmission cases
 - **Screen, fallback, false-safe.** A screen labels a network state as passing, failing or *unsure* with respect to that test; unsure states fall back to OpenDSS. A *false-safe* decision passes a state that OpenDSS fails.
 - **Kron reduction** folds the neutral into the phase conductors. **The one-step four-wire sweep** is a single iteration of the standard radial backward/forward sweep on the four-wire network: a cheap, rough physics estimate.
 
-![Balanced versus four-wire voltages](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/62c2b98928a233815d7fb00ba32c8111a8feee94/figures/fig0_feeder.png)
+![Balanced versus four-wire voltages](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/72e2b5395ae887c3df612d4c2f49d70e6fce6481/figures/fig0_feeder.png)
 
 **Figure 2.** *ENWL feeder 1. (a) Connection phase of each customer, and the heat pumps (HP), EVs and PV per phase in the headline household placement. (b, c) One validation state with 186 kW net export (−79, −60 and −47 kW on phases a, b and c). The balanced model puts every customer between 240 and 247 V, inside the 216.2–253.0 V limits. The four-wire solution of the same injections ranges from 205 V on phase c to above 270 V on phase a: both limits are violated at once.*
 
@@ -53,19 +53,19 @@ We trained the GENCO architecture in gridfm-graphkit [3] (`GNS_heterogeneous` as
 2. **The physics loss collapses at LV numerical scales.** *Fix:* a residual head that predicts a correction to a linear power-flow estimate, initialised at zero, so training starts exactly at the physics estimate.
 3. **Line flows are ill-conditioned.** Flows from voltage differences turn a 1e-4 pu voltage error into an O(100%) flow error on short cables. *Fix:* flows from Kirchhoff's current law.
 
-![GENCO development](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/62c2b98928a233815d7fb00ba32c8111a8feee94/figures/fig3_genco_adaptation.png)
+![GENCO development](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/72e2b5395ae887c3df612d4c2f49d70e6fce6481/figures/fig3_genco_adaptation.png)
 
 **Figure 3.** *Voltage error (mean absolute error, pu, log scale) of each modelling step. Left: 1,000 validation states, 15-epoch screening runs. Right: 1,000 validation states including envelope-loaded conditions, final runs. Separate experiments, not one ablation sequence. Coral: fails; grey: baselines.*
 
 The admittance features were necessary but not sufficient. The decisive step was combining them with the physics estimate and residual head: on envelope-loaded states the error fell to 1.0e-3 pu, 5.4× below the estimate alone. We also found and fixed two bugs in the GridFM tooling before any reported run. graphkit's best-model export could save the untrained epoch-0 weights, so we checked every reported export, including the stock model. datakit's optimal-power-flow step raises an unpinned slack bus to its upper voltage bound, so we fixed the slack at 1.0 pu.
 
-### 3.2 A phase-aware GENCO-style model
+### 3.2 A phase-aware, four-wire GENCO
 
-A balanced representation cannot carry per-phase voltages or the neutral-point displacement, however long it is trained. GENCO's graphkit pipeline cannot carry a four-wire state either. We therefore built a **GENCO-style four-wire residual GNN** in this repository. It uses GENCO's encode–process–decode structure and its TransformerConv processor family, with its own explicit phase-and-neutral representation (4×4 line impedance matrices, no Kron reduction) and its own training pipeline. As in 3.1, it predicts a correction to a cheap physics estimate, here the one-step four-wire sweep.
+A balanced representation cannot carry per-phase voltages or the neutral-point displacement, however long it is trained. We therefore built a **four-wire GENCO**: GENCO's encode–process–decode architecture and TransformerConv processor on an explicit phase-and-neutral representation (4×4 line impedance matrices, no Kron reduction). Because graphkit's pipeline cannot carry a four-wire state, it is implemented in this repository with its own training pipeline. As in 3.1, it predicts a correction to a cheap physics estimate, here the one-step four-wire sweep.
 
-### 3.3 GENCO-style pre-screening to reduce OpenDSS simulations
+### 3.3 GENCO pre-screening to reduce OpenDSS simulations
 
-![Workflow](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/62c2b98928a233815d7fb00ba32c8111a8feee94/figures/fig8_workflow.png)
+![Workflow](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/72e2b5395ae887c3df612d4c2f49d70e6fce6481/figures/fig8_workflow.png)
 
 **Figure 4.** *The screen decides clear cases. Unsure states, and every envelope before it is issued, go through the four-wire OpenDSS test of section 2.*
 
@@ -73,7 +73,7 @@ The final test is necessary: without it, a GENCO screen let one materially faili
 
 ## 4. Experiment design
 
-- **Network.** The open-source benchmark ENWL1 (three-phase four-wire OpenDSS model, UK): 800 kVA, 200 single-phase customers, 4×4 cable impedances from BS 5467 data, modified to TT earthing with the neutral earthed only at the transformer. The balanced model Kron-reduces the neutral, takes each line's positive-sequence impedance, and lumps each customer as a three-phase load at its bus.
+- **Network.** The open-source benchmark ENWL1 from Electricity North West's Low Voltage Network Solutions project [10] (three-phase four-wire OpenDSS model, UK): 800 kVA, 200 single-phase customers, 4×4 cable impedances from BS 5467 data, modified to TT earthing with the neutral earthed only at the transformer. The balanced model Kron-reduces the neutral, takes each line's positive-sequence impedance, and lumps each customer as a three-phase load at its bus.
 - **Households.** Fluvius open data: 2,400 anonymised residential digital meters, quarter-hourly, 2024, in eight technology groups [4]. The mix is 30% heat pumps, 30% EVs and 40% rooftop PV, so every household has at least one of them.
 - **Limits.** Voltage within −6%/+10% of 230 V, i.e. 216.2–253.0 V (UK ESQCR [7]). The checks are directional, as defined in section 2.
 - **Scenarios.** The 200 design scenarios of an hour resample real meters of the same technology group at the *same date and time*, so the spread reflects household diversity at that moment, not seasonal variation.
@@ -84,9 +84,9 @@ The final test is necessary: without it, a GENCO screen let one materially faili
 
 ### 5.1 Screening performance
 
-![OpenDSS fallbacks](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/62c2b98928a233815d7fb00ba32c8111a8feee94/figures/fig4a_fallback.png)
+![OpenDSS fallbacks](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/72e2b5395ae887c3df612d4c2f49d70e6fce6481/figures/fig4a_fallback.png)
 
-**Figure 5.** *Share of the 2,968 evaluation states each screen sends to OpenDSS, all under the same final test; none made a false-safe decision. Teal: the phase-aware GENCO-style model; coral: balanced-GENCO variants; grey: physics baselines.*
+**Figure 5.** *Share of the 2,968 evaluation states each screen sends to OpenDSS, all under the same final test; none made a false-safe decision. Teal: the phase-aware GENCO; coral: balanced-GENCO variants; grey: physics baselines.*
 
 - **Fallbacks fall from 35.8% to 5.8%** relative to the one-step four-wire sweep, with **zero observed false-safe decisions**: six-fold fewer OpenDSS simulations.
 - Phase-to-neutral voltage error falls by 91% (on the 2,699 converged states), and near-limit violation classification improves from 0.926 to 0.992 balanced accuracy.
@@ -100,7 +100,7 @@ On case118 with 99 flexible export units, a network proposes the flexible dispat
 
 ### 5.3 Operational value
 
-![Capacity](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/62c2b98928a233815d7fb00ba32c8111a8feee94/figures/fig1_capacity.png)
+![Capacity](https://raw.githubusercontent.com/ujohn33/genco-dynamic-envelopes/72e2b5395ae887c3df612d4c2f49d70e6fce6481/figures/fig1_capacity.png)
 
 **Figure 6.** *Envelope-hours per household per year over the 36 evaluation days: a fixed allowance valid in every hour, dynamic envelopes that passed the four-wire test (with season-stratified day-bootstrap 95% intervals), and balanced-model envelopes, which fail it.*
 
@@ -109,7 +109,7 @@ Dynamic envelopes release **4.81 MWh of export** (4.35–5.30) and **2.50 MWh of
 ## 6. Conclusion
 
 1. **On this feeder and envelope formulation, balanced grid models, GENCO included, are not usable proxies for household envelopes.**
-2. **A phase-aware GENCO-style model makes learned screening useful at LV.** The ingredients are magnitude-preserving edge features, a physics residual and an explicit phase-and-neutral representation. As a pre-screen it cuts full four-wire simulations six-fold without an observed false-safe decision.
+2. **A phase-aware GENCO makes learned screening useful at LV.** The ingredients are magnitude-preserving edge features, a physics residual and an explicit phase-and-neutral representation. As a pre-screen it cuts full four-wire simulations six-fold without an observed false-safe decision.
 3. **The official pretrained GENCO helps on its native case118 representation** (5 of 5 seeds), but pretraining cannot supply missing phases.
 4. **Physics stays in charge.** The iterated four-wire sweep remains the accuracy leader (3.6e-6 pu, 0.1% fallback, about 80× more accurate). The learned screen's value is fewer OpenDSS simulations, and amortisation where an equally strong specialised solver is not available.
 
@@ -123,7 +123,7 @@ Dynamic envelopes release **4.81 MWh of export** (4.35–5.30) and **2.50 MWh of
 ## Code and data
 
 - **Public demo.** `python scripts/demo_neutral_wire.py` solves one deliberately stressed synthetic state on the public ENWL1 files with both models in a few seconds. The balanced model shows no customer outside the limits. Four-wire OpenDSS shows 34, from 205 to 257 V, with 401 A in the transformer neutral and currents above cable ratings on some segments.
-- **Code, protocols and results** are at the release commit (code under Apache-2.0; third-party data under their own terms, see `DATA_LICENSES.md`). They include numbered amendments, the [experiment log](https://github.com/ujohn33/genco-dynamic-envelopes/blob/62c2b98928a233815d7fb00ba32c8111a8feee94/docs/experiment_log.md), run manifests with SHA-256 hashes, [claims and non-claims](https://github.com/ujohn33/genco-dynamic-envelopes/blob/62c2b98928a233815d7fb00ba32c8111a8feee94/docs/claims.md), and 84 tests.
+- **Code, protocols and results** are at the release commit (code under Apache-2.0; third-party data under their own terms, see `DATA_LICENSES.md`). They include numbered amendments, the [experiment log](https://github.com/ujohn33/genco-dynamic-envelopes/blob/72e2b5395ae887c3df612d4c2f49d70e6fce6481/docs/experiment_log.md), run manifests with SHA-256 hashes, [claims and non-claims](https://github.com/ujohn33/genco-dynamic-envelopes/blob/72e2b5395ae887c3df612d4c2f49d70e6fce6481/docs/claims.md), and 84 tests (on a fresh clone 74 run and 10 skip, because they need the Fluvius download or retained artifacts).
 - **Reproduction.** `scripts/reproduce_check.py` deterministically regenerates the aggregate reports from locally retained run artifacts, and verifies the A100 evaluation against its recorded hash. The source datasets are public (ENWL1 in the repository, Fluvius open data [4]). The derived run files and LV checkpoints are not yet redistributed, so a fresh clone cannot currently reproduce every headline result end to end.
 
 *Built on GENCO with gridfm-graphkit 0.9.0.3 and gridfm-datakit 1.1.0 [3].*
@@ -139,3 +139,4 @@ Dynamic envelopes release **4.81 MWh of export** (4.35–5.30) and **2.50 MWh of
 7. The Electricity Safety, Quality and Continuity Regulations 2002 (UK SI 2002/2665). https://www.legislation.gov.uk/uksi/2002/2665
 8. A. Wächter, L. T. Biegler. On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming. *Mathematical Programming*, 2006. https://doi.org/10.1007/s10107-004-0559-y
 9. C. Coffrin, R. Bent, K. Sundar, Y. Ng, M. Lubin. PowerModels.jl: an open-source framework for exploring power flow formulations. *PSCC* 2018. https://doi.org/10.23919/PSCC.2018.8442948
+10. Electricity North West. Low Voltage Network Solutions (Low Carbon Networks Fund project). https://www.enwl.co.uk/future-energy/innovation/smaller-projects/low-carbon-networks-fund/low-voltage-network-solutions/
