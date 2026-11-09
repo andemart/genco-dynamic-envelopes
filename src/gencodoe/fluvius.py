@@ -53,7 +53,7 @@ def convert(name: str) -> Path:
     """Read one group CSV and cache it as .npz."""
     import pyarrow.csv as pc
 
-    src = next(RAW_DIR.glob(f"*/P6269_Open_Data_{name}.csv"))
+    src = next(RAW_DIR.glob(f"*/P6269_Open_Data_{name}.csv*"))
     t = pc.read_csv(src, convert_options=pc.ConvertOptions(include_columns=[
         "EAN_ID", "Datum_Startuur", "Volume_Afname_KWh", "Volume_Injectie_KWh",
         "Warmtepomp_Indicator", "Elektrisch_Voertuig_Indicator", "PV_Installatie_Indicator"]))

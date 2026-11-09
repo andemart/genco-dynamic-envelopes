@@ -49,7 +49,7 @@ class Stub:
 
 def _needs_fluvius():
     from gencodoe.fluvius import RAW_DIR
-    if not any(RAW_DIR.glob("*/P6269_Open_Data_*.csv")):
+    if not any(RAW_DIR.glob("*/P6269_Open_Data_*.csv*")):
         pytest.skip("Fluvius open data not downloaded (see README)")
 
 
