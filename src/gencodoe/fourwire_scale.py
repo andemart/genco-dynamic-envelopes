@@ -12,6 +12,11 @@ results/fourwire_scale_identification.json (hashes, diagnostics, frozen E and Z_
 
 e1 (§7): per network, the first 200 val states; OpenDSS under the failure rule vs the NumPy sweep with the
 frozen Thevenin equivalent. Writes data_out/fourwire_scale/e1/ and results/fourwire_scale_e1.json.
+
+    python -m gencodoe.fourwire_scale validate-sweeps [--device cpu|cuda]
+
+validate-sweeps (Amendment 3): the Numba and PyTorch sweeps against the one-state NumPy sweep on the full
+val split of the 24 eligible networks. Writes results/fourwire_scale_sweep_validation_<device>.json.
 """
 from __future__ import annotations
 
@@ -281,6 +286,104 @@ def e1(networks: list[int], processes: int) -> Path:
     return out
 
 
+N_VAL = 3000                                   # §2.5 val split
+ELIGIBLE = [n for n in range(1, 26) if n != 13]   # §2.3; all 24 passed E1
+SWEEP_V_TOL_PU = 1e-9                          # Amendment 3 gate
+_CASES: dict = {}
+
+
+def _case(network: int):
+    """(net, frozen Thevenin) of a network, cached per process."""
+    from .fourwire_net import load_fourwire
+    if network not in _CASES:
+        _CASES[network] = (load_fourwire(network_folder(network)), frozen_thevenin(network))
+    return _CASES[network]
+
+
+def _reference_chunk(args):
+    network, s = args
+    net, th = _case(network)
+    res = [reference_sweep_state(net, th, row) for row in s]
+    return (np.array([r[0] for r in res]), np.array([r[1] for r in res]),
+            np.array([r[2] for r in res]), np.array([r[3] for r in res]))
+
+
+def compare_to_reference(out: dict, ref: dict, rating_ka: np.ndarray) -> dict:
+    """Amendment 3 gate of one implementation against the one-state NumPy reference."""
+    c = ref["converged"]
+    v_err = float(np.abs(out["V"][c] - ref["V"][c]).max() / V_PN_NOM_KV) if c.any() else 0.0
+    i_err = float((np.abs(out["I"][c] - ref["I"][c])[:, 1:] / rating_ka[None, 1:, None]).max()) if c.any() else 0.0
+    d_it = out["iterations"] != ref["iterations"]
+    same_nonconv = bool((~out["converged"][~c]).all())
+    return {"states": int(len(c)), "reference_converged": int(c.sum()), "reference_nonconverged": int((~c).sum()),
+            "max_v_err_pu_on_converged": v_err, "nonconverged_classified_the_same": same_nonconv,
+            "mask_diff_reference_converged_only": int((c & ~out["converged"]).sum()),
+            "mask_diff_implementation_converged_only": int((~c & out["converged"]).sum()),
+            "iteration_count_differences": int(d_it.sum()),
+            "largest_iteration_difference": int(np.abs(out["iterations"] - ref["iterations"]).max()),
+            "max_branch_current_err_rel_rating_on_converged": i_err,
+            "pass": bool(v_err <= SWEEP_V_TOL_PU and same_nonconv)}
+
+
+def validate_sweeps(networks: list[int], processes: int, device: str) -> Path:
+    """Amendment 3: Numba and PyTorch sweeps against the one-state NumPy sweep on the full val split."""
+    import platform
+
+    import numba
+    import torch
+
+    from .fourwire_sweep_opt import NumbaSweep, TorchSweep
+    recs = []
+    with Pool(processes) as pool:
+        for network in networks:
+            t0 = time.perf_counter()
+            net, th = _case(network)
+            names, idx, share = cc.customers(net.customer_names)
+            st = customer_states(len(names), "val", N_VAL, seed(network, "val"), AUGMENT, CAP_KVA)
+            p, q = connection_states(st, idx, share)
+            s = p + 1j * q
+            parts = pool.map(_reference_chunk, [(network, s[k:k + 25]) for k in range(0, N_VAL, 25)], chunksize=1)
+            ref = {k: np.concatenate([part[j] for part in parts])
+                   for j, k in enumerate(("V", "I", "iterations", "converged"))}
+            t_ref = time.perf_counter() - t0
+            rating_ka = net.rating_a / 1e3
+            rec = {"network": network, "retained_buses": net.n_bus, "phase_connections": len(net.customer_names),
+                   "inputs_content_sha256": content_sha({"p": p, "q": q}),
+                   "reference_iterations_median": float(np.median(ref["iterations"])),
+                   "reference_seconds_cpu_pool": t_ref}
+            nb = NumbaSweep(net, th)
+            nb.solve(s[:2])                                        # compile outside the informational timing
+            t0 = time.perf_counter()
+            out = nb.solve(s)
+            rec["numba"] = {**compare_to_reference(out, ref, rating_ka),
+                            "informational_ms_per_state": 1e3 * (time.perf_counter() - t0) / N_VAL}
+            ts = TorchSweep(net, th, device)
+            ts.solve(s[:2])
+            t0 = time.perf_counter()
+            outs = [ts.solve(s[k:k + 512]) for k in range(0, N_VAL, 512)]
+            t_torch = time.perf_counter() - t0
+            out = {k: np.concatenate([o[k] for o in outs]) for k in outs[0]}
+            rec[f"torch_{device}"] = {**compare_to_reference(out, ref, rating_ka),
+                                      "informational_ms_per_state": 1e3 * t_torch / N_VAL}
+            recs.append(rec)
+            print(network, rec["numba"]["pass"], rec[f"torch_{device}"]["pass"], flush=True)
+    commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
+    dirty = bool(subprocess.run(["git", "status", "--porcelain", "src"], capture_output=True, text=True,
+                                cwd=ROOT).stdout.strip())
+    out_file = RESULTS / f"fourwire_scale_sweep_validation_{device}.json"
+    out_file.write_text(json.dumps({
+        "protocol": "docs/fourwire_scale_protocol.md, Amendment 3", "code_commit": commit, "src_dirty": dirty,
+        "gate": {"max_v_err_pu_on_converged": SWEEP_V_TOL_PU, "nonconverged_classified_the_same": True},
+        "machine": {"platform": platform.platform(), "processor": platform.processor(), "cpus": os.cpu_count(),
+                    "numba": numba.__version__, "numba_threads": numba.get_num_threads(),
+                    "torch": torch.__version__, "torch_device": device,
+                    "cuda_device": torch.cuda.get_device_name(0) if device.startswith("cuda") else None},
+        "note": "ms_per_state values are informational (tuning), not E2 timings",
+        "all_pass": all(r["numba"]["pass"] and r[f"torch_{device}"]["pass"] for r in recs),
+        "networks": recs}, indent=1))
+    return out_file
+
+
 def identify(networks: list[int], processes: int) -> Path:
     with Pool(processes) as pool:
         recs = pool.map(identify_network, networks, chunksize=1)
@@ -297,11 +400,15 @@ def identify(networks: list[int], processes: int) -> Path:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["identify", "e1"])
-    ap.add_argument("--networks", type=int, nargs="*", default=list(range(1, 26)))
+    ap.add_argument("cmd", choices=["identify", "e1", "validate-sweeps"])
+    ap.add_argument("--networks", type=int, nargs="*", default=None)
+    ap.add_argument("--device", default="cpu", help="validate-sweeps: PyTorch device (cpu or cuda)")
     ap.add_argument("--processes", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     a = ap.parse_args()
-    print((identify if a.cmd == "identify" else e1)(a.networks, a.processes))
+    if a.cmd == "validate-sweeps":
+        print(validate_sweeps(a.networks or ELIGIBLE, a.processes, a.device))
+    else:
+        print((identify if a.cmd == "identify" else e1)(a.networks or list(range(1, 26)), a.processes))
 
 
 if __name__ == "__main__":
