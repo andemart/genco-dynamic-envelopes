@@ -7,6 +7,11 @@ augmentation), OpenDSS
 labels under the §3 failure rule, and the Thevenin root equivalent fitted on the converged ones, with
 fit diagnostics. Writes data_out/fourwire_scale/ (networks, labels, Thevenin) and
 results/fourwire_scale_identification.json (hashes, diagnostics, frozen E and Z_th).
+
+    python -m gencodoe.fourwire_scale e1
+
+e1 (§7): per network, the first 200 val states; OpenDSS under the failure rule vs the NumPy sweep with the
+frozen Thevenin equivalent. Writes data_out/fourwire_scale/e1/ and results/fourwire_scale_e1.json.
 """
 from __future__ import annotations
 
@@ -23,6 +28,7 @@ import numpy as np
 
 from . import csiro_convert as cc
 from .datakit_fluvius import customer_states
+from .fourwire_net import V_PN_NOM as V_PN_NOM_KV
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data_out/fourwire_scale"
@@ -31,7 +37,7 @@ SPLIT_INDEX = {"train": 0, "val": 1, "calib": 2, "test": 3}
 AUGMENT = 0.5            # §2.5, passed explicitly; the generator default stays 0.0
 N_IDENT = 500            # Amendment 1
 OPENDSS = {"tolerance": 1e-6, "retry_algorithm": "newton"}   # §3
-CAP_KVA = 1.10 * 800.0   # Amendment 2: aggregate customer apparent power cap for the augmentation
+CAP_KVA = 880.0          # Amendment 2: 1.10 x 800 kVA, aggregate customer apparent power cap for the augmentation
 
 
 def seed(network: int, split: str) -> int:
@@ -88,6 +94,17 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def content_sha(arrays: dict) -> str:
+    """SHA-256 over array names, dtypes, shapes and bytes: reproducible across runs (an .npz file hash is
+    not, because the zip container stores timestamps)."""
+    h = hashlib.sha256()
+    for k in sorted(arrays):
+        a = np.ascontiguousarray(arrays[k])
+        h.update(f"{k}|{a.dtype}|{a.shape}|".encode())
+        h.update(a.tobytes())
+    return h.hexdigest()
+
+
 def label_block(ex, p_kw: np.ndarray, q_kvar: np.ndarray) -> dict:
     n = len(p_kw)
     d = {"V": np.zeros((n, ex.net.n_bus, 4), complex), "I": np.zeros((n, ex.net.n_bus, 4), complex),
@@ -139,15 +156,117 @@ def identify_network(network: int) -> dict:
     rec["augmentation_cap"] = augmentation_report(st)
     out = OUT / "identification" / f"network_{network}.npz"
     out.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(out, step=st["step"], mix=st["mix"], flex_kw=st["flex_kw"], flex_kw_drawn=st["flex_kw_drawn"],
-             gamma=st["gamma"], groups=st["groups"],
-             meters=st["meters"], p_kw_customer=st["p_kw"], q_kvar_customer=st["q_kvar"],
-             customer_names=np.array(names), connection_customer=idx, connection_share=share,
-             e=th.e, zth=th.zth, **lab)
+    arrays = dict(step=st["step"], mix=st["mix"], flex_kw=st["flex_kw"], flex_kw_drawn=st["flex_kw_drawn"],
+                  gamma=st["gamma"], groups=st["groups"], meters=st["meters"], p_kw_customer=st["p_kw"],
+                  q_kvar_customer=st["q_kvar"], customer_names=np.array(names), connection_customer=idx,
+                  connection_share=share, e=th.e, zth=th.zth, **lab)
+    np.savez(out, **arrays)
     rec["labels_file"] = str(out.relative_to(ROOT))
     rec["labels_sha256"] = _sha(out)
+    rec["labels_content_sha256"] = content_sha(arrays)
     rec["seconds"] = time.perf_counter() - t0
     return rec
+
+
+N_E1 = 200               # §7 E1: first 200 val states per network
+E1_V_TOL_PU, E1_I_TOL_REL = 1e-4, 1e-3
+
+
+def frozen_thevenin(network: int):
+    """The frozen Amendment 1 equivalent (identification run), checked against its recorded hash."""
+    from .fourwire_net import Thevenin
+    rec = {r["network"]: r for r in json.loads((RESULTS / "fourwire_scale_identification.json").read_text())["networks"]}
+    f = ROOT / rec[network]["labels_file"]
+    if _sha(f) != rec[network]["labels_sha256"]:
+        raise AssertionError(f"identification file of network {network} differs from the frozen record")
+    z = np.load(f)
+    return Thevenin(e=z["e"], zth=z["zth"])
+
+
+def e1_network(network: int, split: str = "val", n_states: int = N_E1, write: bool = True) -> dict:
+    """E1 (§7): 200 val states, OpenDSS (failure rule) vs the NumPy sweep with the frozen Thevenin root.
+    split/n_states/write exist only for smoke tests of this code on training states."""
+    from .fourwire_labels import Extractor
+    from .fourwire_net import load_fourwire, phase_neutral_pu, sweep
+    from .limits import VMAX_PU, VMIN_PU
+    t0 = time.perf_counter()
+    folder = network_folder(network)
+    if any(_sha(folder / k) != v for k, v in _identification(network)["network_files_sha256"].items()):
+        raise AssertionError(f"network {network} files differ from the identification run")
+    th = frozen_thevenin(network)
+    ex = Extractor(folder, **OPENDSS)
+    net = ex.net
+    names, idx, share = cc.customers(net.customer_names)
+    st = customer_states(len(names), split, n_states, seed(network, split), AUGMENT, CAP_KVA)
+    p, q = connection_states(st, idx, share)
+    lab = label_block(ex, p, q)
+    s = p + 1j * q
+    v_sw, i_sw, its, sw_conv = [], [], np.zeros(n_states, int), np.zeros(n_states, bool)
+    for k in range(n_states):                                  # one state at a time: per-state iteration counts
+        v, i, it = sweep(net, th, s[k:k + 1], iterations=100, tol=1e-8)
+        v_next, _, _ = sweep(net, th, s[k:k + 1], iterations=1, v0=v)
+        v_sw.append(v[0]); i_sw.append(i[0]); its[k] = it
+        sw_conv[k] = np.abs(v_next - v).max() / V_PN_NOM_KV < 1e-8
+    v_sw, i_sw = np.array(v_sw), np.array(i_sw)
+    c = lab["converged"]
+    both = c & sw_conv
+    vpn_sw = phase_neutral_pu(net, v_sw)
+    vpn_dss = phase_neutral_pu(net, lab["V"])
+    rating = net.rating_a[1:] / 1e3                                          # kA, root row excluded
+    v_err = float(np.abs(vpn_sw - vpn_dss)[both].max()) if both.any() else float("nan")
+    i_err = float((np.abs(i_sw - lab["I"])[:, 1:, :] / rating[None, :, None])[both].max()) if both.any() \
+        else float("nan")
+    # violation shares on OpenDSS-converged states; cable overload also under the rating variants
+    vpn_c = vpn_dss[c]
+    shares = {"undervoltage": float((vpn_c.min(1) < VMIN_PU).mean()), "overvoltage": float((vpn_c.max(1) > VMAX_PU).mean()),
+              "transformer_overload": float(lab["flags"][c, 3].mean())}
+    loading = {}
+    for variant in cc.RATING_VARIANTS:
+        if variant == "primary":
+            r = rating
+        else:
+            vf = network_folder(network, variant)
+            cc.convert(cc.network_dirs()[network], vf, variant)
+            r = load_fourwire(vf).rating_a[1:] / 1e3
+        loading[variant] = (np.abs(lab["I"][c, 1:, :3]) / r[None, :, None]).max((1, 2))
+        shares[f"cable_overload_{variant}"] = float((loading[variant] > 1.0).mean())
+    arrays = dict(step=st["step"], flex_kw=st["flex_kw"], flex_kw_drawn=st["flex_kw_drawn"], gamma=st["gamma"],
+                  meters=st["meters"], p_kw_customer=st["p_kw"], q_kvar_customer=st["q_kvar"], V_sweep=v_sw,
+                  I_sweep=i_sw, sweep_iterations=its, sweep_converged=sw_conv, **lab)
+    out = OUT / "e1" / f"network_{network}.npz"
+    if write:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        np.savez(out, **arrays)
+    return {"network": network, "states": n_states, "opendss_converged": int(c.sum()),
+            "newton_rescued": int(lab["rescued"].sum()), "solver_indeterminate": int((~c).sum()),
+            "sweep_nonconverged": int((~sw_conv).sum()),
+            "opendss_converged_sweep_nonconverged": int((c & ~sw_conv).sum()), "compared": int(both.sum()),
+            "max_vpn_err_pu": v_err, "max_branch_current_err_rel_rating": i_err,
+            "pass": bool(both.any() and v_err <= E1_V_TOL_PU and i_err <= E1_I_TOL_REL),
+            "sweep_iterations_median": float(np.median(its)), "sweep_iterations_p95": float(np.percentile(its, 95)),
+            "opendss_line_loading_check": float(np.abs(loading["primary"] - lab["summary"][c, 2]).max()),
+            "violation_shares": shares, "meter_reuse": meter_reuse(st), "augmentation_cap": augmentation_report(st),
+            "file": str(out.relative_to(ROOT)) if write else None, "sha256": _sha(out) if write else None,
+            "content_sha256": content_sha(arrays), "seconds": time.perf_counter() - t0}
+
+
+def _identification(network: int) -> dict:
+    d = json.loads((RESULTS / "fourwire_scale_identification.json").read_text())
+    return {r["network"]: r for r in d["networks"]}[network]
+
+
+def e1(networks: list[int], processes: int) -> Path:
+    with Pool(processes) as pool:
+        recs = pool.map(e1_network, networks, chunksize=1)
+    commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
+    dirty = bool(subprocess.run(["git", "status", "--porcelain", "src"], capture_output=True, text=True,
+                                cwd=ROOT).stdout.strip())
+    out = RESULTS / "fourwire_scale_e1.json"
+    out.write_text(json.dumps({"protocol": "docs/fourwire_scale_protocol.md §7 E1, Amendments 1 and 2",
+                               "code_commit": commit, "src_dirty": dirty, "criteria": {
+                                   "max_vpn_err_pu": E1_V_TOL_PU, "max_branch_current_err_rel_rating": E1_I_TOL_REL},
+                               "networks": recs}, indent=1))
+    return out
 
 
 def identify(networks: list[int], processes: int) -> Path:
@@ -166,11 +285,11 @@ def identify(networks: list[int], processes: int) -> Path:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["identify"])
+    ap.add_argument("cmd", choices=["identify", "e1"])
     ap.add_argument("--networks", type=int, nargs="*", default=list(range(1, 26)))
     ap.add_argument("--processes", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     a = ap.parse_args()
-    print(identify(a.networks, a.processes))
+    print((identify if a.cmd == "identify" else e1)(a.networks, a.processes))
 
 
 if __name__ == "__main__":

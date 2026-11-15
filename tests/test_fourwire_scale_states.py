@@ -126,3 +126,11 @@ def test_gamma_edge_cases():
     g = dk.augmentation_gamma(p, q, 200.0, 880.0)                  # export: P goes negative
     assert np.isclose(np.hypot(500 - 2000 * g, 100), 880.0) and 500 - 2000 * g < 0
     assert dk.augmentation_gamma(np.full(10, 100.0), q, -1.0, 880.0) == 0.0   # unaugmented > cap
+
+
+def test_content_sha_is_deterministic_and_sensitive():
+    a = {"x": np.arange(6.0).reshape(2, 3), "y": np.array([1, 2])}
+    assert fs.content_sha(a) == fs.content_sha({"y": a["y"].copy(), "x": a["x"].copy()})
+    assert fs.content_sha(a) != fs.content_sha({**a, "x": a["x"] + 1e-12})
+    assert fs.content_sha(a) != fs.content_sha({**a, "x": a["x"].reshape(3, 2)})
+    assert fs.CAP_KVA == 880.0
