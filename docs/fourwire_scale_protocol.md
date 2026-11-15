@@ -441,3 +441,187 @@ Appended after a second read-only audit, of commits 42f61bc to cbb0a02 and of th
 - Two processes with default settings start from identical weights and differ from the third training step (largest step-loss difference 6.7e-5).
 - Two processes with PyTorch's deterministic algorithms are bit-identical over 32 steps.
 - **Limits of this run:** it recorded the requested setting, not the setting in effect, and its summary would also have given a verdict on an invalid run. It is kept as a record. The probe is repeated with corrected code (ee2479f), and the rule for the final fits is fixed in Amendment 7.
+
+## Amendment 7 (2026-11-15): deterministic final fits and what counts as a fit's record (before any final fit)
+**Why.** Two smoke runs with the same seed, code and data gave different losses (Amendment 6). The first determinism probe (Amendment 6, corrections, item 5) shows that PyTorch's default GPU mode is not reproducible between processes, and that its deterministic mode was bit-reproducible over 32 steps on one A100 node.
+
+**Rule.**
+1. **Numerical mode and software.** Every final fit runs on a Hydra A100-PCIE-40GB with `torch.use_deterministic_algorithms(True)`, `CUBLAS_WORKSPACE_CONFIG=:4096:8`, cuDNN benchmark off and TF32 off, with the library versions recorded in the freeze file (Amendment 8, item 14). The settings are read at the start of the run and again at its end. A run with other versions is refused; a record whose settings were not in effect or changed is invalid.
+2. **One fit.** One final fit per (method, fold or network, budget, seed), as §8. **The first attempt that completes with a valid record is the fit.** A fit with a valid record is never run again, and no choice is ever made between two completed runs.
+3. **Attempts.** Every attempt has its own run folder, with the job that owns it and the loss curve written epoch by epoch. No folder is deleted.
+   - A fit may be attempted again only if the earlier attempt left no valid record and one of these holds: (a) Slurm accounting shows that its job ended as FAILED, NODE_FAIL, TIMEOUT, OUT_OF_MEMORY or PREEMPTED, or was cancelled by the system or an administrator; (b) its record is invalid for a reason that does not depend on the fit's outcome: the checkout or the numerical mode changed during the run.
+   - **We do not cancel a running final fit.** If one is cancelled by us, that is recorded as a deviation with its reason.
+   - While an attempt is running, a second attempt of the same fit is refused.
+   - **A rerun must retrace the earlier attempt.** The fit record compares every epoch the earlier attempt recorded (training and validation loss) with the rerun. With deterministic algorithms they should be identical; a difference is stated in the record and in the paper. A rerun therefore cannot give another outcome unnoticed.
+   - At most two reruns per fit. A third failure, an operation without a deterministic implementation, or an out-of-memory error that repeats is a defect of the code or the setup. The final runs then stop until a dated amendment (Amendment 8, item 14).
+   - The accounting lines of every job of the final runs are committed, and the record of a rerun names the earlier attempts with their jobs and how Slurm says they ended.
+4. **Terminal outcomes, never retried:** a non-finite gradient; a target scale that is zero or not finite; no epoch with a finite validation loss. The fit ends there. Its checkpoint is the one selected among its completed epochs (Amendment 8, item 5). If there is none, the method has no model for that case and defers on every state. If a PG-pre fit has no model, neither have the PG-ft fits that start from it, nor PG-pre-tc and PG-zs of that fold. These are valid records.
+5. **Valid record:** `GENCODOE_COMMIT` equals HEAD at the start; the source is unmodified and its hash equals the frozen one at the start and at the end; the label manifest has its pinned hash; the library versions are the frozen ones; the numerical mode of item 1 is in effect at the start and at the end.
+
+**What this does and does not establish.**
+- The probe is a falsification test: 32 steps, two networks, one node type, one software stack. It is not a certificate that a 60-epoch fit is bit-reproducible, and no criterion needs that.
+- Uncertainty enters the primary E3 criterion as frozen in §7: three seeds at B = 1,000 and the bootstrap over networks. Run-to-run variation at a fixed seed is not estimated. A rerun that retraces an interrupted attempt is evidence about it, where one happens.
+- The probe is being repeated with corrected code (job 13587703, commit ee2479f). Its report is committed when it finishes, whatever it shows. The rule above does not depend on it: if deterministic mode turns out not to be reproducible, every fit is still run once, the first valid attempt is the record, and the paper says that the fits are not bit-reproducible.
+- Deterministic algorithms are slower. The fit-only projection of 34 GPU-hours (Amendment 6) was measured in default mode, so the final fits will need more. The probe is too short to say how much.
+- The two smoke runs stay in the record. Neither is a final fit, and neither is used to start one.
+
+## Amendment 8 (2026-11-15): final fits, the screen, test evaluation and the freeze (before any final fit)
+Fixes what §4 to §8 and Amendment 5 leave open. No data, architecture, loss weight or success criterion changes.
+
+**What was seen before this amendment (disclosure).**
+- The two gate-5 smoke runs and the first determinism probe: train and val labels of pool networks only. The val-only comparison of the sweep with OpenDSS described in Amendment 9.
+- **Between the first draft of Amendments 7 to 9 and their commit:** an independent read-only audit of the draft, which led to the attempt rule of Amendment 7, to items 8, 9 and 14 below and to several items of Amendment 9; and dry runs of the code with train and val labels only. One ran on the laptop (network 25: fits of 1 to 3 epochs on at most 500 states, a screen calibrated on the first 1,500 val states and applied to the other 1,500, the timing harness, two envelope hours on a val day). Two of the same kind were submitted to the A100 (networks 17 and 7). They check that the code runs; no number from them decides anything in this text.
+- No PG-net, PG-scratch or PG-ft fit beyond those dry runs has been run. No calib or test label has been read by model code.
+
+**1. One training routine.** Every fit uses the PG-pre routine of Amendment 5 (`fourwire_scale_train.fit`): the same model, loss, loss weights, near-limit weight, batches of 32 states of one network, AdamW with weight decay 1e-4, a cosine schedule over the fit's maximum number of epochs, and the validation loss described in Amendment 6. PG-net, PG-scratch and PG-ft are that routine with a pool of one network.
+
+| Fit | Training states | Validation states | lr | Max epochs | Patience | Initial weights | Scalers and target scales |
+|---|---|---|---|---|---|---|---|
+| PG-pre (fold, seed) | first 5,000 train states of each of the 18 pool networks | all val states of the pool | 1e-3 | 60 | 8 | random | pool training states (Amendment 5) |
+| PG-net (network) | all 10,000 train states | the network's 3,000 | 1e-3 | 60 | 8 | random, seed 0 | its 10,000 train states |
+| PG-scratch(B, seed) | first B train states | the network's 3,000 | 1e-3 | 60 | 8 | random | its B states only |
+| PG-ft(B, seed) | first B train states | the network's 3,000 | 3e-4 | 30 | 5 | the selected checkpoint of PG-pre, fold of the target, same seed | PG-pre's, unchanged |
+
+**2. Budget and scaling boundaries.**
+- **B counts states in generation order, converged or not.** Solver-indeterminate states have loss weight 0 and enter no target scale. Their inputs do enter the input scaler, as in ENWL1. The number of converged states is reported for every fit.
+- **PG-scratch(B):** every fitted statistic comes from its B states only: the input scaler, the residual scale, the V_pn scale and the voltage-drop scale. The inherited rule "first 2,000 converged train states" for the last two becomes "the converged states among the B" when there are fewer. The edge scaler uses the target's branch data (impedance, rating, length), which are not labels.
+- **PG-ft(B), PG-pre-tc and PG-zs:** every scaler and scale is PG-pre's, unchanged, the edge scaler included. No statistic of the target network enters.
+- **PG-net:** its 10,000 train states, with the inherited rules.
+- **What the primary comparison compares.** PG-ft keeps PG-pre's input scaling and loss scales; PG-scratch estimates its own from its B states. With the same loss weights, the two objectives are therefore scaled differently. The criterion compares the two procedures as specified here, not pretrained weights in isolation, and the paper says so.
+- As disclosed in Amendment 6, every network's Thevenin equivalent uses the converged states among its first 500 train states, for every method and budget.
+
+**3. Seeds.** The seed sets the weight initialisation (except PG-ft, which starts from PG-pre) and the batch order: `torch.manual_seed(seed)`, `numpy.random.seed(seed)` and batch order from `numpy.random.default_rng(seed)`.
+
+**4. Fine-tuning.** All parameters are trainable. A new AdamW (lr 3e-4, weight decay 1e-4) and a new cosine schedule over 30 epochs. No optimiser state is carried over from PG-pre.
+
+**5. Checkpoint selection, every fit.** The validation loss is evaluated before training (epoch 0) and after every epoch.
+- The selected checkpoint is the epoch ≥ 1 with the lowest validation loss; on a tie, the earliest. An epoch whose validation loss is not finite is never selected.
+- Training stops after `patience` consecutive epochs without a new lowest value.
+- **Epoch 0 is recorded and not eligible.** It is the U1 prior for a fit from random weights, and PG-pre itself for PG-ft. This is the ENWL1 rule, unchanged. It cannot favour PG-ft: where PG-pre is already the best model on the target's val states, PG-ft is selected with a higher validation loss than its starting point.
+- That starting point is in every PG-ft record (its epoch-0 validation loss). On the test states it is evaluated for seed 0 only, as PG-pre-tc.
+
+**6. Failures and reruns:** Amendment 7, items 2 to 5.
+
+**7. Fit records (the run manifest of §8).** Per fit: commit, source hash, label manifest hash, the hash of the identification record that holds the Thevenin equivalents and the network-file hashes, configuration, seed, state and converged counts, scalers, loss curve, selected epoch, SHA-256 of the checkpoint file, for PG-ft the PG-pre record and checkpoint it started from, the earlier attempts and whether the fit retraced them, library versions, node, GPU, and the numerical mode in effect. Checkpoints stay outside git; the records are committed.
+
+**8. The screen.**
+- **Implementation:** `fourwire_eval.GlobalMargins` of the ENWL1 study, unchanged, α = 0.01, fitted on the converged states of the calibration set. The hash of that file is in every evaluation record.
+- **Predicted quantities:** from the predicted node voltages, branch currents by KCL with the state's customer powers, then `fourwire_model.summaries`: minimum and maximum V_pn, maximum phase loading of the non-root branches, and the LV-root loading proxy. U1 is screened the same way, from its own voltages.
+- **Calibration truth:** the OpenDSS label summary (minimum and maximum V_pn, worst cable loading, transformer loading).
+- **Calibration set:** the target's 2,000 calib states for U1, PG-net, PG-scratch, PG-ft and PG-pre-tc. For PG-zs, the calib states of the 18 pool networks together (36,000 states, each once), giving one set of margins. PG-zs thus has 18 times more calibration states, all from other networks. Whether margins from other networks hold on the target is part of what PG-zs tests; its result is read with that in mind.
+- A state is screened in both directions, whatever its own injection (as in ENWL1).
+- **Unusable calibration.** If one or more predicted quantities are not finite on a converged calibration state, the method has no screen and defers on every state. A margin that is infinite because there are fewer than 399 converged calibration states is kept: that criterion never clears.
+- At test time a state with a non-finite predicted quantity defers (inherited).
+
+**9. Decision metrics, per method, network and direction.** Truth is the OpenDSS label. A state is *safe in a direction* if it converged and has no cable overload, no transformer overload and no undervoltage (import) or overvoltage (export).
+- **False-safe:** cleared by the screen, converged, not safe in that direction.
+- **Cleared-indeterminate:** cleared by the screen, solver-indeterminate.
+- **False-unsafe:** rejected by the screen, safe in that direction.
+- **Fallback share:** share of the 4,096 test states that the screen sends to the fallback, mean of the two directions.
+- **Rates and bounds are per direction.** The false-safe rate is the count over the converged states that are not safe in that direction, with its one-sided 95% Clopper–Pearson upper bound. Counts summed over the two directions are given as counts only: the two directions share the state, so their pairs are not independent trials.
+- **These metrics concern screen outcomes,** as §5 and §6 define them. What the whole pipeline delivers, including the decisions of its exact fallback, is assessed in E2 (Amendment 9, item 6).
+
+**10. State accuracy,** per method and network, on the converged test states with a finite prediction.
+- The number of converged states and the number of non-finite predictions among them are reported with every metric. If no converged state has a finite prediction, the metrics are missing, not zero.
+- **V_pn:** | |V_pn| predicted − |V_pn| OpenDSS | in pu of 240.18 V, over states and customer connections: MAE, p95, p99, maximum.
+- **Complex voltage:** |V predicted − V OpenDSS| / 240.18 V over states, retained buses and the four conductors: MAE, maximum.
+- **Neutral voltage:** | |V_n| predicted − |V_n| OpenDSS | / 240.18 V over states and retained buses: MAE, maximum.
+- **Phase and neutral currents:** | |I| predicted − |I| OpenDSS | divided by the branch rating, non-root branches: MAE and maximum, separately for the phases and the neutral.
+- **Transformer loading:** | LV-root proxy of the predicted state − OpenDSS transformer loading |: MAE, maximum. The OpenDSS label is the authority. This differs on purpose from the ENWL1 evaluator, which compared the model's proxy with the proxy of the OpenDSS state. The proxy of the OpenDSS state is reported next to it: it shows how much of the error is the proxy itself (Amendment 9, disclosure).
+- **Aggregation:** per network. Means over networks in E3 are unweighted means of the per-network values.
+
+**11. Rating sensitivity (§2.4).** For each of the two variants, every model is re-evaluated on the test states with the variant's ratings as edge inputs and in the loading quantity. Margins stay those of the primary calibration. The truth's cable-overload flag is recomputed from the label currents with the variant's ratings. The decision metrics are re-reported; no criterion uses them.
+
+**12. E3 statistics:** as §7. The paired bootstrap resamples the 23 fresh networks with replacement (2,000 replicates, seed 0, percentile interval) on the per-network differences.
+
+**13. Numerical mode of inference.** Calibration, test evaluation and the envelope check use one device path: U1 and the features computed on the device, the model in FP32 with TF32 off, microbatches of 256 states, deterministic algorithms on. Timing uses the same path in PyTorch's default mode (Amendment 9, item 4).
+
+**14. Freeze and test isolation.**
+- **Freeze.** The code and inputs of fits, calibration, evaluation, timing and envelopes are frozen by committing `results/fourwire_scale_freeze.json`. It is written on Hydra, from committed source, and holds: the SHA-256 over `src/gencodoe/*.py`; the hashes of the label manifest, of the identification record (Thevenin equivalents and network files), of the rating-variant network files, of the meter profiles (content hash) and of the job script; the library versions; and the folds. Every final command refuses to run if the source is modified, if it is not pinned to HEAD, or if any of these that it uses differs (the rating-variant files are used by the evaluation, the meter profiles by the envelope check).
+- **Order:** freeze; final fits; evaluation, once per target network, after all of that network's fits have valid records; timing and envelopes for the E2 networks; reports.
+- **Test labels** are read only by the final `evaluate` command of `fourwire_scale_eval`. It refuses if an evaluation record of that network exists, if anything differs from the freeze, or if a fit record of that network is missing, invalid or made with other source. The training module cannot read them (the Amendment 5 loader, with tests).
+- **No selective release.** The evaluation of the 24 networks is submitted as one job array. A final evaluation prints no result, and no evaluation record is opened before all 24 exist.
+- **Dry runs before the freeze** use train and val only: short fits flagged `dry_run`; the first half of a network's val states stands in for its calibration set and the second half for its test set. A dry-run model is never evaluated on test.
+- **Compute.** A fit job has one A100 and 8 cores. Several fits of one network run one after another in one job, each in its own process.
+- **A defect found after the freeze** is fixed under a dated amendment that states the defect, what had been seen, and the change. **What is redone follows from what the change touches, never from a result:**
+  - a change to the fitting code or to an input of the fits: all 276 fits, and everything after them;
+  - a change to the calibration or evaluation code: the evaluation of all 24 networks, and everything after it;
+  - a change to the timing or envelope code: those runs, for all six networks;
+  - a change to a report: the report.
+  - Never a subset of networks, seeds or methods. Every earlier output is kept with its freeze and reported next to the new one.
+
+## Amendment 9 (2026-11-15): E2 execution and the envelope check (before any timing)
+Fixes what §5 to §7 and Amendment 3 leave open for E2, and lists every departure from them. The speed criterion of §7 keeps its thresholds; its safety condition becomes stricter (item 6).
+
+**What was seen before this amendment (disclosure).**
+- **Informational timings, none of them E2:** the validation pass of the gate-5 smoke (0.07 to 0.63 ms per state for networks of 94 to 1,668 buses, loss included), the sweep times of the validation runs (the contaminated field of Amendment 6), OpenDSS label times on the laptop (17 to 270 ms per state), and the laptop dry run of Amendment 8's disclosure (network 25 on a CPU).
+- **A hypothesis from them, stated before any timing:** the PG-net model alone is slower per state than the optimised sweep on every network, and where a sweep has non-converged states, the OpenDSS solves that §3 prescribes for them dominate its end-to-end time. If so, a speed-up for GENCO would come from that rule and not from faster power-flow prediction. The sensitivity series of item 6 is there to test this, whatever the outcome.
+- **Val-only comparison of the Numba sweep with the OpenDSS labels** (72,000 val states, 24 networks; `scripts/fourwire_scale_val_sweep_vs_opendss.py`, `results/fourwire_scale_val_sweep_vs_opendss.json`):
+  - **Convergence.** The sweep does not converge on 1,577 states and OpenDSS is indeterminate on 1,547, all of them among the 1,577. On the other 30 the sweep fails and OpenDSS converges; OpenDSS finds all 30 unsafe in both directions. On no state does the sweep converge while OpenDSS is indeterminate.
+  - **Flags, where both converge.** The voltage and cable flags agree on every state. The transformer flag differs on 73 states (0 to 7 per network): on 58 the sweep's is clear and OpenDSS's is set, on 15 the reverse. OpenDSS's transformer loading is the apparent power at the transformer's HV terminal; the sweep's is the LV-root proxy, typically 0.5 to 1% lower above 80% loading.
+  - **Complete decisions** differ far less, because those states usually break another limit too. The sweep declares no state safe in a direction where OpenDSS does not (0 of 144,000 state-directions). It declares 2 import decisions unsafe that OpenDSS calls safe. Sending the 30 non-converged states to OpenDSS changed no decision.
+  - These are capped val states. They say nothing about the uncapped states of an envelope search.
+
+**1. Allocation.** One job per network: one A100-PCIE-40GB and 16 cores of the same node (the count is recorded), with 16 Numba threads, 16 PyTorch CPU threads and 16 OpenDSS processes. The node is shared with other jobs.
+
+**2. Inputs and batches.** The per-connection P and Q (FP64) of the network's test states in generation order, in host memory, regenerated from the seeds and checked against the input hash in the label manifest. The timing code reads no label. Repeat r = 0, 1, 2, … of batch size B (warm-ups first) uses the B states starting at (r · B) mod 4,096, the same for every series. (A choice: §6 only says "in a fixed order". At batch 4,096 every repeat is the whole test split.)
+
+**3. Timed series, per network and batch size.** The deliverable is that of Amendment 3, in host memory: per state the four quantities, the decision per direction and the convergence flag.
+- **Decision of an exact engine:** safe in a direction if the state converged and its quantities are within the limits of that direction. A state that is not converged after the §3 rule is unsafe in both directions.
+- **Convergence flag of a state decided by the screen:** no solver runs for it, so the flag is delivered as true. Whether each state was decided by the screen or by an exact solve is stored with the decisions.
+- **(a) OpenDSS.** 16 worker processes, each with one engine that is built and primed with a no-load solve before timing and kept for the whole run. A batch is cut into at most 16 contiguous chunks; each goes to a free worker.
+  - **Before each chunk the engine solves the no-load case,** inside the timed region. A chunk's answers and time then do not depend on what that worker solved before.
+  - Within a chunk the states are solved in order under the §3 failure rule, each from the previous solution, as OpenDSS does and as in label generation. This is OpenDSS's own behaviour and an exception to "no warm start for any method" in §3, which concerns the sweeps and GENCO.
+- **(b) NumPy sweep.** One state at a time, as the Amendment 3 reference, non-converged states to OpenDSS. **Timed at batch 1 only** (3 warm-ups, 100 repeats): one state takes of the order of a second on the large networks. Only its batch-1 latency is reported; nothing is derived from it for larger batches. A departure from the batch sizes of §6, for a series that enters no criterion.
+- **(c) CPU sweep, (d) GPU sweep.** `NumbaSweep` and `TorchSweep` (FP64) on the whole batch. States not converged within 100 iterations go to the OpenDSS workers of (a); OpenDSS's quantities and decisions replace the sweep's.
+- **(e) U1 screen + fallback, (f) PG-net screen + fallback,** each timed twice: with (c) and with (d) as its fallback engine.
+- **OpenDSS at batch 4,096** is timed with 1 warm-up and 10 repeats, not 3 and 100: one repeat takes of the order of a minute on the large networks. Its p95 is therefore less precise than that of the other series. The series enters no criterion.
+- **Microbatches.** §6 allows them for any method. The model uses 256 states, the ENWL1 value. The sweeps use none: the Numba sweep has nothing to split, and 4,096 states of the largest network fit in GPU memory. Neither choice was tuned for speed.
+
+**4. The screen pipelines (e) and (f), per batch.**
+1. The batch goes to the device.
+2. U1: one sweep iteration from the flat start, FP64, on the device.
+3. Node features and scaling, on the device. 4. PG-net in FP32, microbatches of 256 states. (Series (e) skips 3 and 4.)
+5. KCL currents and the four quantities.
+6. The screen, in both directions, with the margins of the evaluation record.
+7. A state that is uncertain in at least one direction is solved once by the exact engine, with its OpenDSS rule. The exact quantities and decisions replace the screen's for both directions of that state, also in a direction where the screen had decided. Item 6 accounts for this.
+8. The deliverable goes to host memory.
+- Weights, margins, network constants, compiled code and the OpenDSS engines are prepared before timing. Nothing computed in one repeat or series is reused in another; the OpenDSS engines are reset before every chunk (item 3a).
+- **Numerical mode:** PyTorch's default algorithms for every GPU series, GENCO and sweep alike, because deterministic algorithms would slow both. TF32 off, no `torch.compile`. **This is not the deterministic path on which the screen was calibrated and evaluated.** Item 6 therefore assesses the decisions that the timed run itself delivered.
+
+**5. Order and repeats.** For each batch size, the series run round-robin: one repeat of each per round; 3 warm-up rounds, then 100 timed rounds.
+- **Order within a round:** CPU sweep, GPU sweep, U1 with CPU fallback, U1 with GPU fallback, PG-net with CPU fallback, PG-net with GPU fallback, then the same six without OpenDSS solves (item 6). OpenDSS and the NumPy sweep come first where they are in the rounds.
+- **The starting position advances by one every round,** so that no series always runs after the same one.
+- Exceptions: (b), and (a) at batch 4,096, as in item 3. `torch.cuda.synchronize()` as in Amendment 3.
+
+**6. Statistics and what is reported with them.**
+- **Speed baseline,** per network and batch size: whichever of (c) and (d) has the lower median. **PG-net pipeline time:** whichever of its two fallback variants has the lower median. The speed-up is the ratio of those two medians.
+- **Interval (the criterion, §7):** each bootstrap replicate resamples the 100 repeats of each of the four series independently and recomputes both minima and the ratio (2,000 replicates, seed 0, percentile). **Sensitivity:** the same with whole rounds resampled, which keeps what the series of one round share. Both are reported.
+- **Safety condition of the §7 criterion, stricter than §7.** Both must hold on the network's test states:
+  - the screen of PG-net has no false-safe and no cleared-indeterminate decision (evaluation record; Amendment 8, items 8 and 9);
+  - **what the faster timed PG-net variant delivered at batch 4,096** has none either: every delivered decision, from the screen or from the exact fallback, against the OpenDSS labels.
+- **Reported next to every speed-up, outside the criterion:**
+  - **Sensitivity series.** (c), (d), (e) and (f) again, with the non-converged sweep states declared unsafe without an OpenDSS solve; the speed-up computed from them; and their delivered decisions against OpenDSS.
+  - **Delivered decisions of every timed series** against the OpenDSS labels, per direction: false-safe, cleared-indeterminate, false-unsafe. This includes the sweep baselines.
+  - The number of timed decisions that differ from the evaluation record's deterministic path, and from repeat to repeat.
+  - The log–log exponents and the speed-ups at batch 1 and 256 (§7).
+- **Claim wording.**
+  - "Zero observed false-safe decisions" about a pipeline refers to its delivered decisions. The screen's own metric is reported separately.
+  - If GENCO is faster with the §3 rule and not in the sensitivity series, the paper says "faster than the sweep pipeline with mandatory OpenDSS solves for its non-converged states", gives the comparison without those solves and its decision differences in the same place, and does not attribute the gain to faster power-flow prediction or to solvers in general.
+
+**7. Envelope check (§6), E2 networks.**
+- **Days:** the 36 test days in calendar order, every third one starting with the first: 2024-01-10, 02-09, 03-10, 04-09, 05-09, 06-08, 07-08, 08-07, 09-06, 10-06, 11-05 and 12-05. Their day indices, counted from 0 on 1 January, are 9, 39, …, 339.
+- **Intervals:** the first 15-minute step of each hour, 24 per day, both directions: 576 envelopes per network and evaluator, 288 per direction.
+- **Design scenarios** (the ENWL1 day rule of `doe_day.DayScenarios`, with the meter-shortage rule of §2.5):
+  - Each customer gets its technology flags once per network and day, with the ENWL1 DOE shares (heat pump 0.3, EV 0.3, PV 0.4): one draw of `uniform(size=(customers, 3))` from `numpy.random.default_rng([network, day index, 0])`, customers in `Loads.dss` order.
+  - One generator `numpy.random.default_rng([network, day index, 1])` serves the day: hours in order; within an hour the 200 scenarios in order; within a scenario the technology groups in ascending order of their (heat pump, EV, PV) flags. For each group, one draw of meters for all its customers at once (without replacement while the group has enough meters, §2.5 otherwise), read at the interval's step. Offtake at PF 0.95, injection at unity power factor.
+  - The same scenarios serve both directions and both evaluators. The Amendment 2 cap does not apply: the search sets the injection.
+- **Envelope:** `envelopes.scalar_envelope`, unchanged. Uniform policy: one level L per customer in [0, cap], cap 5.0 kW for export and 7.4 kW for import, added to every customer at unity power factor. A three-phase customer's L is split equally over its three connections. ε = β = 0.05, so a level is accepted if at least 98% of the 200 scenarios are feasible; 4 levels per round; relative tolerance 1e-3.
+  - **Its own order of checks is kept:** if the cap is accepted, the envelope is the cap; otherwise, if fewer than 98% are feasible at L = 0, the envelope is 0; otherwise the search.
+  - The search assumes that feasibility does not come back once lost as L grows (as in ENWL1). A screen need not behave that way; the comparison of B with A shows where it matters.
+- **Feasible in a direction:** the exact-engine decision of item 3.
+- **Evaluator A:** the Numba sweep. **Evaluator B:** the PG-net screen, then the Numba sweep for the states the screen sends to the fallback in the envelope's direction.
+- **Departure from §3, for both evaluators:** a state on which the sweep does not converge counts as infeasible, without an OpenDSS solve. At high levels most states do not converge, and the check needs millions of states. **The check is therefore relative to the sweep. It is not evidence about envelopes judged by OpenDSS.** On the capped val states the same rule changed no decision; the search's states are not capped.
+- The check reads no label. Its reference is evaluator A.
+- **Agreement criterion (§6):** |L_B − L_A| ≤ 1e-3 × cap in at least 95% of the network's 576 envelopes, the two directions together. The share is also reported per direction.
+- **Also reported per network and direction:** the number of unsafe-envelope intervals (L_B > L_A + 1e-3 × cap), the largest differences, the number of zero envelopes, and the share of evaluator B's states sent to the fallback.
