@@ -41,7 +41,9 @@ def store(tmp_path, monkeypatch):
     decoy.mkdir(parents=True)
     (decoy / "shard_000.npz").write_bytes(b"not for training code")
     (decoy / "manifest.json").write_text("{}")
-    return fd.LabelStore(tmp_path / "out/labels", manifest, COMMIT)
+    monkeypatch.setattr(fd, "MANIFEST", manifest)                   # the store takes only the label root
+    monkeypatch.setattr(fd, "LABEL_COMMIT", COMMIT)
+    return fd.LabelStore(tmp_path / "out/labels")
 
 
 @pytest.fixture
@@ -76,16 +78,19 @@ def test_loader_serves_train_val_calib_and_refuses_test(store, test_tree_guard):
         store.load(25, "test")
     assert test_tree_guard == []                                   # refused before any path is touched
     assert list(inspect.signature(fd.LabelStore.load).parameters) == ["self", "network", "split", "n_states"]
+    assert list(inspect.signature(fd.LabelStore.__init__).parameters) == ["self", "root"]   # no manifest or commit override
     assert fd.SERVED == ("train", "val", "calib") and all(split != "test" for _, split in store.units)
     with pytest.raises(ValueError):
         store.load(25, "train", 25)
 
 
-def test_loader_verifies_before_exposing_states(store, tmp_path):
+def test_loader_verifies_before_exposing_states(store, tmp_path, monkeypatch):
     folder = store.root / "train/network_25"
     arrays, prov = fs._read_shard(folder / "shard_001.npz")
-    with pytest.raises(AssertionError, match="label commits"):
-        fd.LabelStore(store.root, tmp_path / "manifest.json", "1" * 40)
+    with monkeypatch.context() as m:
+        m.setattr(fd, "LABEL_COMMIT", "1" * 40)
+        with pytest.raises(AssertionError, match="label commits"):
+            fd.LabelStore(store.root)
     np.savez(folder / "shard_001.npz", provenance=json.dumps({**prov, "src_dirty": True}), **arrays)
     with pytest.raises(AssertionError, match="differs from the committed manifest"):
         store.load(25, "train")                                    # shard written from modified source
@@ -99,8 +104,31 @@ def test_loader_verifies_before_exposing_states(store, tmp_path):
     unit = next(u for u in man["splits"] if (u["network"], u["split"]) == (25, "train"))
     unit["shards"] = unit["shards"][:1]                             # a split with a missing shard
     (tmp_path / "short.json").write_text(json.dumps(man))
+    monkeypatch.setattr(fd, "MANIFEST", tmp_path / "short.json")
     with pytest.raises(AssertionError, match="not the frozen label set"):
-        fd.LabelStore(store.root, tmp_path / "short.json", COMMIT).load(25, "train", 12)
+        fd.LabelStore(store.root).load(25, "train", 12)
+
+
+def test_loader_cannot_be_redirected_into_another_split(store, test_tree_guard, tmp_path, monkeypatch):
+    """A manifest name with '..', a linked shard or a linked folder is refused before any byte is read."""
+    decoy = store.root / "test/network_25/shard_000.npz"
+    val = store.root / "val/network_25"
+    (val / "shard_000.npz").unlink()
+    (val / "shard_000.npz").symlink_to(decoy)                       # a shard that is a link into the test tree
+    with pytest.raises(AssertionError, match="not a plain shard file"):
+        store.load(25, "val")
+    (store.root / "calib/network_25").rename(tmp_path / "moved")
+    (store.root / "calib/network_25").symlink_to(store.root / "test/network_25")   # a linked folder
+    with pytest.raises(AssertionError, match="not a plain shard file"):
+        store.load(25, "calib")
+    man = json.loads(fd.MANIFEST.read_text())
+    unit = next(u for u in man["splits"] if (u["network"], u["split"]) == (25, "train"))
+    unit["shards"][0]["file"] = "../../test/network_25/shard_000.npz"                # a path that climbs out
+    (tmp_path / "evil.json").write_text(json.dumps(man))
+    monkeypatch.setattr(fd, "MANIFEST", tmp_path / "evil.json")
+    with pytest.raises(AssertionError, match="not a plain shard file"):
+        fd.LabelStore(store.root).load(25, "train", 12)
+    assert test_tree_guard == []
 
 
 def test_training_and_smoke_never_open_or_list_the_test_tree(store, test_tree_guard, tmp_path, monkeypatch):
@@ -111,15 +139,25 @@ def test_training_and_smoke_never_open_or_list_the_test_tree(store, test_tree_gu
             touch()                                                # the guard is not vacuous
     del test_tree_guard[:]
     monkeypatch.setattr(tt, "N_PRE", 24)
-    monkeypatch.setattr(tt, "MANIFEST", tmp_path / "manifest.json")
     monkeypatch.setattr(tt, "pool_of", lambda fold: POOL)
-    monkeypatch.setattr(tt, "LabelStore", lambda root: fd.LabelStore(root, tmp_path / "manifest.json", COMMIT))
     monkeypatch.setattr(fs, "ELIGIBLE", POOL)
     (tmp_path / "fourwire_scale_identification.json").write_bytes(
         (fs.RESULTS / "fourwire_scale_identification.json").read_bytes())      # the frozen Thevenin record
     monkeypatch.setattr(fs, "RESULTS", tmp_path)                                # the smoke report goes to tmp
-    rep = json.loads(tt.smoke(store.root, 0, 2, "cpu").read_text())
+    monkeypatch.setenv("GENCODOE_COMMIT", "f" * 40)
+    with pytest.raises(RuntimeError, match="GENCODOE_COMMIT"):      # the pinned commit is asserted before training
+        tt.smoke(store.root, 0, 2, "cpu")
+    head = tt.checkout_state()["head"]
+    monkeypatch.setenv("GENCODOE_COMMIT", head)
+    report = tt.smoke(store.root, 0, 2, "cpu")
+    rep = json.loads(report.read_text())
     assert test_tree_guard == [] and decoy.exists()
+    assert rep["code_commit"] == rep["gencodoe_commit"] == head and rep["checkout_unchanged_during_run"]
+    assert len(rep["initial_weights_sha256"]) == 64 and rep["initial_weights_sha256"] != rep["final_weights_sha256"]
+    assert report.name.startswith("fourwire_scale_smoke_pgpre_local") and "upper bound" not in report.read_text()
+    run = next((fs.OUT / "runs").iterdir())
+    with pytest.raises(FileExistsError):                             # a run folder is never overwritten
+        tt.pretrain(store, POOL, 1, "cpu", out_dir=run)
     assert rep["pool"] == POOL and rep["states"]["train"] == 48 and rep["states"]["val"] == 24
     assert [c["epoch"] for c in rep["curve"]] == [0, 1, 2] and all(np.isfinite(c["val_loss"]) for c in rep["curve"])
     assert all(v["train_ms_per_step"] > 0 and v["val_ms_per_state"] > 0 for v in rep["per_network"].values())
@@ -161,3 +199,24 @@ def test_projection_counts_the_runs_of_section_8():
     fits = sum(k * epoch(n, b) for n in fs.ELIGIBLE for b, k in ((200, 1), (1000, 3), (5000, 1)))
     assert np.isclose(h["pg_scratch_120_fits"], 60 * fits / 3600) and np.isclose(h["pg_ft_120_fits"], 30 * fits / 3600)
     assert np.isclose(p["gpu_hours_total"], sum(h.values())) and p["fits"]["train_ms_per_step"]["r2"] > 0.999
+
+
+def test_cpu_training_is_bit_reproducible_and_scales_match_the_enwl1_formulas(store):
+    """Two fits with the same seed on CPU: same initial weights, step losses and final weights. For a pool
+    of one network the pooled target scales are the ENWL1 ones (fourwire_train.run_fit), up to its use of
+    the sample standard deviation in float32 for the V_pn scale."""
+    runs = [tt.pretrain(store, POOL, 1, "cpu", n_train=24, n_val=12, record_steps=True) for _ in range(2)]
+    for k in ("initial_weights_sha256", "step_losses", "final_weights_sha256"):
+        assert runs[0][k] == runs[1][k], k
+    assert len(runs[0]["step_losses"]) == 2 and all(np.isfinite(runs[0]["step_losses"]))
+    from gencodoe.fourwire_net import V_PN_NOM, phase_neutral_pu
+    st = fm.Static(*fs._case(25))
+    tr = tt.prepare(store, st, 25, "train", 24)
+    rs, vpn, kvl = tt.pooled_scales({25: tr}, {25: st})
+    c = tr["conv"]
+    r = ((tr["V"] - tr["v1"]) / V_PN_NOM)[c]                                             # fourwire_train.residual_scale
+    assert np.allclose(rs, np.concatenate([r.real.reshape(-1, 4).std(0), r.imag.reshape(-1, 4).std(0)]), rtol=1e-5)
+    d = phase_neutral_pu(st.net, tr["V"][c][:2000]) - phase_neutral_pu(st.net, tr["v1"][c][:2000])
+    assert np.isclose(vpn, d.std(ddof=1), rtol=5e-3)                                     # sample SD there, population SD here
+    drop = (tr["V"][c][:2000][:, st.net.parent[1:]] - tr["V"][c][:2000][:, 1:]) / V_PN_NOM
+    assert np.isclose(kvl, np.abs(drop).std(), rtol=1e-5)

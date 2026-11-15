@@ -1,18 +1,25 @@
 """PG-pre for the 25-network study (docs/fourwire_scale_protocol.md §4, §9 gate 5).
 
     python -m gencodoe.fourwire_scale_train smoke --label-root <dir> --fold 0 --epochs 3 --device cuda
+    python -m gencodoe.fourwire_scale_train determinism --label-root <dir> --device cuda [--deterministic] --out <file>
 
 PhaseGraph (fourwire_model.GNS_heterogeneous_4wire) pretrained on the 18 networks outside a fold: the first
 5,000 train states of each, validation on their val states, with the ENWL1 amendment 1 configuration and
 loss of fourwire_train, unchanged. Labels are read through fourwire_scale_data.LabelStore: train and val
 only, from the label root given on the command line.
 
-smoke writes results/fourwire_scale_smoke_pgpre.json: peak GPU memory, epoch time, time per step and per
-validation state for each network, and the projected compute of the §8 runs.
+smoke writes results/fourwire_scale_smoke_pgpre_<job>.json: peak GPU memory, epoch time, time per step and
+per validation state for each network, and the fit-only projection of the §8 fits. The commit is read
+before the run (GENCODOE_COMMIT, when set, must equal HEAD) and the checkout must not move during it.
+
+determinism trains 32 steps on networks 10 and 17 and writes the initial-weight hash, every step loss and
+the final-weight hash, so that two processes can be compared bit for bit, with or without PyTorch's
+deterministic algorithms.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -28,7 +35,7 @@ from . import csiro_convert as cc
 from . import fourwire_model as fm
 from . import fourwire_scale as fs
 from .fourwire_net import V_PN_NOM, phase_neutral_pu
-from .fourwire_scale_data import LABEL_COMMIT, MANIFEST, LabelStore
+from . import fourwire_scale_data as fd
 from .fourwire_train import CONFIG, VMAX, VMIN
 
 N_PRE = 5000                       # §4 PG-pre: the first 5,000 train states of each pool network
@@ -39,7 +46,7 @@ FT_EPOCHS = 30                     # §4 PG-ft
 
 def folds() -> list[list[int]]:
     """§2.6: the eligible networks sorted by retained-bus count (ties by number), round-robin to folds 0-3."""
-    buses = {u["network"]: u["retained_buses"] for u in json.loads(MANIFEST.read_text())["splits"]}
+    buses = {u["network"]: u["retained_buses"] for u in json.loads(fd.MANIFEST.read_text())["splits"]}
     order = sorted(fs.ELIGIBLE, key=lambda n: (buses[n], n))
     return [sorted(order[k::4]) for k in range(4)]
 
@@ -47,6 +54,42 @@ def folds() -> list[list[int]]:
 def pool_of(fold: int) -> list[int]:
     """The 18 pretraining networks of a fold: every eligible network outside it."""
     return sorted(set(fs.ELIGIBLE) - set(folds()[fold]))
+
+
+def checkout_state() -> dict:
+    """HEAD of the checkout this code runs in, and whether src/ differs from it."""
+    git = lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, cwd=fs.ROOT).stdout.strip()  # noqa: E731
+    return {"head": git("rev-parse", "HEAD"), "src_dirty": bool(git("status", "--porcelain", "src"))}
+
+
+def start_provenance(device: str) -> dict:
+    """Read before a run. GENCODOE_COMMIT, set by the job script, must equal HEAD."""
+    import torch_geometric
+    state, pinned = checkout_state(), os.environ.get("GENCODOE_COMMIT")
+    if pinned is not None and pinned != state["head"]:
+        raise RuntimeError(f"GENCODOE_COMMIT {pinned} != HEAD {state['head']}")
+    cuda = device.startswith("cuda")
+    return {"code_commit": state["head"], "gencodoe_commit": pinned, "src_dirty": state["src_dirty"],
+            "job_id": os.environ.get("SLURM_JOB_ID"), "node": platform.node(), "platform": platform.platform(),
+            "cpus": os.cpu_count(), "python": platform.python_version(), "numpy": np.__version__,
+            "torch": torch.__version__, "torch_geometric": torch_geometric.__version__, "device": device,
+            "cuda": torch.version.cuda if cuda else None,
+            "cudnn": torch.backends.cudnn.version() if cuda else None,
+            "cuda_device": torch.cuda.get_device_name(0) if cuda else None,
+            "cuda_total_mb": torch.cuda.get_device_properties(0).total_memory / 2 ** 20 if cuda else None}
+
+
+def checkout_unchanged(start: dict) -> bool:
+    state = checkout_state()
+    return state["head"] == start["code_commit"] and state["src_dirty"] == start["src_dirty"]
+
+
+def weights_sha(model) -> str:
+    h = hashlib.sha256()
+    for k, v in model.state_dict().items():
+        h.update(k.encode())
+        h.update(v.detach().cpu().numpy().tobytes())
+    return h.hexdigest()
 
 
 class Moments:
@@ -81,7 +124,7 @@ class PooledScaler(fm.Scaler):
         self.sd[self.sd < 1e-8] = 1.0
 
 
-def prepare(store: LabelStore, st: fm.Static, network: int, split: str, n_states: int | None) -> dict:
+def prepare(store: fd.LabelStore, st: fm.Static, network: int, split: str, n_states: int | None) -> dict:
     """fourwire_train.prepare for one network of the study (raw node features, U1 prior, targets)."""
     d = store.load(network, split, n_states)
     _, idx, share = cc.customers(st.net.customer_names)
@@ -113,12 +156,20 @@ def pooled_scales(tr: dict, statics: dict) -> tuple[np.ndarray, float, float]:
     return res.std().astype(np.float32), float(dvpn.std()[0]), float(drop.std()[0])
 
 
-def pretrain(store: LabelStore, pool: list[int], epochs: int, device: str, seed: int = 0,
-             out_dir: Path | None = None) -> dict:
+def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: int = 0,
+             out_dir: Path | None = None, n_train: int | None = None, n_val: int | None = None,
+             deterministic: bool = False, record_steps: bool = False) -> dict:
     """One PG-pre fit on the first N_PRE train states and the val states of every pool network. Batches
     hold states of one network (the model's graph context needs equal graph sizes); an epoch visits every
-    training state once, with the batches of all networks shuffled."""
-    n_train, n_val = N_PRE, None
+    training state once, with the batches of all networks shuffled. out_dir must not exist: a run folder is
+    never overwritten. n_train, n_val, deterministic and record_steps serve the determinism probe."""
+    n_train = N_PRE if n_train is None else n_train
+    if out_dir is not None:
+        out_dir.mkdir(parents=True, exist_ok=False)
+    if deterministic:                                                  # must precede the first CUDA call
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+        torch.use_deterministic_algorithms(True)
+        torch.backends.cudnn.benchmark = False
     torch.manual_seed(seed)
     np.random.seed(seed)
     dev = torch.device(device)
@@ -140,6 +191,7 @@ def pretrain(store: LabelStore, pool: list[int], epochs: int, device: str, seed:
 
     model = fm.GNS_heterogeneous_4wire(fm.N_NODE_BASE, hidden=CONFIG["hidden"], layers=CONFIG["layers"],
                                        heads=CONFIG["heads"]).to(dev)
+    initial_sha = weights_sha(model)
     batchers = {n: fm.Batcher(statics[n], es(statics[n].edge_raw), dev) for n in pool}
     physics = {n: fm.Physics(statics[n], dev) for n in pool}
     rs_t = torch.as_tensor(rs, device=dev)
@@ -196,6 +248,7 @@ def pretrain(store: LabelStore, pool: list[int], epochs: int, device: str, seed:
     if dev.type == "cuda":
         torch.cuda.reset_peak_memory_stats()
     step_s, step_n, eval_s = {n: 0.0 for n in pool}, {n: 0 for n in pool}, {n: 0.0 for n in pool}
+    step_losses = []
     for ep in range(1, epochs + 1):
         t_ep = time.perf_counter()
         batches = []
@@ -216,6 +269,8 @@ def pretrain(store: LabelStore, pool: list[int], epochs: int, device: str, seed:
             opt.step()
             tl += loss.item()                                        # synchronises: the step time is complete
             nb += 1
+            if record_steps:
+                step_losses.append(loss.item())
             if ep > 1:                                               # epoch 1 carries warm-up and graph caches
                 step_s[n] += time.perf_counter() - t
                 step_n[n] += 1
@@ -235,7 +290,6 @@ def pretrain(store: LabelStore, pool: list[int], epochs: int, device: str, seed:
         if vl < best:
             best, best_ep, bad = vl, ep, 0
             if out_dir is not None:
-                out_dir.mkdir(parents=True, exist_ok=True)
                 torch.save(model.state_dict(), out_dir / ".best.partial.pt")
                 os.replace(out_dir / ".best.partial.pt", out_dir / "best.pt")
         else:
@@ -244,6 +298,8 @@ def pretrain(store: LabelStore, pool: list[int], epochs: int, device: str, seed:
                 break
     timed = max(len(curve) - 2, 0)                                    # epochs after the first
     return {"pool": pool, "seed": seed, "config": CONFIG, "n_params": sum(p.numel() for p in model.parameters()),
+            "deterministic_algorithms": deterministic, "initial_weights_sha256": initial_sha,
+            "final_weights_sha256": weights_sha(model), **({"step_losses": step_losses} if record_steps else {}),
             "states": {"train_per_network": n_train, "train": int(sum(len(tr[n]["x"]) for n in pool)),
                        "train_converged": int(sum(tr[n]["conv"].sum() for n in pool)),
                        "val": int(sum(len(va[n]["x"]) for n in pool)),
@@ -259,8 +315,9 @@ def pretrain(store: LabelStore, pool: list[int], epochs: int, device: str, seed:
 
 
 def projection(per_network: dict, buses: dict) -> dict:
-    """Upper bound on the GPU hours of the §8 fits: every fit at its maximum number of epochs (PG-scratch
-    taken at PG-net's 60), no early stop; data preparation, calibration and test evaluation excluded. Time
+    """Fit-only projection of the GPU hours of the §8 fits: every fit at its maximum number of epochs
+    (PG-scratch at PG-net's 60), no early stop; data preparation, the initial validation pass, checkpoint
+    writes, calibration, test evaluation and timing runs are excluded, so this is not a total allocation. Time
     per training step and per validation state is a straight-line fit against retained buses on the
     networks measured in the smoke, applied to all 24 networks and never below the smallest measured value."""
     m = list(per_network.values())
@@ -285,8 +342,9 @@ def projection(per_network: dict, buses: dict) -> dict:
              "pg_net_24_fits": E * sum(epoch_s(n, fs.N_STATES["train"]) for n in fs.ELIGIBLE) / 3600,
              "pg_scratch_120_fits": E * sum(len(s) * epoch_s(n, b) for n in fs.ELIGIBLE for b, s in BUDGETS.items()) / 3600,
              "pg_ft_120_fits": FT_EPOCHS * sum(len(s) * epoch_s(n, b) for n in fs.ELIGIBLE for b, s in BUDGETS.items()) / 3600}
-    return {"assumption": "upper bound: maximum epochs for every fit (PG-scratch at 60), no early stopping; data "
-                          "preparation, calibration and test evaluation excluded",
+    return {"assumption": "fit-only projection from an empirical straight-line timing fit: maximum epochs for "
+                          "every fit (PG-scratch at 60), no early stopping; data preparation, calibration, test "
+                          "evaluation and timing runs excluded",
             "fits": fits, "pg_pre_epoch_s_per_fold": pre_epoch, "gpu_hours": hours,
             "gpu_hours_total": sum(hours.values())}
 
@@ -294,33 +352,57 @@ def projection(per_network: dict, buses: dict) -> dict:
 def smoke(label_root: Path, fold: int, epochs: int, device: str) -> Path:
     if epochs < 2:
         raise ValueError("the smoke needs at least 2 epochs: the first one is not timed")
-    store = LabelStore(label_root)
-    res = pretrain(store, pool_of(fold), epochs, device, out_dir=fs.OUT / "runs" / f"pgpre_fold{fold}_seed0_smoke")
-    buses = {u["network"]: u["retained_buses"] for u in json.loads(MANIFEST.read_text())["splits"]}
-    git = lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, cwd=fs.ROOT).stdout.strip()  # noqa: E731
-    cuda = device.startswith("cuda")
-    out = fs.RESULTS / "fourwire_scale_smoke_pgpre.json"
+    prov = start_provenance(device)                                   # before anything is trained
+    tag = f"job{prov['job_id']}" if prov["job_id"] else time.strftime("local%Y%m%dT%H%M%S")
+    out = fs.RESULTS / f"fourwire_scale_smoke_pgpre_{tag}.json"
+    if out.exists():
+        raise FileExistsError(out)
+    store = fd.LabelStore(label_root)
+    res = pretrain(store, pool_of(fold), epochs, device, out_dir=fs.OUT / "runs" / f"pgpre_fold{fold}_seed0_smoke_{tag}")
+    buses = {u["network"]: u["retained_buses"] for u in json.loads(fd.MANIFEST.read_text())["splits"]}
+    unchanged = checkout_unchanged(prov)
     fs._write_json(out, {
         "protocol": "docs/fourwire_scale_protocol.md §9 gate 5 (smoke fit, train and val only)",
-        "code_commit": git("rev-parse", "HEAD"), "src_dirty": bool(git("status", "--porcelain", "src")),
-        "label_commit": LABEL_COMMIT, "label_root_name": Path(label_root).name, "fold": fold, "folds": folds(),
+        **prov, "checkout_unchanged_during_run": unchanged,
+        "label_commit": fd.LABEL_COMMIT, "label_root_name": Path(label_root).name, "fold": fold, "folds": folds(),
         "held_out": folds()[fold], "epochs_requested": epochs,
-        "machine": {"platform": platform.platform(), "cpus": os.cpu_count(), "torch": torch.__version__,
-                    "device": device, "cuda_device": torch.cuda.get_device_name(0) if cuda else None,
-                    "cuda_total_mb": torch.cuda.get_device_properties(0).total_memory / 2 ** 20 if cuda else None},
         **res, "projection": projection(res["per_network"], buses)})
+    if not unchanged:
+        raise RuntimeError(f"the checkout moved during the run; {out.name} is written but not a valid record")
+    return out
+
+
+def determinism(label_root: Path, device: str, deterministic: bool, out: Path) -> Path:
+    """32 training steps on networks 10 and 17 (500 train and 500 val states each), every step loss kept.
+    Two processes with the same settings are bit-identical only if training is deterministic."""
+    prov = start_provenance(device)
+    rec = {**prov, "deterministic_requested": deterministic}
+    try:
+        res = pretrain(fd.LabelStore(label_root), [10, 17], 1, device, n_train=500, n_val=500,
+                       deterministic=deterministic, record_steps=True)
+        rec.update({k: res[k] for k in ("initial_weights_sha256", "final_weights_sha256", "step_losses")})
+        rec["val_loss"] = [c["val_loss"] for c in res["curve"]]
+    except RuntimeError as e:                                          # an operation without a deterministic form
+        rec["error"] = str(e)
+    rec["checkout_unchanged_during_run"] = checkout_unchanged(prov)
+    fs._write_json(out, rec)
     return out
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["smoke"])
+    ap.add_argument("cmd", choices=["smoke", "determinism"])
     ap.add_argument("--label-root", type=Path, required=True, help="folder holding <split>/network_N/ label shards")
     ap.add_argument("--fold", type=int, default=0, choices=range(4))
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--device", default="cpu")
+    ap.add_argument("--deterministic", action="store_true", help="determinism: use PyTorch's deterministic algorithms")
+    ap.add_argument("--out", type=Path, help="determinism: output file")
     a = ap.parse_args()
-    print(smoke(a.label_root, a.fold, a.epochs, a.device))
+    if a.cmd == "determinism":
+        print(determinism(a.label_root, a.device, a.deterministic, a.out))
+    else:
+        print(smoke(a.label_root, a.fold, a.epochs, a.device))
 
 
 if __name__ == "__main__":
