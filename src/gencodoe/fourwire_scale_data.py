@@ -1,8 +1,9 @@
 """Label access for the training code of the 25-network study (docs/fourwire_scale_protocol.md §2.6,
 Amendments 4 and 5).
 
-The only label reader for training, smoke, debugging and calibration code.
-- It serves train, val and calib. Any other split is refused before a path is built.
+LabelStore is the only label reader for training, smoke, debugging and calibration code.
+- It serves train, val and calib. Any other split is refused before a path is built. The held-out split has
+  one reader, a subclass defined in fourwire_scale_eval and used by the final evaluation alone.
 - The manifest, its SHA-256 and the label commit are fixed here; the caller supplies only the label root.
 - It never lists a directory. A file is read only if its manifest name is shard_NNN.npz, its resolved path
   is exactly <root>/<split>/network_<n>/<name>, and it is a regular file with a single hard link. A symbolic
@@ -36,6 +37,8 @@ SHARD_NAME = re.compile(r"shard_\d{3}\.npz")
 
 
 class LabelStore:
+    served = SERVED                    # the evaluation module's reader of the held-out split overrides this
+
     def __init__(self, root):
         """root: the folder holding <split>/network_N/shard_NNN.npz."""
         self.root = Path(root).resolve()
@@ -46,7 +49,7 @@ class LabelStore:
         if man["label_code_commits"] != [LABEL_COMMIT]:
             raise AssertionError(f"manifest label commits {man['label_code_commits']} != [{LABEL_COMMIT}]")
         self.states, self.shard = man["states"], man["shard_states"]
-        self.units = {(u["network"], u["split"]): u for u in man["splits"] if u["split"] in SERVED}
+        self.units = {(u["network"], u["split"]): u for u in man["splits"] if u["split"] in self.served}
 
     def _path(self, network: int, split: str, name: str) -> Path:
         path = self.root / split / f"network_{int(network)}" / name
@@ -60,8 +63,8 @@ class LabelStore:
 
     def load(self, network: int, split: str, n_states: int | None = None) -> dict:
         """The first n_states states (default: all) of one network and split, as stored (FP64)."""
-        if split not in SERVED:
-            raise PermissionError(f"split {split!r} is not served to training code (only {', '.join(SERVED)})")
+        if split not in self.served:
+            raise PermissionError(f"split {split!r} is not served by this reader (only {', '.join(self.served)})")
         u = self.units[(network, split)]
         total = self.states[split]
         n = total if n_states is None else n_states

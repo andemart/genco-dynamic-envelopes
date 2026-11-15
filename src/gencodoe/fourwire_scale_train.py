@@ -1,13 +1,28 @@
-"""PG-pre for the 25-network study (docs/fourwire_scale_protocol.md §4, §9 gate 5).
+"""Fits of the 25-network study (docs/fourwire_scale_protocol.md §4, §8, Amendments 5, 7 and 8).
 
+    python -m gencodoe.fourwire_scale_train fit --kind pgpre --fold 0 --seed 0 --label-root <dir> --device cuda
+    python -m gencodoe.fourwire_scale_train fit --kind pgnet --network 17 --label-root <dir> --device cuda
+    python -m gencodoe.fourwire_scale_train fit --kind scratch|ft --network 17 --budget 1000 --seed 0 ...
+    python -m gencodoe.fourwire_scale_train freeze | collect
     python -m gencodoe.fourwire_scale_train smoke --label-root <dir> --fold 0 --epochs 3 --device cuda
     python -m gencodoe.fourwire_scale_train determinism --label-root <dir> --device cuda [--deterministic] --out <file>
     python -m gencodoe.fourwire_scale_train determinism-report --out-dir <dir with the four runs> --out <file>
 
-PhaseGraph (fourwire_model.GNS_heterogeneous_4wire) pretrained on the 18 networks outside a fold: the first
-5,000 train states of each, validation on their val states, with the ENWL1 amendment 1 configuration and
-loss of fourwire_train, unchanged. Labels are read through fourwire_scale_data.LabelStore: train and val
-only, from the label root given on the command line.
+One training routine (fit) for PhaseGraph (fourwire_model.GNS_heterogeneous_4wire) with the ENWL1 amendment 1
+configuration and loss of fourwire_train:
+- PG-pre: the first 5,000 train states of each of the 18 networks outside a fold, validation on their val states;
+- PG-net, PG-scratch(B): one network, all 10,000 or the first B train states, validation on its val states;
+- PG-ft(B): as PG-scratch(B), starting from the selected PG-pre checkpoint with PG-pre's scalers, lr 3e-4,
+  at most 30 epochs, patience 5.
+Labels are read through fourwire_scale_data.LabelStore: train and val only, from the label root given on the
+command line.
+
+fit --kind ... is a final fit (Amendments 7 and 8): deterministic algorithms, GENCODOE_COMMIT equal to HEAD,
+unmodified source equal to the freeze (results/fourwire_scale_freeze.json), one run folder per fit under
+data_out/fourwire_scale/runs/final/ holding best.pt and record.json. A fit with a record is never rerun; a
+folder without a record (an interrupted run) is set aside and listed in the record of the rerun. With
+--dry-train/--dry-val/--dry-epochs it is a dry run under runs/dry/ (train and val only, never evaluated on
+test). freeze writes the freeze file; collect gathers the final records into results/fourwire_scale_fits.json.
 
 smoke writes results/fourwire_scale_smoke_pgpre_fold<f>_<job>.json: peak GPU memory, epoch time, time per
 step and per validation state for each network, and the fit-only projection of the §8 fits. The commit and
@@ -46,6 +61,20 @@ N_PRE = 5000                       # §4 PG-pre: the first 5,000 train states of
 EVAL_BATCH = 128                   # as fourwire_train.evaluate
 BUDGETS = {200: [0], 1000: [0, 1, 2], 5000: [0]}    # §4: target budget B -> seeds of PG-ft and PG-scratch
 FT_EPOCHS = 30                     # §4 PG-ft
+# Amendment 8, item 1: what differs between the four kinds of fit
+FITS = {"pgpre": {"lr": CONFIG["lr"], "epochs": CONFIG["max_epochs"], "patience": CONFIG["patience"]},
+        "pgnet": {"lr": CONFIG["lr"], "epochs": CONFIG["max_epochs"], "patience": CONFIG["patience"]},
+        "scratch": {"lr": CONFIG["lr"], "epochs": CONFIG["max_epochs"], "patience": CONFIG["patience"]},
+        "ft": {"lr": 3e-4, "epochs": FT_EPOCHS, "patience": 5}}
+
+
+def runs(dry: bool = False) -> Path:
+    """Run folders of the final fits, or of dry runs."""
+    return fs.OUT / "runs" / ("dry" if dry else "final")
+
+
+def freeze_file() -> Path:
+    return fs.RESULTS / "fourwire_scale_freeze.json"
 
 
 def folds() -> list[list[int]]:
@@ -78,16 +107,19 @@ def checkout_state() -> dict:
 
 
 def set_determinism(deterministic: bool) -> dict:
-    """Switch PyTorch's deterministic algorithms on or off explicitly. Call before the first CUDA call.
-    Returns the settings in effect, not the request."""
+    """Switch PyTorch's deterministic algorithms on or off explicitly, and TF32 off. Call before the first
+    CUDA call. Returns the settings in effect, not the request."""
     if deterministic:
         os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     torch.use_deterministic_algorithms(deterministic)
     torch.backends.cudnn.benchmark = False
+    torch.backends.cuda.matmul.allow_tf32 = False                    # FP32 without TF32 (§6), for every run
+    torch.backends.cudnn.allow_tf32 = False
     return {"deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
             "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG"),
             "cudnn_benchmark": torch.backends.cudnn.benchmark,
-            "cudnn_deterministic": torch.backends.cudnn.deterministic}
+            "cudnn_deterministic": torch.backends.cudnn.deterministic,
+            "tf32": bool(torch.backends.cuda.matmul.allow_tf32 or torch.backends.cudnn.allow_tf32)}
 
 
 def start_provenance(device: str, settings: dict) -> dict:
@@ -158,6 +190,13 @@ class PooledScaler(fm.Scaler):
         self.sd[self.sd < 1e-8] = 1.0
 
 
+def scaler_from(state: dict) -> fm.Scaler:
+    """A fitted scaler from its recorded mean and standard deviation."""
+    x = fm.Scaler.__new__(fm.Scaler)
+    x.mu, x.sd = np.array(state["mu"]), np.array(state["sd"])
+    return x
+
+
 def prepare(store: fd.LabelStore, st: fm.Static, network: int, split: str, n_states: int | None) -> dict:
     """fourwire_train.prepare for one network of the study (raw node features, U1 prior, targets)."""
     d = store.load(network, split, n_states)
@@ -190,14 +229,21 @@ def pooled_scales(tr: dict, statics: dict) -> tuple[np.ndarray, float, float]:
     return res.std().astype(np.float32), float(dvpn.std()[0]), float(drop.std()[0])
 
 
-def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: int = 0,
-             out_dir: Path | None = None, n_train: int | None = None, n_val: int | None = None,
-             record_steps: bool = False) -> dict:
-    """One PG-pre fit on the first N_PRE train states and the val states of every pool network. Batches
-    hold states of one network (the model's graph context needs equal graph sizes); an epoch visits every
-    training state once, with the batches of all networks shuffled. out_dir must not exist: a run folder is
-    never overwritten. n_train, n_val and record_steps serve the determinism probe. Deterministic
-    algorithms are switched by set_determinism before this is called."""
+def fit(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: int = 0,
+        out_dir: Path | None = None, n_train: int | None = None, n_val: int | None = None,
+        record_steps: bool = False, lr: float = CONFIG["lr"], patience: int = CONFIG["patience"],
+        init: dict | None = None) -> dict:
+    """One fit on the first n_train train states (default N_PRE) and the val states of every network of
+    pool. Batches hold states of one network (the model's graph context needs equal graph sizes); an epoch
+    visits every training state once, with the batches of all networks shuffled.
+    - init (PG-ft): {"state_dict", "scalers"} of the model to start from; its scalers and target scales are
+      used unchanged and nothing is fitted on the data. Otherwise they come from the training states.
+    - The selected checkpoint is the epoch >= 1 with the lowest validation loss, the earliest on a tie
+      (out_dir/best.pt); epoch 0 is recorded and not eligible.
+    - A non-finite gradient ends the fit there (Amendment 7, item 4): the result names it and the
+      checkpoint is the one selected among the completed epochs.
+    out_dir must not exist: a run folder is never overwritten. n_val and record_steps serve the determinism
+    probe and dry runs. Deterministic algorithms are switched by set_determinism before this is called."""
     n_train = N_PRE if n_train is None else n_train
     if out_dir is not None:
         out_dir.mkdir(parents=True, exist_ok=False)
@@ -211,9 +257,14 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
     statics = {n: fm.Static(*fs._case(n)) for n in pool}
     tr = {n: prepare(store, statics[n], n, "train", n_train) for n in pool}
     va = {n: prepare(store, statics[n], n, "val", n_val) for n in pool}
-    xs = PooledScaler(tr[n]["x"] for n in pool)                       # pool training statistics only (§4)
-    es = PooledScaler(statics[n].edge_raw for n in pool)
-    rs, vpn_scale, kvl_scale = pooled_scales(tr, statics)
+    if init is None:
+        xs = PooledScaler(tr[n]["x"] for n in pool)                   # training statistics only (§4)
+        es = PooledScaler(statics[n].edge_raw for n in pool)
+        rs, vpn_scale, kvl_scale = pooled_scales(tr, statics)
+    else:                                                             # PG-ft: PG-pre's, unchanged
+        sc = init["scalers"]
+        xs, es = scaler_from(sc["x"]), scaler_from(sc["edge"])
+        rs, vpn_scale, kvl_scale = np.array(sc["residual"], np.float32), float(sc["vpn"]), float(sc["kvl"])
     for d in (tr, va):
         for n in pool:
             for k in range(0, len(d[n]["x"]), 256):
@@ -222,11 +273,13 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
 
     model = fm.GNS_heterogeneous_4wire(fm.N_NODE_BASE, hidden=CONFIG["hidden"], layers=CONFIG["layers"],
                                        heads=CONFIG["heads"]).to(dev)
+    if init is not None:
+        model.load_state_dict(init["state_dict"])
     initial_sha = weights_sha(model)
     batchers = {n: fm.Batcher(statics[n], es(statics[n].edge_raw), dev) for n in pool}
     physics = {n: fm.Physics(statics[n], dev) for n in pool}
     rs_t = torch.as_tensor(rs, device=dev)
-    opt = torch.optim.AdamW(model.parameters(), lr=CONFIG["lr"], weight_decay=CONFIG["weight_decay"])
+    opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=CONFIG["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(epochs, 1))
     W = CONFIG["loss_weights"]
 
@@ -279,7 +332,7 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
     if dev.type == "cuda":
         torch.cuda.reset_peak_memory_stats()
     step_s, step_n, eval_s = {n: 0.0 for n in pool}, {n: 0 for n in pool}, {n: 0.0 for n in pool}
-    step_losses = []
+    step_losses, failure, selected_sha = [], None, None
     for ep in range(1, epochs + 1):
         t_ep = time.perf_counter()
         batches = []
@@ -296,7 +349,8 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
             opt.zero_grad()
             loss.backward()
             if not all(torch.isfinite(p.grad).all() for p in model.parameters() if p.grad is not None):
-                raise FloatingPointError("non-finite gradient")
+                failure = {"what": "non-finite gradient", "epoch": ep, "step_in_epoch": nb}
+                break
             opt.step()
             tl += loss.item()                                        # synchronises: the step time is complete
             nb += 1
@@ -305,6 +359,9 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
             if ep > 1:                                               # epoch 1 carries warm-up and graph caches
                 step_s[n] += time.perf_counter() - t
                 step_n[n] += 1
+        if failure is not None:                                       # the epoch is not completed
+            print(json.dumps({"numerical_failure": failure}), flush=True)
+            break
         train_s = time.perf_counter() - t_ep
         sched.step()
         vl, secs = evaluate()
@@ -319,17 +376,21 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
         curve.append(rec)
         print(json.dumps(rec), flush=True)
         if vl < best:
-            best, best_ep, bad = vl, ep, 0
+            best, best_ep, bad, selected_sha = vl, ep, 0, weights_sha(model)
             if out_dir is not None:
                 torch.save(model.state_dict(), out_dir / ".best.partial.pt")
                 os.replace(out_dir / ".best.partial.pt", out_dir / "best.pt")
         else:
             bad += 1
-            if bad >= CONFIG["patience"]:
+            if bad >= patience:
                 break
     timed = max(len(curve) - 2, 0)                                    # epochs after the first
-    return {"pool": pool, "seed": seed, "config": CONFIG, "n_params": sum(p.numel() for p in model.parameters()),
+    return {"pool": pool, "seed": seed, "config": {**CONFIG, "lr": lr, "patience": patience, "max_epochs": epochs,
+                                                   "seed": seed},
+            "n_params": sum(p.numel() for p in model.parameters()),
             "epochs_requested": epochs, "scheduler_t_max": max(epochs, 1),
+            "started_from_given_weights": init is not None, "numerical_failure": failure,
+            "selected_weights_sha256": selected_sha,
             "deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
             "initial_weights_sha256": initial_sha,
             "final_weights_sha256": weights_sha(model), **({"step_losses": step_losses} if record_steps else {}),
@@ -340,7 +401,7 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
             "scalers": {"x": xs.state(), "edge": es.state(), "residual": rs.tolist(), "vpn": vpn_scale, "kvl": kvl_scale},
             "prepare_s": prep_s, "host_peak_rss_gb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
             / (2 ** 30 if platform.system() == "Darwin" else 2 ** 20),
-            "best_epoch": best_ep, "best_val_loss": best, "curve": curve,
+            "best_epoch": best_ep, "best_val_loss": best if best_ep > 0 else None, "curve": curve,
             "per_network": {n: {"retained_buses": statics[n].net.n_bus,
                                 "train_ms_per_step": 1e3 * step_s[n] / step_n[n] if step_n[n] else None,
                                 "val_ms_per_state": 1e3 * eval_s[n] / (timed * len(va[n]["x"])) if timed else None}
@@ -391,7 +452,7 @@ def smoke(label_root: Path, fold: int, epochs: int, device: str, deterministic: 
     if out.exists():
         raise FileExistsError(out)
     store = fd.LabelStore(label_root)
-    res = pretrain(store, pool_of(fold), epochs, device, out_dir=fs.OUT / "runs" / f"pgpre_fold{fold}_seed0_smoke_{tag}")
+    res = fit(store, pool_of(fold), epochs, device, out_dir=fs.OUT / "runs" / f"pgpre_fold{fold}_seed0_smoke_{tag}")
     buses = {u["network"]: u["retained_buses"] for u in json.loads(fd.MANIFEST.read_text())["splits"]}
     unchanged = checkout_unchanged(prov)
     if out.exists():
@@ -404,6 +465,146 @@ def smoke(label_root: Path, fold: int, epochs: int, device: str, deterministic: 
     if not unchanged:
         raise RuntimeError(f"the checkout differs from the start of the run; {out.name} is not a valid record")
     return out
+
+
+def fold_of(network: int) -> int:
+    return next(k for k, f in enumerate(folds()) if network in f)
+
+
+def run_name(kind: str, fold: int | None = None, network: int | None = None, budget: int | None = None,
+             seed: int = 0) -> str:
+    if kind == "pgpre":
+        return f"pgpre_fold{fold}_seed{seed}"
+    if kind == "pgnet":
+        return f"pgnet_net{network}"
+    return f"{kind}_net{network}_b{budget}_seed{seed}"
+
+
+def all_fits() -> list[dict]:
+    """The 276 final fits of §8: 12 PG-pre, 24 PG-net, 120 PG-scratch and 120 PG-ft."""
+    fits = [{"kind": "pgpre", "fold": f, "seed": s} for f in range(4) for s in (0, 1, 2)]
+    fits += [{"kind": "pgnet", "network": n, "seed": 0} for n in fs.ELIGIBLE]
+    fits += [{"kind": k, "network": n, "budget": b, "seed": s} for k in ("scratch", "ft") for n in fs.ELIGIBLE
+             for b, seeds in BUDGETS.items() for s in seeds]
+    return fits
+
+
+def input_hashes() -> dict:
+    """What a run depends on besides the source: the label manifest (pinned in fourwire_scale_data) and the
+    identification record, which holds every network's Thevenin equivalent and network-file hashes."""
+    return {"label_manifest_sha256": fd.MANIFEST_SHA256,
+            "identification_sha256": fs._sha(fs.RESULTS / "fourwire_scale_identification.json")}
+
+
+def freeze() -> Path:
+    """Amendment 8, item 14: record the hash of the committed source that every final command must run."""
+    state = checkout_state()
+    if state["src_dirty"]:
+        raise RuntimeError("src/ differs from HEAD: commit it before freezing")
+    files = {q.name: fs._sha(q) for q in sorted(Path(__file__).resolve().parent.glob("*.py"))}
+    fs._write_json(freeze_file(), {"protocol": "docs/fourwire_scale_protocol.md Amendment 8, item 14",
+                                   "source_sha256": state["source_sha256"], **input_hashes(),
+                                   "folds": folds(), "frozen_at_commit": state["head"], "files_sha256": files})
+    return freeze_file()
+
+
+def check_freeze(prov: dict, deterministic: bool = True) -> None:
+    """A final command runs only when pinned to HEAD, from unmodified source equal to the freeze, with the
+    frozen inputs and the numerical mode it must use (deterministic algorithms, except for timing)."""
+    fr = json.loads(freeze_file().read_text())
+    problems = []
+    if prov["gencodoe_commit"] != prov["code_commit"]:
+        problems.append("GENCODOE_COMMIT is not set to HEAD")
+    if prov["src_dirty"]:
+        problems.append("src/ is modified")
+    if prov["source_sha256"] != fr["source_sha256"]:
+        problems.append("the source differs from the freeze")
+    if any(fr[k] != v for k, v in input_hashes().items()) or fr["folds"] != folds():
+        problems.append("label manifest, identification record or folds differ from the freeze")
+    if prov["deterministic_algorithms"] != deterministic:
+        problems.append("wrong numerical mode")
+    if problems:
+        raise RuntimeError("not a final run: " + "; ".join(problems))
+
+
+def load_run(base: Path, name: str, device: str) -> dict:
+    """Record and selected weights of a completed fit; the checkpoint must be the one the record names."""
+    rec = json.loads((base / name / "record.json").read_text())
+    ck = base / name / "best.pt"
+    if not rec["valid"] or rec["checkpoint_sha256"] is None or fs._sha(ck) != rec["checkpoint_sha256"]:
+        raise AssertionError(f"{name}: no valid record with its checkpoint")
+    return {"record": rec, "state_dict": torch.load(ck, map_location=device, weights_only=True)}
+
+
+def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None, network: int | None = None,
+              budget: int | None = None, seed: int = 0, dry: dict | None = None) -> Path:
+    """One fit of §8 (Amendments 7 and 8). dry: None, or {"n_train", "n_val", "epochs"} for a dry run on
+    train and val only, kept under runs/dry and never evaluated on test."""
+    cfg = FITS[kind]
+    name = run_name(kind, fold, network, budget, seed)
+    base = runs(dry is not None)
+    out_dir = base / name
+    if (out_dir / "record.json").exists():
+        raise FileExistsError(f"{name} has a record: a completed fit is never rerun")
+    prov = start_provenance(device, set_determinism(True))          # before anything is trained
+    if dry is None:
+        check_freeze(prov)
+    if out_dir.exists():                                             # an interrupted run: kept under another name
+        k = 1
+        while (base / f"{name}.incomplete{k}").exists():
+            k += 1
+        out_dir.rename(base / f"{name}.incomplete{k}")
+    store = fd.LabelStore(label_root)
+    start = init = None
+    if kind == "pgpre":
+        pool, n_train = pool_of(fold), N_PRE
+    else:
+        pool, n_train = [network], fs.N_STATES["train"] if kind == "pgnet" else budget
+        fold = fold_of(network)
+        if kind == "ft":                                             # the selected PG-pre checkpoint, same seed
+            start = load_run(base, run_name("pgpre", fold=fold, seed=seed), device)
+            init = {"state_dict": start["state_dict"], "scalers": start["record"]["scalers"]}
+    epochs, n_val = cfg["epochs"], None
+    if dry is not None:
+        n_train, n_val, epochs = min(n_train, dry["n_train"]), dry["n_val"], dry["epochs"]
+    t0 = time.perf_counter()
+    res = fit(store, pool, epochs, device, seed=seed, out_dir=out_dir, n_train=n_train, n_val=n_val,
+              lr=cfg["lr"], patience=cfg["patience"], init=init)
+    if start is not None and res["initial_weights_sha256"] != start["record"]["selected_weights_sha256"]:
+        raise AssertionError("PG-ft did not start from the selected PG-pre weights")
+    unchanged = checkout_unchanged(prov)
+    ck = out_dir / "best.pt"
+    rec = {"protocol": "docs/fourwire_scale_protocol.md §4, §8, Amendments 5, 7 and 8", "name": name,
+           "kind": kind, "fold": fold, "network": network, "budget": budget, "dry_run": dry, **prov,
+           "checkout_unchanged_during_run": unchanged, "label_commit": fd.LABEL_COMMIT, **input_hashes(),
+           "started_from": None if start is None else {"name": start["record"]["name"],
+                                                         "checkpoint_sha256": start["record"]["checkpoint_sha256"]},
+           "incomplete_attempts": sorted(q.name for q in base.glob(f"{name}.incomplete*")),
+           "fit_s": time.perf_counter() - t0, **res,
+           "checkpoint_sha256": fs._sha(ck) if ck.exists() else None}
+    rec["valid"] = bool(unchanged and prov["deterministic_algorithms"])
+    fs._write_json(out_dir / "record.json", rec)
+    if not unchanged:
+        raise RuntimeError(f"the checkout differs from the start of the run; {name} is not a valid fit")
+    return out_dir / "record.json"
+
+
+def collect() -> Path:
+    """The records of the final fits, gathered for git (checkpoints stay outside it)."""
+    recs, missing = [], []
+    for a in all_fits():
+        f = runs() / run_name(a["kind"], a.get("fold"), a.get("network"), a.get("budget"), a["seed"]) / "record.json"
+        if f.exists():
+            recs.append(json.loads(f.read_text()))
+        else:
+            missing.append(f.parent.name)
+    index = fs.RESULTS / "fourwire_scale_fits.json"
+    tmp = index.with_name("." + index.name + ".partial")
+    tmp.write_text(json.dumps({"protocol": "docs/fourwire_scale_protocol.md §8, Amendments 7 and 8",
+                               "fits_expected": len(all_fits()), "fits": len(recs),
+                               "valid": sum(r["valid"] for r in recs), "missing": missing, "records": recs}))
+    os.replace(tmp, index)
+    return index
 
 
 PROBE_RUNS = ("default_a", "default_b", "deterministic_a", "deterministic_b")
@@ -419,7 +620,7 @@ def determinism(label_root: Path, device: str, deterministic: bool, out: Path) -
     prov = start_provenance(device, set_determinism(deterministic))
     rec = {**prov, "deterministic_requested": deterministic}
     try:
-        res = pretrain(fd.LabelStore(label_root), [10, 17], 1, device, n_train=500, n_val=500, record_steps=True)
+        res = fit(fd.LabelStore(label_root), [10, 17], 1, device, n_train=500, n_val=500, record_steps=True)
         rec.update({k: res[k] for k in ("initial_weights_sha256", "final_weights_sha256", "step_losses",
                                         "epochs_requested", "scheduler_t_max")})
         rec["val_loss"] = [c["val_loss"] for c in res["curve"]]
@@ -434,8 +635,8 @@ def determinism(label_root: Path, device: str, deterministic: bool, out: Path) -
 def determinism_report(folder: Path, out: Path) -> dict:
     """Compare the two default runs with each other and the two deterministic runs with each other. A pair
     gets a verdict only if both runs are valid: pinned commit equal to HEAD, unmodified and unchanged
-    source, the requested setting in effect, all 32 step losses finite, no error, and the four runs share
-    commit, source, node, GPU and library versions."""
+    source, the requested setting in effect, all 32 step losses and both validation losses finite, no
+    error, and the four runs share commit, source, node, GPU and library versions."""
     if out.exists():
         raise FileExistsError(out)
     runs = {k: json.loads((folder / f"{k}.json").read_text()) for k in PROBE_RUNS}
@@ -444,8 +645,9 @@ def determinism_report(folder: Path, out: Path) -> dict:
         r, p = runs[k], []
         if "error" in r:
             p.append(f"error: {r['error_type']}")
-        elif len(r["step_losses"]) != PROBE_STEPS or not np.isfinite(r["step_losses"]).all():
-            p.append("step losses incomplete or not finite")
+        elif (len(r["step_losses"]) != PROBE_STEPS or not np.isfinite(r["step_losses"]).all()
+              or len(r["val_loss"]) != 2 or not np.isfinite(r["val_loss"]).all()):
+            p.append("step or validation losses incomplete or not finite")
         if r["gencodoe_commit"] != r["code_commit"]:
             p.append("commit not pinned")
         if r["src_dirty"] or not r["checkout_unchanged_during_run"]:
@@ -481,12 +683,19 @@ def determinism_report(folder: Path, out: Path) -> dict:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["smoke", "determinism", "determinism-report"])
+    ap.add_argument("cmd", choices=["fit", "freeze", "collect", "smoke", "determinism", "determinism-report"])
     ap.add_argument("--label-root", type=Path, help="folder holding <split>/network_N/ label shards")
-    ap.add_argument("--fold", type=int, default=0, choices=range(4))
-    ap.add_argument("--epochs", type=int, default=3)
+    ap.add_argument("--kind", choices=list(FITS), help="fit: which fit of §4")
+    ap.add_argument("--fold", type=int, default=0, choices=range(4), help="fit --kind pgpre, smoke")
+    ap.add_argument("--network", type=int, choices=fs.ELIGIBLE, help="fit: the target network")
+    ap.add_argument("--budget", type=int, choices=list(BUDGETS), help="fit --kind scratch|ft: B")
+    ap.add_argument("--seed", type=int, default=0, choices=(0, 1, 2))
+    ap.add_argument("--dry-train", type=int, help="fit: dry run with at most this many train states per network")
+    ap.add_argument("--dry-val", type=int, help="fit: dry run, val states per network")
+    ap.add_argument("--dry-epochs", type=int, help="fit: dry run, epochs")
+    ap.add_argument("--epochs", type=int, default=3, help="smoke")
     ap.add_argument("--device", default="cpu")
-    ap.add_argument("--deterministic", action="store_true", help="use PyTorch's deterministic algorithms")
+    ap.add_argument("--deterministic", action="store_true", help="smoke, determinism: deterministic algorithms")
     ap.add_argument("--out", type=Path, help="determinism, determinism-report: output file")
     ap.add_argument("--out-dir", type=Path, help="determinism-report: folder with the four probe runs")
     a = ap.parse_args()
@@ -494,9 +703,23 @@ def main():
         rep = determinism_report(a.out_dir, a.out)
         print(json.dumps({k: rep[k] for k in rep if k != "runs"}, indent=1))
         sys.exit(0 if rep["default"]["valid"] and rep["deterministic_algorithms"]["valid"] else 4)
+    if a.cmd in ("freeze", "collect"):
+        print((freeze if a.cmd == "freeze" else collect)())
+        return
     if a.label_root is None:
         ap.error("--label-root is required")
-    if a.cmd == "determinism":
+    if a.cmd == "fit":
+        dry = (a.dry_train, a.dry_val, a.dry_epochs)
+        if any(v is not None for v in dry) and None in dry:
+            ap.error("a dry run needs --dry-train, --dry-val and --dry-epochs")
+        if a.kind is None or (a.kind == "pgpre") == (a.network is not None) \
+                or (a.kind in ("scratch", "ft")) != (a.budget is not None):
+            ap.error("--kind pgpre takes --fold; pgnet takes --network; scratch and ft take --network and --budget")
+        if a.kind != "pgpre" and a.seed not in ([0] if a.kind == "pgnet" else BUDGETS[a.budget]):
+            ap.error("that seed is not among the fits of §4")
+        print(final_fit(a.label_root, a.kind, a.device, a.fold if a.kind == "pgpre" else None, a.network, a.budget,
+                        a.seed, None if dry[0] is None else {"n_train": dry[0], "n_val": dry[1], "epochs": dry[2]}))
+    elif a.cmd == "determinism":
         print(determinism(a.label_root, a.device, a.deterministic, a.out))
     else:
         print(smoke(a.label_root, a.fold, a.epochs, a.device, a.deterministic))

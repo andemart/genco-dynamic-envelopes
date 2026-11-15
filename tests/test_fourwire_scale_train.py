@@ -176,7 +176,7 @@ def test_training_and_smoke_never_open_or_list_the_test_tree(store, test_tree_gu
     assert rep["source_sha256"] == tt.source_sha()
     run = next((fs.OUT / "runs").iterdir())
     with pytest.raises(FileExistsError):                             # a run folder is never overwritten
-        tt.pretrain(store, POOL, 1, "cpu", out_dir=run)
+        tt.fit(store, POOL, 1, "cpu", out_dir=run)
     assert rep["pool"] == POOL and rep["states"]["train"] == 48 and rep["states"]["val"] == 24
     assert [c["epoch"] for c in rep["curve"]] == [0, 1, 2] and all(np.isfinite(c["val_loss"]) for c in rep["curve"])
     assert all(v["train_ms_per_step"] > 0 and v["val_ms_per_state"] > 0 for v in rep["per_network"].values())
@@ -223,7 +223,7 @@ def test_projection_counts_the_runs_of_section_8():
 def test_two_cpu_fits_in_one_process_are_bit_identical(store):
     """Default settings, two optimiser steps each. Separate processes and the deterministic mode are covered
     by the determinism command, not here."""
-    runs = [tt.pretrain(store, POOL, 1, "cpu", n_train=24, n_val=12, record_steps=True) for _ in range(2)]
+    runs = [tt.fit(store, POOL, 1, "cpu", n_train=24, n_val=12, record_steps=True) for _ in range(2)]
     for k in ("initial_weights_sha256", "step_losses", "final_weights_sha256"):
         assert runs[0][k] == runs[1][k], k
     assert len(runs[0]["step_losses"]) == 2 and all(np.isfinite(runs[0]["step_losses"]))
