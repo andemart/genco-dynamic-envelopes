@@ -1,4 +1,5 @@
 """State generation for the 25-network study (docs/fourwire_scale_protocol.md §2.5, Amendment 1)."""
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -134,3 +135,20 @@ def test_content_sha_is_deterministic_and_sensitive():
     assert fs.content_sha(a) != fs.content_sha({**a, "x": a["x"] + 1e-12})
     assert fs.content_sha(a) != fs.content_sha({**a, "x": a["x"].reshape(3, 2)})
     assert fs.CAP_KVA == 880.0
+
+
+def test_frozen_thevenin_comes_from_committed_record_and_roundtrips_raw_fit():
+    """Cluster runs need only the small committed record, not the 900 MB identification-label folder."""
+    rec = {r["network"]: r for r in json.loads(
+        (fs.RESULTS / "fourwire_scale_identification.json").read_text())["networks"]}
+    th = fs.frozen_thevenin(1)
+    e = np.asarray(rec[1]["thevenin"]["e_kv"])
+    z = np.asarray(rec[1]["thevenin"]["zth_ohm"])
+    assert np.array_equal(th.e, e[..., 0] + 1j * e[..., 1])
+    assert np.array_equal(th.zth, z[..., 0] + 1j * z[..., 1])
+
+    raw = fs.ROOT / rec[1]["labels_file"]
+    if raw.exists():
+        with np.load(raw) as fit:
+            assert np.array_equal(th.e, fit["e"])
+            assert np.array_equal(th.zth, fit["zth"])

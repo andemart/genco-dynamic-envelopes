@@ -178,14 +178,20 @@ E1_V_TOL_PU, E1_I_TOL_REL = 1e-4, 1e-3
 
 
 def frozen_thevenin(network: int):
-    """The frozen Amendment 1 equivalent (identification run), checked against its recorded hash."""
+    """The frozen Amendment 1 equivalent, reconstructed from the committed identification record.
+
+    The raw identification labels are deliberately not a runtime dependency: they are large, live outside
+    git, and are needed only to audit/refit the equivalent.  JSON's float representation round-trips the
+    binary64 values used to write the record.
+    """
     from .fourwire_net import Thevenin
     rec = {r["network"]: r for r in json.loads((RESULTS / "fourwire_scale_identification.json").read_text())["networks"]}
-    f = ROOT / rec[network]["labels_file"]
-    if _sha(f) != rec[network]["labels_sha256"]:
-        raise AssertionError(f"identification file of network {network} differs from the frozen record")
-    z = np.load(f)
-    return Thevenin(e=z["e"], zth=z["zth"])
+    r = rec[network]
+    if not r.get("frozen") or r["fit"]["rank"] != 4:
+        raise AssertionError(f"network {network} has no frozen full-rank Thevenin equivalent")
+    e_pair = np.asarray(r["thevenin"]["e_kv"], dtype=np.float64)
+    z_pair = np.asarray(r["thevenin"]["zth_ohm"], dtype=np.float64)
+    return Thevenin(e=e_pair[..., 0] + 1j * e_pair[..., 1], zth=z_pair[..., 0] + 1j * z_pair[..., 1])
 
 
 SWEEP_TOL, SWEEP_MAX_IT = 1e-8, 100     # §3 common sweep settings
