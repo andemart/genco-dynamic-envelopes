@@ -1,0 +1,618 @@
+{
+ "protocol": "docs/fourwire_scale_protocol.md \u00a76, \u00a77 E2, Amendments 3 and 9",
+ "network": 1,
+ "retained_buses": 397,
+ "phase_connections": 200,
+ "dry_run": true,
+ "states_from": "val",
+ "inputs_content_sha256": "4e559e2768760269dbb098ede3a835081aee2dc579063623efb4599fd386ee0d",
+ "code_commit": "ed17a1a843a3c514729c730820a310a0b7c73c19",
+ "gencodoe_commit": null,
+ "src_dirty": false,
+ "source_sha256": "4761b3d908d46e15173744a797f814936ce67e04346d42129617ad606f4ed968",
+ "job_id": null,
+ "node": "laptop (name removed)",
+ "platform": "macOS-27.2.1-arm64-arm-64bit",
+ "cpus": 10,
+ "python": "3.12.13",
+ "numpy": "2.4.6",
+ "torch": "2.13.0",
+ "torch_geometric": "2.8.1",
+ "device": "cpu",
+ "deterministic_algorithms": false,
+ "cublas_workspace_config": null,
+ "cudnn_benchmark": false,
+ "cudnn_deterministic": false,
+ "tf32": false,
+ "software": {
+  "python": "3.12.13",
+  "numpy": "2.4.6",
+  "scipy": "1.18.1",
+  "torch": "2.13.0",
+  "torch_cuda": null,
+  "torch_geometric": "2.8.1",
+  "numba": "0.68.0",
+  "opendssdirect": "0.9.4"
+ },
+ "label_manifest_sha256": "5625aa637941593ba7212abc69bd277cac58afcf57ff482b23749742785b7dc9",
+ "identification_sha256": "34f1d07469721d8915143faec1aa78caa1bbab3bf1d557fd389cf55f9994f123",
+ "freeze_sha256": null,
+ "cuda": null,
+ "cudnn": null,
+ "cuda_device": null,
+ "cuda_total_mb": null,
+ "unchanged_during_run": true,
+ "valid": true,
+ "evaluation_record": "network_1_20261115T234431.json",
+ "evaluation_record_sha256": "e90c9af2000b0687f0ce836e6ec707f5e344d19b3f99ae259f22284556aa497d",
+ "pgnet_checkpoint_sha256": "350b3466e1cf02fa19bb0aa76aa26bccc1ec438969f7df4c4cafc6cd933ff218",
+ "earlier_attempts": [],
+ "allocated_cores": 10,
+ "numba_threads": 10,
+ "torch_threads": 10,
+ "opendss_processes": 10,
+ "numba_compile_s": 0.1617975829867646,
+ "series_order": [
+  "opendss",
+  "numpy",
+  "sweep_cpu",
+  "sweep_gpu",
+  "u1_cpu",
+  "u1_gpu",
+  "pgnet_cpu",
+  "pgnet_gpu",
+  "sweep_cpu_noopendss",
+  "sweep_gpu_noopendss",
+  "u1_cpu_noopendss",
+  "u1_gpu_noopendss",
+  "pgnet_cpu_noopendss",
+  "pgnet_gpu_noopendss"
+ ],
+ "warmup_rounds": 1,
+ "timed_rounds": 3,
+ "opendss_at_largest_batch": [
+  0,
+  1
+ ],
+ "repeats_with_other_decisions": {
+  "sweep_gpu": 0,
+  "u1_cpu": 0,
+  "u1_gpu": 0,
+  "pgnet_cpu": 0,
+  "pgnet_gpu": 0,
+  "sweep_cpu_noopendss": 0,
+  "sweep_gpu_noopendss": 0,
+  "u1_cpu_noopendss": 0,
+  "u1_gpu_noopendss": 0,
+  "pgnet_cpu_noopendss": 0,
+  "pgnet_gpu_noopendss": 0,
+  "sweep_cpu": 0,
+  "opendss": 0
+ },
+ "decisions_file": "timing_network_1_20261115T234624_decisions.npz",
+ "decisions_sha256": "6b2902eb225070bef6f0729d935994ea21985ded29109a0bf54091cf1e6d9a25",
+ "batches": {
+  "1": {
+   "opendss": {
+    "repeats": 3,
+    "p50_s": 0.0102714590029791,
+    "p95_s": 0.01031147117028013,
+    "states_per_s": 97.35715244640156,
+    "times_s": [
+     0.00933629198698327,
+     0.01031591696664691,
+     0.0102714590029791
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "numpy": {
+    "repeats": 3,
+    "p50_s": 0.005183792032767087,
+    "p95_s": 0.005222229240462184,
+    "states_per_s": 192.90897352342355,
+    "times_s": [
+     0.004325292014982551,
+     0.005183792032767087,
+     0.005226500041317195
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_cpu": {
+    "repeats": 3,
+    "p50_s": 0.0001425419468432665,
+    "p95_s": 0.000179404194932431,
+    "states_per_s": 7015.478756576551,
+    "times_s": [
+     0.00013995898189023137,
+     0.00018350000027567148,
+     0.0001425419468432665
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_gpu": {
+    "repeats": 3,
+    "p50_s": 0.002123209007550031,
+    "p95_s": 0.002279096218990162,
+    "states_per_s": 470.9851910217257,
+    "times_s": [
+     0.001854625006671995,
+     0.002123209007550031,
+     0.0022964170202612877
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "u1_cpu": {
+    "repeats": 3,
+    "p50_s": 0.0006896249833516777,
+    "p95_s": 0.0007345124846324325,
+    "states_per_s": 1450.0634752816736,
+    "times_s": [
+     0.0006752919871360064,
+     0.0006896249833516777,
+     0.0007394999847747386
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   },
+   "u1_gpu": {
+    "repeats": 3,
+    "p50_s": 0.00270229100715369,
+    "p95_s": 0.0028269788366742433,
+    "states_per_s": 370.0563697073082,
+    "times_s": [
+     0.0023623330052942038,
+     0.0028408330399543047,
+     0.00270229100715369
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   },
+   "pgnet_cpu": {
+    "repeats": 3,
+    "p50_s": 0.006062917003873736,
+    "p95_s": 0.006173241708893329,
+    "states_per_s": 164.93710855040194,
+    "times_s": [
+     0.005665958044119179,
+     0.0061855000094510615,
+     0.006062917003873736
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   },
+   "pgnet_gpu": {
+    "repeats": 3,
+    "p50_s": 0.007696584041696042,
+    "p95_s": 0.007903358101611958,
+    "states_per_s": 129.92776984991346,
+    "times_s": [
+     0.0073495410033501685,
+     0.00792633299715817,
+     0.007696584041696042
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   },
+   "sweep_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.00015791598707437515,
+    "p95_s": 0.00016425380599685013,
+    "states_per_s": 6332.48107760629,
+    "times_s": [
+     0.00010845897486433387,
+     0.00015791598707437515,
+     0.00016495800809934735
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.002182292053475976,
+    "p95_s": 0.0022009669861290603,
+    "states_per_s": 458.23380899325105,
+    "times_s": [
+     0.001869916042778641,
+     0.002182292053475976,
+     0.0022030419786460698
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "u1_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.0006800830014981329,
+    "p95_s": 0.0007554589421488345,
+    "states_per_s": 1470.408755691779,
+    "times_s": [
+     0.0006589999538846314,
+     0.0007638340466655791,
+     0.0006800830014981329
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   },
+   "u1_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.002682332997210324,
+    "p95_s": 0.0027269586164038627,
+    "states_per_s": 372.80978947804715,
+    "times_s": [
+     0.0023021670058369637,
+     0.0027319170185364783,
+     0.002682332997210324
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   },
+   "pgnet_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.00578929198672995,
+    "p95_s": 0.005921441700775176,
+    "states_per_s": 172.7326937891838,
+    "times_s": [
+     0.00578929198672995,
+     0.005936125002335757,
+     0.005694958032108843
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   },
+   "pgnet_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.007709041994530708,
+    "p95_s": 0.007795592321781441,
+    "states_per_s": 129.71780419791,
+    "times_s": [
+     0.007318749965634197,
+     0.007805209024809301,
+     0.007709041994530708
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1
+   }
+  },
+  "256": {
+   "opendss": {
+    "repeats": 3,
+    "p50_s": 1.0986398750101216,
+    "p95_s": 1.4168553868890739,
+    "states_per_s": 233.01539096024666,
+    "times_s": [
+     1.0789257920114323,
+     1.4522126659867354,
+     1.0986398750101216
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_cpu": {
+    "repeats": 3,
+    "p50_s": 0.29795704199932516,
+    "p95_s": 0.418256441981066,
+    "states_per_s": 859.1842578453972,
+    "times_s": [
+     0.25698408304015175,
+     0.4316230419790372,
+     0.29795704199932516
+    ],
+    "opendss_solves_first_timed_repeat": 4,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_gpu": {
+    "repeats": 3,
+    "p50_s": 0.49258274998283014,
+    "p95_s": 0.6322646256245207,
+    "states_per_s": 519.709632562089,
+    "times_s": [
+     0.4142777500092052,
+     0.647784834029153,
+     0.49258274998283014
+    ],
+    "opendss_solves_first_timed_repeat": 4,
+    "fallback_states_first_timed_repeat": null
+   },
+   "u1_cpu": {
+    "repeats": 3,
+    "p50_s": 0.020494583004619926,
+    "p95_s": 0.020809771114727482,
+    "states_per_s": 12491.105573716333,
+    "times_s": [
+     0.016685541020706296,
+     0.020844792015850544,
+     0.020494583004619926
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 137
+   },
+   "u1_gpu": {
+    "repeats": 3,
+    "p50_s": 0.061262792034540325,
+    "p95_s": 0.06559839169494808,
+    "states_per_s": 4178.719113155432,
+    "times_s": [
+     0.05186733300797641,
+     0.061262792034540325,
+     0.06608012499054894
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 137
+   },
+   "pgnet_cpu": {
+    "repeats": 3,
+    "p50_s": 0.5079092080122791,
+    "p95_s": 0.5176414335845039,
+    "states_per_s": 504.0270898058044,
+    "times_s": [
+     0.4985155839822255,
+     0.5187227919814177,
+     0.5079092080122791
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 139
+   },
+   "pgnet_gpu": {
+    "repeats": 3,
+    "p50_s": 0.5615165840135887,
+    "p95_s": 0.5649939212133177,
+    "states_per_s": 455.9081731302967,
+    "times_s": [
+     0.5615165840135887,
+     0.5453782919794321,
+     0.5653802920132875
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 139
+   },
+   "sweep_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.00971791596384719,
+    "p95_s": 0.011838578799506649,
+    "states_per_s": 26343.0967043116,
+    "times_s": [
+     0.012074208003468812,
+     0.00971791596384719,
+     0.008922417007852346
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.16996254195692018,
+    "p95_s": 0.16997922980226576,
+    "states_per_s": 1506.2142343392784,
+    "times_s": [
+     0.1681238750461489,
+     0.16998108400730416,
+     0.16996254195692018
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "u1_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.015540083986707032,
+    "p95_s": 0.01672005871660076,
+    "states_per_s": 16473.527441613707,
+    "times_s": [
+     0.015540083986707032,
+     0.014898916997481138,
+     0.016851167019922286
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 137
+   },
+   "u1_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.052898457972332835,
+    "p95_s": 0.053093120810808615,
+    "states_per_s": 4839.460540303352,
+    "times_s": [
+     0.0531147500150837,
+     0.04960395803209394,
+     0.052898457972332835
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 137
+   },
+   "pgnet_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.48517704097321257,
+    "p95_s": 0.4855386915965937,
+    "states_per_s": 527.6424446764664,
+    "times_s": [
+     0.47378820896847174,
+     0.48517704097321257,
+     0.4855788749991916
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 139
+   },
+   "pgnet_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.5564819580176845,
+    "p95_s": 0.5580364451918285,
+    "states_per_s": 460.0328839266062,
+    "times_s": [
+     0.5582091659889556,
+     0.5564819580176845,
+     0.5484803750296123
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 139
+   }
+  },
+  "3000": {
+   "sweep_cpu": {
+    "repeats": 3,
+    "p50_s": 3.1164555409923196,
+    "p95_s": 3.202399879117729,
+    "states_per_s": 962.6320544411685,
+    "times_s": [
+     3.0872787500265986,
+     3.1164555409923196,
+     3.2119492500205524
+    ],
+    "opendss_solves_first_timed_repeat": 55,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_gpu": {
+    "repeats": 3,
+    "p50_s": 4.25903787498828,
+    "p95_s": 4.2980104624992235,
+    "states_per_s": 704.3844380013303,
+    "times_s": [
+     4.242514833982568,
+     4.25903787498828,
+     4.30234075000044
+    ],
+    "opendss_solves_first_timed_repeat": 55,
+    "fallback_states_first_timed_repeat": null
+   },
+   "u1_cpu": {
+    "repeats": 3,
+    "p50_s": 0.1987381670041941,
+    "p95_s": 0.20451342920423485,
+    "states_per_s": 15095.238349142512,
+    "times_s": [
+     0.19009766698582098,
+     0.20515512500423938,
+     0.1987381670041941
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1646
+   },
+   "u1_gpu": {
+    "repeats": 3,
+    "p50_s": 0.5982616250403225,
+    "p95_s": 0.6091986869054381,
+    "states_per_s": 5014.528551447373,
+    "times_s": [
+     0.610413916001562,
+     0.5982616250403225,
+     0.5644743330194615
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1646
+   },
+   "pgnet_cpu": {
+    "repeats": 3,
+    "p50_s": 6.026335916016251,
+    "p95_s": 6.182599279086571,
+    "states_per_s": 497.81493129629087,
+    "times_s": [
+     6.026335916016251,
+     6.1999618749832734,
+     5.988168707990553
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1668
+   },
+   "pgnet_gpu": {
+    "repeats": 3,
+    "p50_s": 6.419761499972083,
+    "p95_s": 6.494004825584125,
+    "states_per_s": 467.3070798678496,
+    "times_s": [
+     6.372415707970504,
+     6.419761499972083,
+     6.502254083985463
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1668
+   },
+   "sweep_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.08315316698281094,
+    "p95_s": 0.09144722948549315,
+    "states_per_s": 36078.000500211216,
+    "times_s": [
+     0.07793466601287946,
+     0.09236879198579118,
+     0.08315316698281094
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "sweep_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 1.2734481249935925,
+    "p95_s": 1.3195110628323163,
+    "states_per_s": 2355.808565044685,
+    "times_s": [
+     1.2734481249935925,
+     1.1921541249612346,
+     1.324629167036619
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": null
+   },
+   "u1_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.13391312502790242,
+    "p95_s": 0.15431192473042757,
+    "states_per_s": 22402.58375999301,
+    "times_s": [
+     0.13391312502790242,
+     0.1292734169983305,
+     0.15657845803070813
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1646
+   },
+   "u1_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 0.4440778329735622,
+    "p95_s": 0.49513355862000025,
+    "states_per_s": 6755.572508341354,
+    "times_s": [
+     0.4440778329735622,
+     0.4269942919490859,
+     0.50080641702516
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1646
+   },
+   "pgnet_cpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 5.986298458999954,
+    "p95_s": 6.2052742333733475,
+    "states_per_s": 501.1444084432047,
+    "times_s": [
+     5.986298458999954,
+     5.930165208003018,
+     6.229604874970391
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1668
+   },
+   "pgnet_gpu_noopendss": {
+    "repeats": 3,
+    "p50_s": 6.377511333033908,
+    "p95_s": 6.3839423955476375,
+    "states_per_s": 470.4029273081418,
+    "times_s": [
+     6.384656958049163,
+     6.365810459014028,
+     6.377511333033908
+    ],
+    "opendss_solves_first_timed_repeat": 0,
+    "fallback_states_first_timed_repeat": 1668
+   },
+   "opendss": {
+    "repeats": 1,
+    "p50_s": 12.988797958008945,
+    "p95_s": 12.988797958008945,
+    "states_per_s": 230.96825508400397,
+    "times_s": [
+     12.988797958008945
+    ]
+   }
+  }
+ }
+}

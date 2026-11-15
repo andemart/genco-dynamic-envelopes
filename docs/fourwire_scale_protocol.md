@@ -667,3 +667,31 @@ Appended after a fourth read-only audit, of the committed Amendments 7 to 9 (com
 8. **U1 screen (Amendment 9, item 6).** The report applies the same rule to the U1 screen pipeline: speed-up of at least 1.10, interval above 1, no false-safe and no cleared-indeterminate decision of its screen or in what it delivered. This is reported next to the §7 criterion, which concerns PG-net. It was added after the dry run of item B: if a screen without a learned model gets the same speed-up, the paper must say so.
 9. **A PG-net fit without a model** (Amendment 7, item 4) is timed and enveloped as a screen that defers every state.
 10. **Envelope check (Amendment 9, item 7).** Evaluator B's fallback share is reported per direction. The E2 report needs the complete, valid envelope records of all six networks.
+
+## Amendments 7 to 9: second set of corrections (2026-11-16, before the freeze)
+Appended after a fifth read-only audit, of commit ed17a1a. The texts above are left as written. Still nothing frozen, and no final fit, final evaluation or timing run.
+
+**A. The disclosure of the 12 test states, completed.**
+- The evaluation that the unit tests ran on those states also computed, and wrote to pytest's temporary folders, state-accuracy metrics, the two rating-sensitivity screens, the sweep's agreement with OpenDSS and per-state outputs. None of these was displayed, beyond what part A above says.
+- The calib states were 24: 12 of network 10 and 12 of network 25. The throwaway models were PG-pre and PG-net on 24 train states and PG-scratch and PG-ft on 12.
+- **"About ten runs" and what was displayed come from the working session's own record. They cannot be verified from the repository.**
+- **What the test guard covers** (`tests/conftest.py`): the study's state generator, the datakit generator, and `numpy.load` on the real calib and test label folders. It does not stop a test that reads a label file by other means. No test of the study does.
+
+**B. The dry-run timings quoted in part B above** were those of a first run on network 1. Its files were removed when the dry run was repeated with the revised code. The repeat is kept, with the laptop's name removed: `results/fourwire_scale_dryrun_laptop_network1_timing.json` and `..._evaluation.json`.
+- It gives, for 3,000 val states: Numba sweep 0.083 s without and 3.12 s with the OpenDSS solves of its 55 non-converged states; U1 screen pipeline 0.20 s with no OpenDSS solve; PG-net on the CPU 6.0 s.
+- Fallback shares of 0.350 to 0.397.
+
+**C. What the code enforces, stated as it now is.** Where this differs from parts C and D above, this is the rule.
+1. **Claims.** One process at a time inspects, sets aside and claims a run folder; a second one is refused, not queued. A folder appears with its owner in it.
+2. **Skips.** A run is skipped only if its record is valid and passes every check below, and for a fit only if its checkpoint is the one the record names. Anything else is an error, not a skip.
+3. **Publication.** An evaluation, timing or envelope record is written to its run folder and then copied to `results/`. If a run dies between the two, the next call publishes the record it finds. It does not read a label again.
+4. **The test reader** checks its authorisation when it is made and at every read: the freeze, the claim held by this process, no record yet, and the list of fits that this evaluation has checked.
+5. **Record checks.** A fit record must be the fit its name stands for in §8: kind, fold, network, budget, seed and pool. Every final record must be valid, made with today's input hashes, and made under this freeze with its source hash and library versions, or under an earlier freeze that this one accepts for the stage.
+6. **End of a run.** Besides Amendment 7 corrections, item C5: the job script and, where the stage uses them, the rating-variant networks (evaluation) and the meter profiles (envelopes) are compared with the freeze again.
+7. **Halt.** Also written when a fit has used its two reruns. `collect` and both reports refuse while a halt is in force.
+8. **Rerun reason.** A cancellation counts only if accounting names an account other than ours. A bare "CANCELLED" does not.
+9. **Library versions in the freeze:** Python, NumPy, SciPy, PyTorch with its CUDA build, PyTorch Geometric and its optional native backends, Numba, OpenDSSDirect. **cuDNN is recorded per run and not pinned:** its version cannot be read on the machine where the freeze is written, and the model has no operation that uses it.
+10. **Envelope records.** The report accepts a network's envelope record only if it holds exactly the 576 intervals of Amendment 9, item 7, each once, with the frozen settings, and a summary that follows from its intervals.
+11. **Submission.** The final job chain is submitted by hand, after the A100 dry run of the same source has ended with `DRY_RUN_OK` and its output has been read. There is no automatic dependency on the dry run.
+
+**D. What these guards are.** They protect the study against our own mistakes: a wrong folder, a repeated job, a stale record, two jobs for one run. They work on one file system and assume nobody edits records on purpose. They are not security.
