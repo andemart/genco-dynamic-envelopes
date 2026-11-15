@@ -183,11 +183,26 @@ def frozen_thevenin(network: int):
     return Thevenin(e=z["e"], zth=z["zth"])
 
 
+SWEEP_TOL, SWEEP_MAX_IT = 1e-8, 100     # §3 common sweep settings
+
+
+def reference_sweep_state(net, th, s_kva: np.ndarray):
+    """The NumPy sweep on one state (flat start): (V (n_bus, 4) kV, I (n_bus, 4) kA, iterations, converged).
+    converged: the voltage update of the last performed iteration is below SWEEP_TOL within SWEEP_MAX_IT."""
+    from .fourwire_net import sweep
+    v, i, it = sweep(net, th, s_kva[None], iterations=SWEEP_MAX_IT, tol=SWEEP_TOL)
+    conv = True
+    if it == SWEEP_MAX_IT:                                  # no early exit: check the update of iteration 100
+        v_prev, _, _ = sweep(net, th, s_kva[None], iterations=SWEEP_MAX_IT - 1, tol=SWEEP_TOL)
+        conv = bool(np.abs(v - v_prev).max() / V_PN_NOM_KV < SWEEP_TOL)
+    return v[0], i[0], it, conv
+
+
 def e1_network(network: int, split: str = "val", n_states: int = N_E1, write: bool = True) -> dict:
     """E1 (§7): 200 val states, OpenDSS (failure rule) vs the NumPy sweep with the frozen Thevenin root.
     split/n_states/write exist only for smoke tests of this code on training states."""
     from .fourwire_labels import Extractor
-    from .fourwire_net import load_fourwire, phase_neutral_pu, sweep
+    from .fourwire_net import load_fourwire, phase_neutral_pu
     from .limits import VMAX_PU, VMIN_PU
     t0 = time.perf_counter()
     folder = network_folder(network)
@@ -203,18 +218,15 @@ def e1_network(network: int, split: str = "val", n_states: int = N_E1, write: bo
     s = p + 1j * q
     v_sw, i_sw, its, sw_conv = [], [], np.zeros(n_states, int), np.zeros(n_states, bool)
     for k in range(n_states):                                  # one state at a time: per-state iteration counts
-        v, i, it = sweep(net, th, s[k:k + 1], iterations=100, tol=1e-8)
-        v_next, _, _ = sweep(net, th, s[k:k + 1], iterations=1, v0=v)
-        v_sw.append(v[0]); i_sw.append(i[0]); its[k] = it
-        sw_conv[k] = np.abs(v_next - v).max() / V_PN_NOM_KV < 1e-8
+        v, i, its[k], sw_conv[k] = reference_sweep_state(net, th, s[k])
+        v_sw.append(v); i_sw.append(i)
     v_sw, i_sw = np.array(v_sw), np.array(i_sw)
-    c = lab["converged"]
-    both = c & sw_conv
+    c = lab["converged"]                                       # §7: every state where OpenDSS converges
     vpn_sw = phase_neutral_pu(net, v_sw)
     vpn_dss = phase_neutral_pu(net, lab["V"])
     rating = net.rating_a[1:] / 1e3                                          # kA, root row excluded
-    v_err = float(np.abs(vpn_sw - vpn_dss)[both].max()) if both.any() else float("nan")
-    i_err = float((np.abs(i_sw - lab["I"])[:, 1:, :] / rating[None, :, None])[both].max()) if both.any() \
+    v_err = float(np.abs(vpn_sw - vpn_dss)[c].max()) if c.any() else float("nan")
+    i_err = float((np.abs(i_sw - lab["I"])[:, 1:, :] / rating[None, :, None])[c].max()) if c.any() \
         else float("nan")
     # violation shares on OpenDSS-converged states; cable overload also under the rating variants
     vpn_c = vpn_dss[c]
@@ -240,9 +252,9 @@ def e1_network(network: int, split: str = "val", n_states: int = N_E1, write: bo
     return {"network": network, "states": n_states, "opendss_converged": int(c.sum()),
             "newton_rescued": int(lab["rescued"].sum()), "solver_indeterminate": int((~c).sum()),
             "sweep_nonconverged": int((~sw_conv).sum()),
-            "opendss_converged_sweep_nonconverged": int((c & ~sw_conv).sum()), "compared": int(both.sum()),
+            "opendss_converged_sweep_nonconverged": int((c & ~sw_conv).sum()), "compared": int(c.sum()),
             "max_vpn_err_pu": v_err, "max_branch_current_err_rel_rating": i_err,
-            "pass": bool(both.any() and v_err <= E1_V_TOL_PU and i_err <= E1_I_TOL_REL),
+            "pass": bool(c.any() and v_err <= E1_V_TOL_PU and i_err <= E1_I_TOL_REL),
             "sweep_iterations_median": float(np.median(its)), "sweep_iterations_p95": float(np.percentile(its, 95)),
             "opendss_line_loading_check": float(np.abs(loading["primary"] - lab["summary"][c, 2]).max()),
             "violation_shares": shares, "meter_reuse": meter_reuse(st), "augmentation_cap": augmentation_report(st),
