@@ -17,6 +17,19 @@ frozen Thevenin equivalent. Writes data_out/fourwire_scale/e1/ and results/fourw
 
 validate-sweeps (Amendment 3): the Numba and PyTorch sweeps against the one-state NumPy sweep on the full
 val split of the 24 eligible networks. Writes results/fourwire_scale_sweep_validation_<device>.json.
+
+    python -m gencodoe.fourwire_scale labels [--networks ...] [--splits ...] [--processes k]
+
+labels (§2.5, §3): the full splits of the eligible networks, one unit of work per (network, split), in
+shards of 500 states written atomically under data_out/fourwire_scale/labels/<split>/network_N/ with a
+manifest.json (content hashes, solver counts). An existing shard is kept, so a unit can be resumed. Test
+labels have their own directory tree.
+
+    python -m gencodoe.fourwire_scale label-integrity [--networks ...] [--splits ...]
+
+label-integrity (§9 gate 4): re-hashes every shard, regenerates the inputs from the seeds and runs the
+ENWL1 semantic checker. Writes results/fourwire_scale_labels_manifest.json and
+results/fourwire_scale_label_integrity.json.
 """
 from __future__ import annotations
 
@@ -403,6 +416,185 @@ def validate_sweeps(networks: list[int], processes: int, device: str) -> Path:
     return out_file
 
 
+N_STATES = {"train": 10_000, "val": 3_000, "calib": 2_000, "test": 4_096}   # §2.5
+SHARD = 500              # states per label shard (one Amendment 1 block)
+STORED_INPUTS = {"step": "step", "mix": "mix", "flex_kw": "flex_kw", "flex_kw_drawn": "flex_kw_drawn",
+                 "gamma": "gamma", "groups": "groups", "meters": "meters", "p_kw": "p_kw_customer",
+                 "q_kvar": "q_kvar_customer"}                               # generator key -> stored key
+LABEL_KEYS = ("V", "I", "summary", "flags", "converged", "retried", "rescued")
+
+
+def labels_dir(network: int, split: str) -> Path:
+    return OUT / "labels" / split / f"network_{network}"
+
+
+def _provenance() -> dict:
+    import platform
+
+    import opendssdirect
+    commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
+    dirty = bool(subprocess.run(["git", "status", "--porcelain", "src"], capture_output=True, text=True,
+                                cwd=ROOT).stdout.strip())
+    return {"code_commit": commit, "src_dirty": dirty, "platform": platform.platform(),
+            "opendssdirect": opendssdirect.__version__, "opendss_engine": opendssdirect.Basic.Version().split(";")[0]}
+
+
+def _read_shard(path: Path) -> tuple[dict, dict]:
+    """(arrays, provenance) of a shard. The content hash covers the arrays, not the provenance."""
+    with np.load(path) as z:
+        return {k: z[k] for k in z.files if k != "provenance"}, json.loads(str(z["provenance"]))
+
+
+def _write_json(path: Path, obj) -> None:
+    tmp = path.with_name("." + path.name + ".partial")
+    tmp.write_text(json.dumps(obj, indent=1))
+    os.replace(tmp, path)
+
+
+def label_split(task: tuple[int, str]) -> dict:
+    """Label shards and manifest of one (network, split): the §2.5 states in the frozen generator order,
+    OpenDSS under the §3 failure rule.
+
+    OpenDSS starts each solve from the previous solution, so every shard starts from a fresh engine: a shard
+    then depends only on its own states, not on which shards the process solved before it (a resumed unit
+    gives the same labels). With one fresh engine per 500 states, train shard 0 repeats the identification
+    solves and the start of val shard 0 repeats the E1 solves."""
+    from .fourwire_labels import Extractor
+    from .fourwire_net import load_fourwire
+    network, split = task
+    folder = ensure_network_folder(network)
+    net = load_fourwire(folder)
+    names, idx, share = cc.customers(net.customer_names)
+    n = N_STATES[split]
+    st = customer_states(len(names), split, n, seed(network, split), AUGMENT, CAP_KVA)
+    p, q = connection_states(st, idx, share)
+    out = labels_dir(network, split)
+    out.mkdir(parents=True, exist_ok=True)
+    prov = _provenance()
+    for a in range(0, n, SHARD):
+        f = out / f"shard_{a // SHARD:03d}.npz"
+        if f.exists():
+            continue
+        b = min(a + SHARD, n)
+        t0 = time.perf_counter()
+        ex = Extractor(folder, **OPENDSS)
+        lab = label_block(ex, p[a:b], q[a:b])
+        arrays = {"state": np.arange(a, b), **{v: st[k][a:b] for k, v in STORED_INPUTS.items()}, **lab}
+        tmp = f.with_name("." + f.stem + ".partial.npz")
+        np.savez(tmp, provenance=json.dumps({**prov, "seconds": time.perf_counter() - t0,
+                                             "engine_health": ex.ub.health()}), **arrays)
+        os.replace(tmp, f)
+    shards, provenance, counts = [], [], np.zeros(3, int)
+    for f in sorted(out.glob("shard_*.npz")):                    # the manifest describes the files on disk
+        arrays, pr = _read_shard(f)
+        c = arrays["converged"]
+        shards.append({"file": f.name, "first_state": int(arrays["state"][0]), "states": int(len(c)),
+                       "content_sha256": content_sha(arrays), "converged": int(c.sum()),
+                       "newton_rescued": int(arrays["rescued"].sum()), "retried": int(arrays["retried"].sum()),
+                       "seconds": pr.pop("seconds"), "engine_resets": pr.pop("engine_health")["resets"]})
+        counts += [c.sum(), arrays["rescued"].sum(), arrays["retried"].sum()]
+        if pr not in provenance:
+            provenance.append(pr)
+    man = {"network": network, "split": split, "seed": seed(network, split), "states": n, "shard_states": SHARD,
+           "retained_buses": net.n_bus, "customers": len(names), "phase_connections": len(idx),
+           "inputs_content_sha256": content_sha({"p": p, "q": q}),
+           "content_sha256": hashlib.sha256("".join(s["content_sha256"] for s in shards).encode()).hexdigest(),
+           "opendss": {"states": int(sum(s["states"] for s in shards)), "converged": int(counts[0]),
+                       "newton_rescued": int(counts[1]), "retried": int(counts[2]),
+                       "solver_indeterminate": int(sum(s["states"] for s in shards) - counts[0])},
+           "meter_reuse": meter_reuse(st), "augmentation_cap": augmentation_report(st),
+           "provenance": provenance, "shards": shards}
+    _write_json(out / "manifest.json", man)
+    return man
+
+
+def _tasks(networks: list[int], splits: list[str]) -> list[tuple[int, str]]:
+    """(network, split) units, largest first (states x converted lines) so a pool ends without a long tail."""
+    tasks = [(n, s) for n in networks for s in splits]
+    return sorted(tasks, key=lambda t: -N_STATES[t[1]] * _identification(t[0])["conversion"]["lines"])
+
+
+def labels(networks: list[int], splits: list[str], processes: int) -> Path:
+    tasks = _tasks(networks, splits)
+    with Pool(processes) as pool:
+        for k, man in enumerate(pool.imap_unordered(label_split, tasks, chunksize=1), 1):
+            o = man["opendss"]
+            print(f"{k}/{len(tasks)} network_{man['network']} {man['split']}: {o['states']} states, "
+                  f"{o['solver_indeterminate']} indeterminate, {o['newton_rescued']} Newton-rescued", flush=True)
+    return OUT / "labels"
+
+
+def _same(a: np.ndarray, b: np.ndarray) -> bool:
+    return a.shape == b.shape and a.dtype == b.dtype and a.tobytes() == b.tobytes()
+
+
+def integrity_split(task: tuple[int, str]) -> dict:
+    """§9 gate 4 for one (network, split). No model metric and no violation share is computed.
+
+    - shards complete and contiguous; every shard's content hash equals the manifest's;
+    - one code commit, clean source;
+    - stored inputs equal the states regenerated from the seed, and their calendar days are the split's;
+    - the ENWL1 semantic checker (fourwire_labels.semantic_check, its thresholds) on every shard;
+    - where the identification (train) or E1 (val) labels are on disk: the same states are bit-identical.
+    Reported only: converged states with a customer voltage outside 0.5-1.5 pu, where OpenDSS no longer
+    models the load as constant power (§3)."""
+    from .datakit_fluvius import day_split
+    from .fourwire_labels import semantic_check
+    from .fourwire_net import load_fourwire, phase_neutral_pu
+    network, split = task
+    net = load_fourwire(ensure_network_folder(network))
+    names, idx, share = cc.customers(net.customer_names)
+    n = N_STATES[split]
+    st = customer_states(len(names), split, n, seed(network, split), AUGMENT, CAP_KVA)
+    folder = labels_dir(network, split)
+    man = json.loads((folder / "manifest.json").read_text())
+    earlier = {"train": OUT / "identification" / f"network_{network}.npz",
+               "val": OUT / "e1" / f"network_{network}.npz"}.get(split)
+    rep = {"network": network, "split": split, "states_expected": n, "content_hashes_match": True,
+           "shards_contiguous": True, "inputs_reproduced": True, "reproduces_earlier_labels": None,
+           "converged_states_outside_constant_power_range": 0}
+    sem, pos = [], 0
+    for sh in man["shards"]:
+        arrays, _ = _read_shard(folder / sh["file"])
+        a, b = pos, pos + len(arrays["converged"])
+        rep["content_hashes_match"] &= content_sha(arrays) == sh["content_sha256"]
+        rep["shards_contiguous"] &= bool(np.array_equal(arrays["state"], np.arange(a, b)))
+        rep["inputs_reproduced"] &= b <= n and all(_same(arrays[v], st[k][a:b]) for k, v in STORED_INPUTS.items())
+        if a == 0 and earlier is not None and earlier.exists():
+            with np.load(earlier) as z:
+                m = min(b, len(z["converged"]))
+                rep["reproduces_earlier_labels"] = all(_same(arrays[k][:m], z[k][:m]) for k in LABEL_KEYS)
+        p, q = arrays["p_kw_customer"][:, idx] * share, arrays["q_kvar_customer"][:, idx] * share
+        sem.append(semantic_check({"scenario": arrays["state"], "p_kw": p, "q_kvar": q, **arrays}, net))
+        vpn = phase_neutral_pu(net, arrays["V"][arrays["converged"]])
+        rep["converged_states_outside_constant_power_range"] += int(((vpn < 0.5) | (vpn > 1.5)).any(1).sum())
+        pos = b
+    rep["states"] = pos
+    rep["split_days_ok"] = bool(set(day_split(st["step"])) == {split})
+    rep["single_clean_commit"] = len(man["provenance"]) == 1 and not man["provenance"][0]["src_dirty"]
+    rep["semantic"] = {k: all(r[k] for r in sem) if isinstance(sem[0][k], bool)
+                       else sum(r[k] for r in sem) if k in ("states", "converged") else max(r[k] for r in sem)
+                       for k in sem[0]} if sem else {"ok": False}
+    rep["ok"] = bool(pos == n and rep["content_hashes_match"] and rep["shards_contiguous"]
+                     and rep["inputs_reproduced"] and rep["split_days_ok"] and rep["single_clean_commit"]
+                     and rep["semantic"]["ok"] and rep["reproduces_earlier_labels"] is not False)
+    return rep
+
+
+def label_integrity(networks: list[int], splits: list[str], processes: int) -> Path:
+    tasks = sorted((n, s) for n in networks for s in splits)
+    with Pool(processes) as pool:
+        reps = pool.map(integrity_split, tasks, chunksize=1)
+    mans = [json.loads((labels_dir(n, s) / "manifest.json").read_text()) for n, s in tasks]
+    head = {"protocol": "docs/fourwire_scale_protocol.md §2.5, §3, §9 gate 4, Amendments 1 and 2",
+            "states": N_STATES, "shard_states": SHARD,
+            "label_code_commits": sorted({pr["code_commit"] for m in mans for pr in m["provenance"]})}
+    _write_json(RESULTS / "fourwire_scale_labels_manifest.json", {**head, "splits": mans})
+    out = RESULTS / "fourwire_scale_label_integrity.json"
+    _write_json(out, {**head, "checker": _provenance(), "all_ok": all(r["ok"] for r in reps), "splits": reps})
+    return out
+
+
 def identify(networks: list[int], processes: int) -> Path:
     with Pool(processes) as pool:
         recs = pool.map(identify_network, networks, chunksize=1)
@@ -419,13 +611,16 @@ def identify(networks: list[int], processes: int) -> Path:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["identify", "e1", "validate-sweeps"])
+    ap.add_argument("cmd", choices=["identify", "e1", "validate-sweeps", "labels", "label-integrity"])
     ap.add_argument("--networks", type=int, nargs="*", default=None)
+    ap.add_argument("--splits", nargs="*", default=list(SPLIT_INDEX), choices=list(SPLIT_INDEX))
     ap.add_argument("--device", default="cpu", help="validate-sweeps: PyTorch device (cpu or cuda)")
     ap.add_argument("--processes", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     a = ap.parse_args()
     if a.cmd == "validate-sweeps":
         print(validate_sweeps(a.networks or ELIGIBLE, a.processes, a.device))
+    elif a.cmd in ("labels", "label-integrity"):
+        print((labels if a.cmd == "labels" else label_integrity)(a.networks or ELIGIBLE, a.splits, a.processes))
     else:
         print((identify if a.cmd == "identify" else e1)(a.networks or list(range(1, 26)), a.processes))
 
