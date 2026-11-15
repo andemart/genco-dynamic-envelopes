@@ -20,7 +20,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.018512368616770525,
   "tr_dss_minus_proxy_min": -0.027007697087781113,
-  "tr_rel_at_load_gt_0.8": 0.007913568244615294
+  "tr_rel_at_load_gt_0.8": 0.007913568244615294,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 2,
@@ -43,7 +59,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.03236781921044063,
   "tr_dss_minus_proxy_min": -0.04040124542636163,
-  "tr_rel_at_load_gt_0.8": 0.006720413639870491
+  "tr_rel_at_load_gt_0.8": 0.006720413639870491,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 3,
@@ -66,7 +98,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.03176623835517489,
   "tr_dss_minus_proxy_min": -0.02741757569830572,
-  "tr_rel_at_load_gt_0.8": 0.007429665014950909
+  "tr_rel_at_load_gt_0.8": 0.007429665014950909,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 4,
@@ -89,7 +137,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.010997231163477839,
   "tr_dss_minus_proxy_min": -0.02534782613566943,
-  "tr_rel_at_load_gt_0.8": 0.005317207176267647
+  "tr_rel_at_load_gt_0.8": 0.005317207176267647,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 5,
@@ -112,7 +176,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.020947813164767348,
   "tr_dss_minus_proxy_min": -0.029595242167634594,
-  "tr_rel_at_load_gt_0.8": -0.0006463671130349649
+  "tr_rel_at_load_gt_0.8": -0.0006463671130349649,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 6,
@@ -135,7 +215,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.01619567928958232,
   "tr_dss_minus_proxy_min": -0.01942256302534595,
-  "tr_rel_at_load_gt_0.8": 0.00800273804762772
+  "tr_rel_at_load_gt_0.8": 0.00800273804762772,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 7,
@@ -158,7 +254,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.021525686471716043,
   "tr_dss_minus_proxy_min": -0.03562995065884078,
-  "tr_rel_at_load_gt_0.8": -0.000609954749077324
+  "tr_rel_at_load_gt_0.8": -0.000609954749077324,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 8,
@@ -181,7 +293,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.028772625409879682,
   "tr_dss_minus_proxy_min": -0.03670283191860285,
-  "tr_rel_at_load_gt_0.8": 0.002788848750505462
+  "tr_rel_at_load_gt_0.8": 0.002788848750505462,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 9,
@@ -204,7 +332,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.01656603202602791,
   "tr_dss_minus_proxy_min": -0.03236817875038514,
-  "tr_rel_at_load_gt_0.8": 0.005596211918618952
+  "tr_rel_at_load_gt_0.8": 0.005596211918618952,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 10,
@@ -227,7 +371,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.005586016565701235,
   "tr_dss_minus_proxy_min": -0.027035496646298583,
-  "tr_rel_at_load_gt_0.8": null
+  "tr_rel_at_load_gt_0.8": null,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 11,
@@ -250,7 +410,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.014990609676484024,
   "tr_dss_minus_proxy_min": -0.025588370169751545,
-  "tr_rel_at_load_gt_0.8": 0.005870523023115285
+  "tr_rel_at_load_gt_0.8": 0.005870523023115285,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 12,
@@ -273,7 +449,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.01363182370874072,
   "tr_dss_minus_proxy_min": -0.030352644048746324,
-  "tr_rel_at_load_gt_0.8": 0.005817662089723937
+  "tr_rel_at_load_gt_0.8": 0.005817662089723937,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 14,
@@ -296,7 +488,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.0316989428079153,
   "tr_dss_minus_proxy_min": -0.022905241368690668,
-  "tr_rel_at_load_gt_0.8": 0.0097757014009642
+  "tr_rel_at_load_gt_0.8": 0.0097757014009642,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 15,
@@ -319,7 +527,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.0562002719100505,
   "tr_dss_minus_proxy_min": -0.043179903963369265,
-  "tr_rel_at_load_gt_0.8": 0.006273792101325035
+  "tr_rel_at_load_gt_0.8": 0.006273792101325035,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 16,
@@ -342,7 +566,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.0138378436755342,
   "tr_dss_minus_proxy_min": -0.0268893352285004,
-  "tr_rel_at_load_gt_0.8": 0.007069017275966415
+  "tr_rel_at_load_gt_0.8": 0.007069017275966415,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 17,
@@ -365,7 +605,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.05963194352028056,
   "tr_dss_minus_proxy_min": -0.023923871145199616,
-  "tr_rel_at_load_gt_0.8": 0.006991635755774574
+  "tr_rel_at_load_gt_0.8": 0.006991635755774574,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 18,
@@ -388,7 +644,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.021599443461195467,
   "tr_dss_minus_proxy_min": -0.02674229640787587,
-  "tr_rel_at_load_gt_0.8": 0.007668376828001792
+  "tr_rel_at_load_gt_0.8": 0.007668376828001792,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 2,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 2,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 19,
@@ -411,7 +683,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.01616497390995031,
   "tr_dss_minus_proxy_min": -0.024459869581424265,
-  "tr_rel_at_load_gt_0.8": 0.0060121891098541816
+  "tr_rel_at_load_gt_0.8": 0.0060121891098541816,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 20,
@@ -434,7 +722,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.028161506592295993,
   "tr_dss_minus_proxy_min": -0.022477576427404916,
-  "tr_rel_at_load_gt_0.8": 0.014571315036189348
+  "tr_rel_at_load_gt_0.8": 0.014571315036189348,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 21,
@@ -457,7 +761,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.016443805598150396,
   "tr_dss_minus_proxy_min": -0.04478764687453407,
-  "tr_rel_at_load_gt_0.8": 0.00691100484984228
+  "tr_rel_at_load_gt_0.8": 0.00691100484984228,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 22,
@@ -480,7 +800,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.01969360773413853,
   "tr_dss_minus_proxy_min": -0.02380592782821192,
-  "tr_rel_at_load_gt_0.8": 0.00929430421047962
+  "tr_rel_at_load_gt_0.8": 0.00929430421047962,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 23,
@@ -503,7 +839,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.022261364522441207,
   "tr_dss_minus_proxy_min": -0.039881753287135,
-  "tr_rel_at_load_gt_0.8": 0.0087140001114229
+  "tr_rel_at_load_gt_0.8": 0.0087140001114229,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 24,
@@ -526,7 +878,23 @@
   ],
   "tr_dss_minus_proxy_max": 0.021941919488482675,
   "tr_dss_minus_proxy_min": -0.018393704392658417,
-  "tr_rel_at_load_gt_0.8": 0.0129913769203732
+  "tr_rel_at_load_gt_0.8": 0.0129913769203732,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  },
  {
   "network": 25,
@@ -549,6 +917,22 @@
   ],
   "tr_dss_minus_proxy_max": 0.005207471216082199,
   "tr_dss_minus_proxy_min": -0.013150704259186734,
-  "tr_rel_at_load_gt_0.8": null
+  "tr_rel_at_load_gt_0.8": null,
+  "decision_sweep_safe_dss_not_safe": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_with_section3_rule": {
+   "import": 0,
+   "export": 0
+  },
+  "decision_sweep_not_safe_dss_safe_without_opendss": {
+   "import": 0,
+   "export": 0
+  },
+  "sweep_nonconv_dss_conv_and_safe": {
+   "import": 0,
+   "export": 0
+  }
  }
 ]
