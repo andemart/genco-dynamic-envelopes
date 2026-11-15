@@ -285,3 +285,20 @@ Committed after the converter (commit 8d1c2b9) and before any Fluvius state or l
 - No symmetry is imposed on Z_th and E is not fixed to nominal. ENWL1 amendment 2, item 1 ("E = 240.18 V nominal phasors with a symmetric Z_th") describes what that fit returned, not a constraint of the method.
 
 **Consequence for network_1.** Its equivalent here comes from 500 training states, not from the full ENWL1 training split, so it can differ slightly from the ENWL1 study's. The ENWL1 study's frozen results are untouched.
+
+## Amendment 2 (2026-11-15): transformer-based cap on the envelope augmentation (before any E1 label)
+**What motivated it (disclosure).** The Amendment 1 identification run (code commit 17d3f9c) was run with the §2.5 augmentation unchanged. It is kept as an **uncapped pre-E1 design pilot**: `results/fourwire_scale_identification_pilot_uncapped.json` (label hashes, fit diagnostics, solver-indeterminate counts per network). It was not frozen.
+- Among its first 500 training states, up to 115 per network were solver-indeterminate (network_13: 351), almost all with import augmentation. In the large networks 75–85% of import-augmented states failed: every customer importing up to 7.4 kW requests more than 1 MW through an 800 kVA transformer.
+- Re-solving failing network_1 states at tolerance 1e-4 or with 1,000 iterations did not converge either (last iterates 0.3–0.7 pu), so these are loadings beyond the network's capability, not a tolerance artefact.
+- Left in, they would make E2 partly measure the rejection of grossly infeasible synthetic requests rather than screening speed. This pilot motivated the global rule below. Only training states were seen; no val, calib or test state, and no E1 result, had been generated.
+
+**Rule (replaces the augmentation in §2.5; input-only, global, prospective).**
+1. Draw the state and its augmentation exactly as in §2.5 (same random streams, same order).
+2. Let S(γ) = |Σ_i (P_i − γ·f) + j Σ_i Q_i| be the aggregate customer apparent power in kVA, summed over all customers i of the network (a three-phase customer counts once, with its total power), where f is the drawn per-customer augmentation (+ = export) and P_i, Q_i the unaugmented customer net consumption. Losses are not included.
+3. Scale the augmentation by the largest γ ∈ [0, 1] with S(γ) ≤ 1.10 × 800 kVA = 880 kVA. The same rule applies to import and export. If the unaugmented state already exceeds 880 kVA, γ = 0. If the full augmentation fits, γ = 1 and the state is bit-identical to the uncapped draw.
+4. γ depends only on the drawn inputs. No solver outcome, network-specific tuning or per-network cap is used.
+5. Stored per state: the drawn f, γ and the applied γ·f. Reported per network and split: the share of augmented states with γ < 1 and with γ = 0.
+
+**Consequences.**
+- The cap still allows transformer overload (up to 10% before losses) and every cable and voltage violation; remaining solver-indeterminate states stay operationally unsafe and are reported as in §3.
+- **No further change to the state distribution** after the capped identification run, whatever its indeterminate shares. All 25 identification runs are redone with the cap and their Thevenin equivalents frozen (Amendment 1), and only then is E1 run.
