@@ -1,0 +1,26 @@
+{
+ "what": "copy of the full label set from the laptop to Hydra, for training; the labels were not regenerated",
+ "date": "2026-11-15",
+ "label_commit": "6ad2af67233ebb162ece7640cd047e1a4f1dd631",
+ "source": "data_out/fourwire_scale/labels/ (laptop)",
+ "destination": "$VSC_SCRATCH_VO/genco-dynamic-envelopes/fourwire-scale/labels-6ad2af6/ (Hydra)",
+ "files": 1032,
+ "shards": 936,
+ "unit_manifests": 96,
+ "bytes": 35563791754,
+ "file_list_equals_committed_label_manifest": true,
+ "method": "rsync -a --partial over ssh (resumable; openrsync protocol 29 to rsync 3.2.7)",
+ "verification": {
+  "sha256_list": {
+   "file": "results/fourwire_scale_labels_SHA256SUMS.txt",
+   "sha256_of_list": "2d7300d21f3da39abe24c351a525e960b6f2099cccc4e9c87d5a052465e9da88",
+   "copy_on_hydra": "$VSC_SCRATCH_VO/genco-dynamic-envelopes/fourwire-scale/labels-6ad2af6.SHA256SUMS",
+   "check_on_hydra": "sha256sum -c --quiet: all 1,032 files OK"
+  },
+  "rsync_checksum_dry_run": {
+   "command": "rsync -a --checksum -n --itemize-changes <source>/ <destination>/",
+   "itemized_changes": 0,
+   "positive_control": "the same command on two local folders flags a same-size, same-time file with different content"
+  }
+ }
+}
