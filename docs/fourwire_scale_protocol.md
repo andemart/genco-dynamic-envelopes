@@ -625,3 +625,45 @@ Fixes what §5 to §7 and Amendment 3 leave open for E2, and lists every departu
 - The check reads no label. Its reference is evaluator A.
 - **Agreement criterion (§6):** |L_B − L_A| ≤ 1e-3 × cap in at least 95% of the network's 576 envelopes, the two directions together. The share is also reported per direction.
 - **Also reported per network and direction:** the number of unsafe-envelope intervals (L_B > L_A + 1e-3 × cap), the largest differences, the number of zero envelopes, and the share of evaluator B's states sent to the fallback.
+
+## Amendments 7 to 9: a disclosure and corrections (2026-11-15, before the freeze)
+Appended after a fourth read-only audit, of the committed Amendments 7 to 9 (commit 2356f51) and of the code written for them (commits babf88a to 73442a2). The amendments above are left as written. Nothing had been frozen and no final fit, final evaluation or timing had been run.
+
+**A. Disclosure: unit tests evaluated 12 test states.**
+- **What happened.** The fixture of `tests/test_fourwire_scale_eval.py` (commits 83c3454 to 73442a2) generated labels, in a temporary folder, for the first 12 states of network_25's test split (states 0 to 11 of its 4,096; generator seed 25003) and for the first 12 calib states of networks 10 and 25. The tests then ran the evaluation code on them, with the U1 prior and with throwaway models trained for one or two epochs on 24 train states.
+- **How often.** About ten runs of that test file on the laptop on 2026-11-15, before the audit found it. The auditor did not run those tests.
+- **What was computed and seen.** With 12 calibration states no margin is finite, so every method deferred every state. The numbers that were displayed are a fallback share of 1.0 and zero false-safe and cleared-indeterminate decisions for every method. Two assertions also passed: that a V_pn error is not negative, and that PG-net's differs from U1's. No accuracy value was displayed, kept or used. The records went to pytest's temporary folders.
+- **What it changes.**
+  - The sentence "No calib or test label has been read by model code" in Amendment 8's disclosure was **false when it was committed**. Model code had read 12 test states of network_25 and 12 calib states of networks 10 and 25.
+  - Those 12 test states are 0.3% of network_25's test split and 0.012% of all test states. **They stay in the test set.** Nothing is dropped or replaced.
+  - §8 limits debugging to train and val. Using 12 calib states in a unit test of the calibration code broke that as well.
+- **Earlier fixture.** Since commit b377e92 the fixture of `tests/test_fourwire_scale_train.py` generated the same 12 calib states of networks 10 and 25 to test the loader. No model or screen used them.
+- **What was done.** In both fixtures, what plays calib and test is now drawn from val days with other seeds. `tests/conftest.py` makes the state generator refuse the calib and test splits in every unit test, and a test checks that.
+
+**B. What had been seen by the time of these corrections,** beyond Amendment 8's disclosure: a second local dry run, on network 1 with train and val labels only (fits of 1 to 3 epochs on at most 1,000 states; calibration on the first 1,500 val states, evaluation on the other 1,500; timing on a laptop CPU).
+- Fallback shares of about 0.35 to 0.40 for every method, U1 included. With such fits these say nothing about the methods.
+- Timing of 3,000 val states: the Numba sweep took 0.07 s without and 2.6 s with the OpenDSS solves of its 55 non-converged states. The U1 screen pipeline took 0.17 s and sent no state to OpenDSS. PG-net ran on the CPU there (5.7 s), which says nothing about the A100.
+- This agrees with the hypothesis written in Amendment 9. **It is why item D8 below was added.**
+
+**C. Corrections to Amendment 7.**
+1. **Reruns are authorised by the code, before the earlier attempt is set aside** (item 3). Slurm accounting must report FAILED, NODE_FAIL, TIMEOUT, OUT_OF_MEMORY, PREEMPTED or BOOT_FAIL, or a cancellation that is not by our account. A cancellation by our account needs a declared deviation, whose text goes into the record. If Slurm gives no answer, nothing is rerun. A run folder without an owner is refused.
+2. **Halt.** An error raised inside a final run, after it has claimed its folder, writes a halt file. Every later final command refuses to start until the halt is resolved under an amendment. This is how "the final runs then stop" (item 3) is enforced.
+3. **The same attempt rule covers evaluation, timing and envelope runs.** Each claims a folder; a network has one valid run of each; an attempt that died is set aside and named in the record of the next one.
+4. **Device.** A final command refuses any device other than an "NVIDIA A100-PCIE-40GB", the CPU included.
+5. Library versions and input hashes are read at the start of a run and compared at its end, like the checkout and the numerical mode.
+
+**D. Corrections to Amendments 8 and 9.**
+1. **Epoch 0 (Amendment 8, item 5).** "It cannot favour PG-ft" is withdrawn. The rule is the same for every fit. Its effect need not be: it costs PG-ft where PG-pre is already the best model, and it costs PG-scratch where the U1 prior is. No neutrality is claimed.
+2. **Freeze lineage (Amendment 8, item 14).** Every final record carries the hash of the freeze file. A record is used only under that freeze, or under a later freeze that lists it as accepted for that stage. A change to the evaluation code is thus made with a new freeze that accepts the earlier freeze's fits; a change to the fitting code accepts nothing. A freeze file is never replaced in place, and it must be committed before a final command runs.
+3. **The test reader (Amendment 8, item 14).** It serves one network, to the process that holds the claim on that network's evaluation, under the freeze, until the record is written. Timing and envelope runs start only when all 24 networks have a valid evaluation record.
+4. **Records are checked when they are used:** which fit they are (method, network, budget, seed, fold), validity, freeze, inputs. Per-state files are checked against the hash in their record. The reports refuse anything else.
+5. **Missing metrics (Amendment 8, item 10)** stay missing in the reports.
+6. **Delivered decisions (Amendment 9, item 6) are scored over every timed repeat** at batch 4,096. A state counts as cleared if any repeat cleared it, and as rejected if any repeat rejected it.
+7. **What the timed region contains (Amendment 9, items 2 to 4).**
+   - The batch input is one complex array S = P + jQ per connection (FP64 parts) in host memory. Packing P and Q into it is outside the timed region, for every series alike.
+   - The screen runs on the host: the four quantities come back from the device and the ENWL1 `GlobalMargins.screen` is applied to them there, inside the timed region.
+   - The GPU sweep brings back the four quantities and the convergence flags, nothing else.
+   - A final timing run refuses any core count other than 16, and every OpenDSS worker reports ready before anything is timed.
+8. **U1 screen (Amendment 9, item 6).** The report applies the same rule to the U1 screen pipeline: speed-up of at least 1.10, interval above 1, no false-safe and no cleared-indeterminate decision of its screen or in what it delivered. This is reported next to the §7 criterion, which concerns PG-net. It was added after the dry run of item B: if a screen without a learned model gets the same speed-up, the paper must say so.
+9. **A PG-net fit without a model** (Amendment 7, item 4) is timed and enveloped as a screen that defers every state.
+10. **Envelope check (Amendment 9, item 7).** Evaluator B's fallback share is reported per direction. The E2 report needs the complete, valid envelope records of all six networks.
