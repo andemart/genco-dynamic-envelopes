@@ -1,6 +1,6 @@
 {
  "protocol": "docs/fourwire_scale_protocol.md \u00a77 E1, Amendments 1 and 2",
- "code_commit": "7e60a2ea425437f71e2258572ff922b35e3f01d3",
+ "code_commit": "4413c714797c81f56e3fccf213e35e9b78cb28ee",
  "src_dirty": false,
  "criteria": {
   "max_vpn_err_pu": 0.0001,
@@ -81,7 +81,7 @@
    "file": "data_out/fourwire_scale/e1/network_1.npz",
    "sha256": "cc055f456902cb5e325bf18ec080d0af45b40167a47c8cce22ed62f7f8461e62",
    "content_sha256": "613749ffc8e8c919d73dff71b27258abf40853f85cee2805939b31d04ed7f335",
-   "seconds": 26.328461625031196
+   "seconds": 16.393319249968044
   },
   {
    "network": 2,
@@ -157,7 +157,7 @@
    "file": "data_out/fourwire_scale/e1/network_2.npz",
    "sha256": "f6aa862dddb73c648b597d6ab9960b566bc61fcc6e281bde5a5677acc1908026",
    "content_sha256": "563acec80d8de133ac5955d2f83fbd4f434bef86faf5ef2f530a2f652eebf87a",
-   "seconds": 56.26068408298306
+   "seconds": 49.63777533295797
   },
   {
    "network": 3,
@@ -233,7 +233,7 @@
    "file": "data_out/fourwire_scale/e1/network_3.npz",
    "sha256": "3f17e7117a0230c380cd88d18c2172dd2914f60903ad50e3a171f9ca87b836c5",
    "content_sha256": "3fb3ca0552644bb3311897cb0580d49d45af0354258d95d37653f40656600047",
-   "seconds": 27.742936166992877
+   "seconds": 20.966001583030447
   },
   {
    "network": 4,
@@ -309,7 +309,7 @@
    "file": "data_out/fourwire_scale/e1/network_4.npz",
    "sha256": "2c614712fc66d73e4bc9d2a87a6e5de33565f1553e9968599a61308be81a93c8",
    "content_sha256": "9ac5deb485172877bb3dd6751dbde71f5e4e8692de1dc8825be3a335d5b4912a",
-   "seconds": 19.552779917023145
+   "seconds": 12.71370725001907
   },
   {
    "network": 5,
@@ -385,7 +385,7 @@
    "file": "data_out/fourwire_scale/e1/network_5.npz",
    "sha256": "7fa65a4281c057fc005c533553eed0fefb94c5774186a547d519a8d9c3469c8f",
    "content_sha256": "fb394a256db69d689f5afc83b4ee2eef9fbe0cea408963b627f5cca50c864add",
-   "seconds": 52.34840129199438
+   "seconds": 48.88278483302565
   },
   {
    "network": 6,
@@ -461,7 +461,7 @@
    "file": "data_out/fourwire_scale/e1/network_6.npz",
    "sha256": "1015899f2ec1765b5de73019b65f910fe0da02ac063d2c18d6acc539920e5074",
    "content_sha256": "f5c46b60d21bb92666f385803a97911604a976f46843b475b3f3a7106dc3369d",
-   "seconds": 19.41550120903412
+   "seconds": 14.752991040993948
   },
   {
    "network": 7,
@@ -471,9 +471,9 @@
    "solver_indeterminate": 22,
    "sweep_nonconverged": 23,
    "opendss_converged_sweep_nonconverged": 1,
-   "compared": 177,
-   "max_vpn_err_pu": 1.2748804817330761e-05,
-   "max_branch_current_err_rel_rating": 0.00010368678763449506,
+   "compared": 178,
+   "max_vpn_err_pu": 1.478602242016569e-05,
+   "max_branch_current_err_rel_rating": 0.00012043832824294129,
    "pass": true,
    "sweep_iterations_median": 10.0,
    "sweep_iterations_p95": 100.0,
@@ -537,7 +537,7 @@
    "file": "data_out/fourwire_scale/e1/network_7.npz",
    "sha256": "41178925a0940f32a2e81ae6272e3deb0bcc2dc39885a8070618d386022c1014",
    "content_sha256": "074f8ae8ed17595c07fa8f5d4e6408ee1e21c2569574206886fd47f7f75f2372",
-   "seconds": 56.241370416013524
+   "seconds": 57.577933499997016
   },
   {
    "network": 8,
@@ -613,7 +613,7 @@
    "file": "data_out/fourwire_scale/e1/network_8.npz",
    "sha256": "a8a73b88f87af769f39cbe299c0f507602887536bee2df9612c6cd1310ec03bd",
    "content_sha256": "2f6dc543252bd5155d1d4f6b5efe191a5e4eb96c7bb5c54c0a233d94741a8d38",
-   "seconds": 97.19805637502577
+   "seconds": 93.37777616694802
   },
   {
    "network": 9,
@@ -689,7 +689,7 @@
    "file": "data_out/fourwire_scale/e1/network_9.npz",
    "sha256": "edc2af8aef21c12229a6c237b37b884d58681c512a7ba0b059a3f9f498340791",
    "content_sha256": "cd17d7569c9ee20890d47beefb2ec65a60933b4ce6795e98f0e4a4729f9ab14c",
-   "seconds": 27.667434333008714
+   "seconds": 20.561849458958022
   },
   {
    "network": 10,
@@ -765,7 +765,7 @@
    "file": "data_out/fourwire_scale/e1/network_10.npz",
    "sha256": "e2bb1f91b6f52289d9d257d6a84952a9e70ad11f8256db1c9240fb9b3016947e",
    "content_sha256": "a2de2300796d42d0f20196d15d981925fd7e4034ca87c8cf90615e6ad4186ea9",
-   "seconds": 8.712165874952916
+   "seconds": 7.746960625052452
   },
   {
    "network": 11,
@@ -841,7 +841,7 @@
    "file": "data_out/fourwire_scale/e1/network_11.npz",
    "sha256": "e0bc2be83017fd38e96b58b86803be13e02ee17b41751390aafd5decf5737938",
    "content_sha256": "64268681f287ae64aca574a36012e95338c448db2daba02ffcbe7ee1d971f372",
-   "seconds": 14.52900416601915
+   "seconds": 12.918656583991833
   },
   {
    "network": 12,
@@ -917,7 +917,7 @@
    "file": "data_out/fourwire_scale/e1/network_12.npz",
    "sha256": "0291212e928d01a8c46d0a17c4b32547b07c24438f1ddcb30ea1f951802f0a0f",
    "content_sha256": "105cd08093db6d15d96a647cc827b20c42b3f9c50ea4a0b71b59d717cb218cee",
-   "seconds": 28.659731167019345
+   "seconds": 25.067094500001986
   },
   {
    "network": 13,
@@ -993,7 +993,7 @@
    "file": "data_out/fourwire_scale/e1/network_13.npz",
    "sha256": "30d4243606969b6f9901c440051431ab7516853b5cd554817a1f78fd7547940a",
    "content_sha256": "6c10b04018e36a97e85bccd8ae97bb0c101764b02b50edd4077a825fe3a7cd45",
-   "seconds": 80.7354490000289
+   "seconds": 82.49327350000385
   },
   {
    "network": 14,
@@ -1069,7 +1069,7 @@
    "file": "data_out/fourwire_scale/e1/network_14.npz",
    "sha256": "81b4de3ab2edc5eb8a02ac920b62a2e6ed3eed475e9d6089e01114ca645ec73a",
    "content_sha256": "b1153c46e044866ec9b17d69c07269f5a20656aaad440c7d6d64a57f32db2298",
-   "seconds": 23.22804445802467
+   "seconds": 16.761836374993436
   },
   {
    "network": 15,
@@ -1145,7 +1145,7 @@
    "file": "data_out/fourwire_scale/e1/network_15.npz",
    "sha256": "a51f84bb95c8d84be334eb36e263134fa4ae3ad4d248e31c661247892ab27c76",
    "content_sha256": "f5e8c084a210122de117b8051ba0f27a41670dc4c504ca1f9d4e354cbea00183",
-   "seconds": 56.372049333003815
+   "seconds": 52.294922499975655
   },
   {
    "network": 16,
@@ -1221,7 +1221,7 @@
    "file": "data_out/fourwire_scale/e1/network_16.npz",
    "sha256": "7eb672c9cccacb03707a4a47aad8590fbfccfad604ffb2729b61cb77468eb9b7",
    "content_sha256": "8b2f8b66dc3a265a130cdc8a37c01490d1cc96e71036cfbb09b7c80b2a285cf0",
-   "seconds": 17.32344754098449
+   "seconds": 15.21110525005497
   },
   {
    "network": 17,
@@ -1297,7 +1297,7 @@
    "file": "data_out/fourwire_scale/e1/network_17.npz",
    "sha256": "b9e5b298f3215e22f252433a213d2ebcfa93682c9f623be5edf07ad73fe67c4b",
    "content_sha256": "f0f85002c0ea93178e36da027ddaad746457460ff8e0d8d7db3d6b1a9165a6f1",
-   "seconds": 61.987599084037356
+   "seconds": 59.30843816703418
   },
   {
    "network": 18,
@@ -1373,7 +1373,7 @@
    "file": "data_out/fourwire_scale/e1/network_18.npz",
    "sha256": "5fc70a0d118c5c739ceb7b7bc0d99902bd766200e0b2ab9d4f068ce592b9dbb5",
    "content_sha256": "be6d2c01ef03a2910e6cd74ea659b7982dff9c260f0946c5673e1e6b87253f9e",
-   "seconds": 27.747621292015538
+   "seconds": 26.458355041977484
   },
   {
    "network": 19,
@@ -1449,7 +1449,7 @@
    "file": "data_out/fourwire_scale/e1/network_19.npz",
    "sha256": "39c6bf0c3a67c59bc1d6cfdd0393628f1fa867d9935e1a3550142fa51c378165",
    "content_sha256": "43bad0c22771f42c2cf7a410f9b4b29b185e28cf1cb920eb6cdc7076ac8d052b",
-   "seconds": 25.134700542024802
+   "seconds": 23.265071500034537
   },
   {
    "network": 20,
@@ -1525,7 +1525,7 @@
    "file": "data_out/fourwire_scale/e1/network_20.npz",
    "sha256": "1598ca31027e552ef25d702acaf174b3e5b38e7786e53cf73f5502266fb6bd3e",
    "content_sha256": "88917e2cfa224a7050d125149eac3527385fc6dec2f471ce7ae2f0cef135efb2",
-   "seconds": 9.366100666986313
+   "seconds": 7.329749416967388
   },
   {
    "network": 21,
@@ -1601,7 +1601,7 @@
    "file": "data_out/fourwire_scale/e1/network_21.npz",
    "sha256": "455875c5fb68ca95a7d346418bffb9f5a31e5d9a876b1df1aab0fc2f8a805569",
    "content_sha256": "c33ef8ce14ea821da6b9038ea16ccdff424fbf9a7b4f99108c886d0dcc150ac4",
-   "seconds": 13.392891915980726
+   "seconds": 12.068440834002104
   },
   {
    "network": 22,
@@ -1677,7 +1677,7 @@
    "file": "data_out/fourwire_scale/e1/network_22.npz",
    "sha256": "575b136794e4aa711778478963670ee9f2b07cf6858cd3d4a90d32c4c88619ca",
    "content_sha256": "68ba8498092841bebafd8df30127a12db8d9413aab77faa7d94b56eddb18525f",
-   "seconds": 17.453686041990295
+   "seconds": 14.256604124966543
   },
   {
    "network": 23,
@@ -1753,7 +1753,7 @@
    "file": "data_out/fourwire_scale/e1/network_23.npz",
    "sha256": "8fe3a979bf27e5f61bf7bfb741683ff067416b9059668481e4cc8d33faef4148",
    "content_sha256": "2eae2852f48d314dafee613940a9563a0d578b1069215d56ab9f72ef0774f5ff",
-   "seconds": 16.772960625006817
+   "seconds": 14.916842125006951
   },
   {
    "network": 24,
@@ -1829,7 +1829,7 @@
    "file": "data_out/fourwire_scale/e1/network_24.npz",
    "sha256": "cf376ccaf426a8a76447a3bb432d171582c4cf7f736eb879787d59821863c083",
    "content_sha256": "abd2809612df26b95aaddd042f9e07e4b469beadbfdbbe13d997c2b4f44ad7ac",
-   "seconds": 9.74136470904341
+   "seconds": 8.922405041987076
   },
   {
    "network": 25,
@@ -1905,7 +1905,7 @@
    "file": "data_out/fourwire_scale/e1/network_25.npz",
    "sha256": "e604f24cb9d6452ad092eb16eb155c93cddc645317177a93d372f39ee8ca0edc",
    "content_sha256": "6165365456bfc77e58ce6526bc4f5a4f10c0e4101658bbe68cfed76a9c4cd062",
-   "seconds": 5.683647624973673
+   "seconds": 5.111344583972823
   }
  ]
 }
