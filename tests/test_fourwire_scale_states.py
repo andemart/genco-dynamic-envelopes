@@ -152,3 +152,12 @@ def test_frozen_thevenin_comes_from_committed_record_and_roundtrips_raw_fit():
         with np.load(raw) as fit:
             assert np.array_equal(th.e, fit["e"])
             assert np.array_equal(th.zth, fit["zth"])
+
+
+def test_converted_network_is_recreated_and_matches_frozen_hashes(tmp_path, monkeypatch):
+    """A clean cluster worktree must not depend on generated identification directories."""
+    monkeypatch.setattr(fs, "OUT", tmp_path)
+    folder = fs.ensure_network_folder(1)
+    expected = {r["network"]: r for r in json.loads(
+        (fs.RESULTS / "fourwire_scale_identification.json").read_text())["networks"]}[1]["network_files_sha256"]
+    assert {name: fs._sha(folder / name) for name in expected} == expected

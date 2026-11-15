@@ -53,6 +53,19 @@ def network_folder(network: int, variant: str = "primary") -> Path:
     return OUT / "networks" / variant / f"network_{network}"
 
 
+def ensure_network_folder(network: int, variant: str = "primary") -> Path:
+    """Materialise a converted network and, for the frozen primary variant, verify its committed hashes."""
+    folder = network_folder(network, variant)
+    required = ("LineCode_3f4w.dss", "Lines.dss", "Loads.dss", "Master.dss")
+    if not all((folder / name).is_file() for name in required):
+        cc.convert(cc.network_dirs()[network], folder, variant)
+    if variant == "primary":
+        expected = _identification(network)["network_files_sha256"]
+        if any(_sha(folder / name) != digest for name, digest in expected.items()):
+            raise AssertionError(f"converted network {network} differs from the frozen identification run")
+    return folder
+
+
 def connection_states(st: dict, idx: np.ndarray, share: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Per-customer p/q (S, n_cust) -> per phase-connection (S, n_conn) in Loads.dss order (§2.2 item 5)."""
     return st["p_kw"][:, idx] * share, st["q_kvar"][:, idx] * share
@@ -302,7 +315,7 @@ def _case(network: int):
     """(net, frozen Thevenin) of a network, cached per process."""
     from .fourwire_net import load_fourwire
     if network not in _CASES:
-        _CASES[network] = (load_fourwire(network_folder(network)), frozen_thevenin(network))
+        _CASES[network] = (load_fourwire(ensure_network_folder(network)), frozen_thevenin(network))
     return _CASES[network]
 
 
