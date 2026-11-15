@@ -12,6 +12,7 @@ set -euo pipefail
 cd "${GENCODOE_WORKTREE:-$VSC_DATA/genco-dynamic-envelopes}"
 module load Python/3.12.3-GCCcore-13.3.0
 export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"  # shared .venv must import this pinned worktree
 : "${GENCODOE_COMMIT:?GENCODOE_COMMIT must be set}"
 HEAD=$(git rev-parse HEAD)
 [ "$HEAD" = "$GENCODOE_COMMIT" ] || { echo "ABORT: HEAD $HEAD != $GENCODOE_COMMIT"; exit 2; }
