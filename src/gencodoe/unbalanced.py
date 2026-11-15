@@ -48,7 +48,8 @@ class UnbalancedENWL1:
     customers are connected three-phase wye (balanced, same total kW/kvar) and the worst of their
     three phase-neutral voltages counts -- the W2 idealised multi-phase sensitivity."""
 
-    def __init__(self, folder: Path = ENWL1_DIR, three_phase: np.ndarray | None = None):
+    def __init__(self, folder: Path = ENWL1_DIR, three_phase: np.ndarray | None = None,
+                 tolerance: float | None = None, retry_algorithm: str = "normal"):
         import opendssdirect as dss
 
         self.dss = dss
@@ -87,6 +88,10 @@ class UnbalancedENWL1:
         dss.Text.Command("CalcVoltageBases")
         dss.Text.Command("Set mode=snapshot")
         dss.Text.Command("Set maxiterations=100")
+        if tolerance is not None:                            # None: OpenDSS default (ENWL1 study)
+            dss.Text.Command(f"Set tolerance={tolerance}")
+        self.retry_algorithm = retry_algorithm               # after a failed solve and reset (fourwire_scale §3)
+        self.last_retried = self.last_rescued = False
         # customer bus/phase -> node names for phase and neutral voltage
         self.nodes = [n.lower() for n in dss.Circuit.AllNodeNames()]
         self.node_idx = {n: i for i, n in enumerate(self.nodes)}
@@ -145,13 +150,17 @@ class UnbalancedENWL1:
             dss.Loads.kW(float(p))
             dss.Loads.kvar(float(q))
         dss.Solution.Solve()
+        self.last_retried = self.last_rescued = False
         if not dss.Solution.Converged():
+            self.last_retried = True
             self._reset()                                    # checked: raises if the engine is unhealthy
             for name, p, q in zip(self.load_names, p_kw, q_kvar):
                 dss.Loads.Name(name)
                 dss.Loads.kW(float(p))
                 dss.Loads.kvar(float(q))
+            dss.Text.Command(f"Set algorithm={self.retry_algorithm}")
             dss.Solution.Solve()
+            self.last_rescued = bool(dss.Solution.Converged())
             if not dss.Solution.Converged():                 # genuinely non-convergent after a healthy reset
                 self.n_nonconverged += 1
         v = np.array(dss.Circuit.AllBusVolts())
@@ -169,7 +178,10 @@ class UnbalancedENWL1:
         dss.Transformers.Name("TR1")
         s_tr = np.array(dss.CktElement.Powers()[:6]).reshape(3, 2)
         tr_loading = float(np.abs(s_tr[:, 0] + 1j * s_tr[:, 1]).sum() / TR_KVA)
-        return {"converged": bool(dss.Solution.Converged()), "v_pn_min": float(v_pn.min()),
+        converged = bool(dss.Solution.Converged())
+        if self.last_retried and self.retry_algorithm != "normal":
+            dss.Text.Command("Set algorithm=normal")
+        return {"converged": converged, "v_pn_min": float(v_pn.min()),
                 "v_pn_max": float(v_pn.max()), "line_loading_max": worst_line, "transformer_loading": tr_loading,
                 "undervoltage": voltage_flags(v_pn)[0], "overvoltage": voltage_flags(v_pn)[1],
                 "line_overload": worst_line > 1.0, "transformer_overload": tr_loading > 1.0}

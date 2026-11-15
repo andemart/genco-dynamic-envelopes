@@ -47,10 +47,11 @@ def split_states(split: str):
 
 
 class Extractor:
-    def __init__(self):
+    def __init__(self, folder: Path | None = None, **ub_kwargs):
+        """folder: a four-wire network in the ENWL1 layout (default ENWL1); ub_kwargs go to UnbalancedENWL1."""
         from .unbalanced import UnbalancedENWL1
-        self.net = load_fourwire()
-        self.ub = UnbalancedENWL1()
+        self.net = load_fourwire() if folder is None else load_fourwire(folder)
+        self.ub = UnbalancedENWL1(**ub_kwargs) if folder is None else UnbalancedENWL1(folder, **ub_kwargs)
         if self.ub.load_names != self.net.customer_names:
             raise AssertionError("customer order differs between the four-wire net and OpenDSS")
         names = [n.lower() for n in self.ub.dss.Circuit.AllNodeNames()]

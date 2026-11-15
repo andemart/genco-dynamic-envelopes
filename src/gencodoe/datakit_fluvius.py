@@ -78,13 +78,64 @@ def is_test_step(step: np.ndarray) -> np.ndarray:
 
 
 def split_steps(split: str) -> np.ndarray:
-    """Steps a dataset may draw from: 'trainval' (train + val days), 'calib' or 'test'."""
+    """Steps a dataset may draw from: 'trainval' (train + val days), 'train', 'val', 'calib' or 'test'."""
     names = day_split(np.arange(STEPS))
     if split == "trainval":
         return np.flatnonzero((names == "train") | (names == "val"))
-    if split in ("calib", "test"):
+    if split in SPLITS:
         return np.flatnonzero(names == split)
     raise ValueError(f"unknown split {split!r}")
+
+
+def _pick_meters(rng: np.random.Generator, n_meters: int, n_need: int) -> np.ndarray:
+    """Meter indices for n_need customers of one group: without replacement while the group has enough
+    meters (the original draw, same random stream); on a shortage (docs/fourwire_scale_protocol.md §2.5)
+    every meter is used once and the excess customers reuse meters of the group, drawn with replacement."""
+    if n_need <= n_meters:
+        return rng.choice(n_meters, size=n_need, replace=False)
+    first = rng.choice(n_meters, size=n_meters, replace=False)
+    return np.concatenate([first, rng.choice(n_meters, size=n_need - n_meters, replace=True)])
+
+
+def draw_state(rng, rng_flex, by_flags, n_cust, steps, augment):
+    """One state for n_cust customers: (step, mix, group flags, p_kw, q_kvar, meter EANs, flex_kw)."""
+    t = int(rng.choice(steps))
+    mix = rng.uniform(0, 1, 3)
+    flags = rng.uniform(size=(n_cust, 3)) < mix
+    p_kw = np.empty(n_cust)
+    q_kvar = np.empty(n_cust)
+    meters = np.empty(n_cust, dtype=np.int64)
+    for key in {tuple(int(v) for v in f) for f in flags}:
+        g = by_flags[key]
+        who = np.flatnonzero((flags == key).all(axis=1))
+        pick = _pick_meters(rng, len(g.ean), len(who))
+        off, inj = g.offtake_kw[pick, t], g.injection_kw[pick, t]
+        p_kw[who], q_kvar[who], meters[who] = off - inj, off * TAN_PHI, g.ean[pick]
+    flex_kw = 0.0   # signed flexible injection per customer, + = export
+    if augment > 0 and rng_flex.uniform() < augment:
+        if rng_flex.uniform() < 0.5:
+            flex_kw = rng_flex.uniform(0, FLEX_EXPORT_KW)
+        else:
+            flex_kw = -rng_flex.uniform(0, FLEX_IMPORT_KW)
+        p_kw = p_kw - flex_kw
+    return t, mix, flags, p_kw, q_kvar, meters, flex_kw
+
+
+def customer_states(n_cust: int, split: str, n_states: int, seed: int, augment: float) -> dict:
+    """Per-customer states (docs/fourwire_scale_protocol.md §2.5), the same draw as FluviusScenarios.
+    States are drawn one after another, so the first k states do not depend on n_states."""
+    rng = np.random.default_rng(seed)
+    rng_flex = np.random.default_rng(seed + 7)
+    groups = {name: load_group(name) for name in GROUPS}
+    by_flags = {(g.hp, g.ev, g.pv): g for g in groups.values()}
+    steps = split_steps(split)
+    out = {"step": np.zeros(n_states, np.int64), "mix": np.zeros((n_states, 3)), "flex_kw": np.zeros(n_states),
+           "groups": np.zeros((n_states, n_cust, 3), np.int8), "p_kw": np.zeros((n_states, n_cust)),
+           "q_kvar": np.zeros((n_states, n_cust)), "meters": np.zeros((n_states, n_cust), np.int64)}
+    for s in range(n_states):
+        (out["step"][s], out["mix"][s], out["groups"][s], out["p_kw"][s], out["q_kvar"][s], out["meters"][s],
+         out["flex_kw"][s]) = draw_state(rng, rng_flex, by_flags, n_cust, steps, augment)
+    return out
 
 
 class FluviusScenarios:
@@ -107,25 +158,8 @@ class FluviusScenarios:
         out = np.zeros((net.Pd.size, n_scenarios, 2))
         rows = []
         for s in range(n_scenarios):
-            t = int(rng.choice(train_steps))
-            mix = rng.uniform(0, 1, 3)
-            flags = rng.uniform(size=(n_cust, 3)) < mix
-            p_kw = np.empty(n_cust)
-            q_kvar = np.empty(n_cust)
-            meters = np.empty(n_cust, dtype=np.int64)
-            for key in {tuple(int(v) for v in f) for f in flags}:
-                g = by_flags[key]
-                who = np.flatnonzero((flags == key).all(axis=1))
-                pick = rng.choice(len(g.ean), size=len(who), replace=False)
-                off, inj = g.offtake_kw[pick, t], g.injection_kw[pick, t]
-                p_kw[who], q_kvar[who], meters[who] = off - inj, off * TAN_PHI, g.ean[pick]
-            flex_kw = 0.0   # signed flexible injection per customer, + = export
-            if self.augment > 0 and rng_flex.uniform() < self.augment:
-                if rng_flex.uniform() < 0.5:
-                    flex_kw = rng_flex.uniform(0, FLEX_EXPORT_KW)
-                else:
-                    flex_kw = -rng_flex.uniform(0, FLEX_IMPORT_KW)
-                p_kw = p_kw - flex_kw
+            t, mix, flags, p_kw, q_kvar, meters, flex_kw = draw_state(rng, rng_flex, by_flags, n_cust,
+                                                                       train_steps, self.augment)
             np.add.at(out[:, s, 0], self.customer_bus, p_kw / 1e3)
             np.add.at(out[:, s, 1], self.customer_bus, q_kvar / 1e3)
             rows.append({"scenario": s, "step": t, "time": groups["geen_ZP"].time[t], "split": day_split(t).item(),
