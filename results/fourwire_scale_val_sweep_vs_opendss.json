@@ -1,0 +1,554 @@
+[
+ {
+  "network": 1,
+  "buses": 397,
+  "dss_indet": 53,
+  "sweep_nonconv": 55,
+  "sweep_nonconv_dss_conv": 2,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   7
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "tr_dss_minus_proxy_max": 0.018512368616770525,
+  "tr_dss_minus_proxy_min": -0.027007697087781113,
+  "tr_rel_at_load_gt_0.8": 0.007913568244615294
+ },
+ {
+  "network": 2,
+  "buses": 1089,
+  "dss_indet": 82,
+  "sweep_nonconv": 86,
+  "sweep_nonconv_dss_conv": 4,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tr_dss_minus_proxy_max": 0.03236781921044063,
+  "tr_dss_minus_proxy_min": -0.04040124542636163,
+  "tr_rel_at_load_gt_0.8": 0.006720413639870491
+ },
+ {
+  "network": 3,
+  "buses": 720,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "tr_dss_minus_proxy_max": 0.03176623835517489,
+  "tr_dss_minus_proxy_min": -0.02741757569830572,
+  "tr_rel_at_load_gt_0.8": 0.007429665014950909
+ },
+ {
+  "network": 4,
+  "buses": 364,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   5
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "tr_dss_minus_proxy_max": 0.010997231163477839,
+  "tr_dss_minus_proxy_min": -0.02534782613566943,
+  "tr_rel_at_load_gt_0.8": 0.005317207176267647
+ },
+ {
+  "network": 5,
+  "buses": 648,
+  "dss_indet": 293,
+  "sweep_nonconv": 308,
+  "sweep_nonconv_dss_conv": 15,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "tr_dss_minus_proxy_max": 0.020947813164767348,
+  "tr_dss_minus_proxy_min": -0.029595242167634594,
+  "tr_rel_at_load_gt_0.8": -0.0006463671130349649
+ },
+ {
+  "network": 6,
+  "buses": 279,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "tr_dss_minus_proxy_max": 0.01619567928958232,
+  "tr_dss_minus_proxy_min": -0.01942256302534595,
+  "tr_rel_at_load_gt_0.8": 0.00800273804762772
+ },
+ {
+  "network": 7,
+  "buses": 876,
+  "dss_indet": 342,
+  "sweep_nonconv": 350,
+  "sweep_nonconv_dss_conv": 8,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "tr_dss_minus_proxy_max": 0.021525686471716043,
+  "tr_dss_minus_proxy_min": -0.03562995065884078,
+  "tr_rel_at_load_gt_0.8": -0.000609954749077324
+ },
+ {
+  "network": 8,
+  "buses": 610,
+  "dss_indet": 633,
+  "sweep_nonconv": 633,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "tr_dss_minus_proxy_max": 0.028772625409879682,
+  "tr_dss_minus_proxy_min": -0.03670283191860285,
+  "tr_rel_at_load_gt_0.8": 0.002788848750505462
+ },
+ {
+  "network": 9,
+  "buses": 465,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   2
+  ],
+  "tr_dss_minus_proxy_max": 0.01656603202602791,
+  "tr_dss_minus_proxy_min": -0.03236817875038514,
+  "tr_rel_at_load_gt_0.8": 0.005596211918618952
+ },
+ {
+  "network": 10,
+  "buses": 94,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tr_dss_minus_proxy_max": 0.005586016565701235,
+  "tr_dss_minus_proxy_min": -0.027035496646298583,
+  "tr_rel_at_load_gt_0.8": null
+ },
+ {
+  "network": 11,
+  "buses": 303,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   6
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   5
+  ],
+  "tr_dss_minus_proxy_max": 0.014990609676484024,
+  "tr_dss_minus_proxy_min": -0.025588370169751545,
+  "tr_rel_at_load_gt_0.8": 0.005870523023115285
+ },
+ {
+  "network": 12,
+  "buses": 542,
+  "dss_indet": 58,
+  "sweep_nonconv": 59,
+  "sweep_nonconv_dss_conv": 1,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   2
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "tr_dss_minus_proxy_max": 0.01363182370874072,
+  "tr_dss_minus_proxy_min": -0.030352644048746324,
+  "tr_rel_at_load_gt_0.8": 0.005817662089723937
+ },
+ {
+  "network": 14,
+  "buses": 406,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   2
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   2
+  ],
+  "tr_dss_minus_proxy_max": 0.0316989428079153,
+  "tr_dss_minus_proxy_min": -0.022905241368690668,
+  "tr_rel_at_load_gt_0.8": 0.0097757014009642
+ },
+ {
+  "network": 15,
+  "buses": 1096,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   6
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   5
+  ],
+  "tr_dss_minus_proxy_max": 0.0562002719100505,
+  "tr_dss_minus_proxy_min": -0.043179903963369265,
+  "tr_rel_at_load_gt_0.8": 0.006273792101325035
+ },
+ {
+  "network": 16,
+  "buses": 465,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   2
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "tr_dss_minus_proxy_max": 0.0138378436755342,
+  "tr_dss_minus_proxy_min": -0.0268893352285004,
+  "tr_rel_at_load_gt_0.8": 0.007069017275966415
+ },
+ {
+  "network": 17,
+  "buses": 1668,
+  "dss_indet": 85,
+  "sweep_nonconv": 85,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   7
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   7
+  ],
+  "tr_dss_minus_proxy_max": 0.05963194352028056,
+  "tr_dss_minus_proxy_min": -0.023923871145199616,
+  "tr_rel_at_load_gt_0.8": 0.006991635755774574
+ },
+ {
+  "network": 18,
+  "buses": 629,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   2
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tr_dss_minus_proxy_max": 0.021599443461195467,
+  "tr_dss_minus_proxy_min": -0.02674229640787587,
+  "tr_rel_at_load_gt_0.8": 0.007668376828001792
+ },
+ {
+  "network": 19,
+  "buses": 678,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   2
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "tr_dss_minus_proxy_max": 0.01616497390995031,
+  "tr_dss_minus_proxy_min": -0.024459869581424265,
+  "tr_rel_at_load_gt_0.8": 0.0060121891098541816
+ },
+ {
+  "network": 20,
+  "buses": 217,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   6
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   6
+  ],
+  "tr_dss_minus_proxy_max": 0.028161506592295993,
+  "tr_dss_minus_proxy_min": -0.022477576427404916,
+  "tr_rel_at_load_gt_0.8": 0.014571315036189348
+ },
+ {
+  "network": 21,
+  "buses": 296,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tr_dss_minus_proxy_max": 0.016443805598150396,
+  "tr_dss_minus_proxy_min": -0.04478764687453407,
+  "tr_rel_at_load_gt_0.8": 0.00691100484984228
+ },
+ {
+  "network": 22,
+  "buses": 355,
+  "dss_indet": 1,
+  "sweep_nonconv": 1,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   3
+  ],
+  "tr_dss_minus_proxy_max": 0.01969360773413853,
+  "tr_dss_minus_proxy_min": -0.02380592782821192,
+  "tr_rel_at_load_gt_0.8": 0.00929430421047962
+ },
+ {
+  "network": 23,
+  "buses": 495,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   4
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   4
+  ],
+  "tr_dss_minus_proxy_max": 0.022261364522441207,
+  "tr_dss_minus_proxy_min": -0.039881753287135,
+  "tr_rel_at_load_gt_0.8": 0.0087140001114229
+ },
+ {
+  "network": 24,
+  "buses": 221,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   6
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   6
+  ],
+  "tr_dss_minus_proxy_max": 0.021941919488482675,
+  "tr_dss_minus_proxy_min": -0.018393704392658417,
+  "tr_rel_at_load_gt_0.8": 0.0129913769203732
+ },
+ {
+  "network": 25,
+  "buses": 79,
+  "dss_indet": 0,
+  "sweep_nonconv": 0,
+  "sweep_nonconv_dss_conv": 0,
+  "sweep_conv_dss_indet": 0,
+  "flag_diff_uv_ov_cable_tr": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "sweep_clears_dss_violates": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tr_dss_minus_proxy_max": 0.005207471216082199,
+  "tr_dss_minus_proxy_min": -0.013150704259186734,
+  "tr_rel_at_load_gt_0.8": null
+ }
+]
