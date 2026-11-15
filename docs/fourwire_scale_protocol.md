@@ -330,3 +330,30 @@ Clarifies §3 ("Optimised sweep implementations") and the timing procedure of §
 - **Included, every batch:** every operation from the batch's inputs in host memory (customer P and Q) to its deliverable in host memory. That covers host-to-device transfer of the batch, the solve or the model with its screen, convergence checks, the final-current and screening-quantity computation, device-to-host transfer of the deliverable, and the fallback solves (§3, §5).
 - **Deliverable, the same for every method:** per state, the four screening quantities, the decision per direction and the convergence flag. Full voltage and current tensors stay on the device and are not part of the timed transfer for any method.
 - **CUDA:** `torch.cuda.synchronize()` immediately before the start and immediately before the end of every timed measurement.
+
+## Amendment 4 (2026-11-15): label generation and the label-integrity gate (before the full label run)
+Specifies how the labels of §2.5 are generated and what §9 gate 4 checks. Committed before the full label run. No state distribution, solver setting or criterion changes.
+
+**Labels that exist at this point.** The 500 identification states per network (Amendment 1) and the 200 E1 val states per network. In addition, a smoke test of the label code, run from uncommitted source in a scratch folder and discarded: network_25 (1,500 train and 500 val states) and network_8 (500 train and 500 val states). No test or calib state has been labelled.
+
+**Why a rule is needed.** OpenDSS starts each snapshot solve from the previous solution. A label therefore depends, at the level of the solver tolerance, on the states solved before it in the same engine.
+
+**Generation (frozen).**
+1. One unit of work per network and split, for the 24 eligible networks. States in the frozen generator order, with the Amendment 2 cap.
+2. **Shards of 500 consecutive states. Every shard starts from a fresh OpenDSS engine** and solves its states in order, under the §3 failure rule. A shard then depends only on its own states, so an interrupted and resumed unit gives the same labels.
+3. Consequence: the first training shard repeats the identification solves, and the first 200 states of the first val shard repeat the E1 solves. On the machine that produced those labels, both must come out bit-identical (checked below).
+4. Stored per state, in FP64: the generator outputs (step, mix, drawn f, γ, applied γ·f, technology groups, meters, customer P and Q) and the OpenDSS outputs (node voltages, branch currents, the four summary quantities, the four violation flags, converged, retried, Newton-rescued).
+5. Each shard is written atomically. Per network and split, a manifest records a content hash per shard (SHA-256 over array names, dtypes, shapes and bytes), the solver counts of §3, the meter-reuse report of §2.5, the cap report of Amendment 2, the code commit, the platform and the OpenDSS version.
+6. This run is made on the laptop that produced the identification and E1 labels, so that item 3 can be checked. Label arrays stay outside git; the manifests and the integrity report are committed.
+
+**§9 gate 4, per network and split.** The thresholds are fixed here and are not adjusted after the run.
+- All shards present and contiguous, with the §2.5 state count.
+- Every shard's recomputed content hash equals its manifest entry.
+- One code commit, with unmodified source.
+- The stored inputs equal the states regenerated from the seed, bit for bit, and their calendar days belong to the split.
+- The ENWL1 checker (`fourwire_labels.semantic_check`), **with its ENWL1 thresholds unchanged**, on the converged states of every shard: KCL residual at every retained bus below 2e-4 kA; root neutral below 1 V; recomputed minimum and maximum V_pn within 1e-4 pu of the stored summary; recomputed worst cable loading within 1e-3; the four flags consistent with the summaries; all values finite.
+- The identification states (train) and the E1 states (val) are bit-identical to the labels stored by those runs, where those files are on disk.
+- **Reported, not gated:** the number of converged states with a customer voltage outside 0.5–1.5 pu, where OpenDSS no longer models the load as constant power (§3; the cause of the network_13 exclusion).
+- A failed check is reported as it is.
+
+**Test split.** Test labels are generated in this run and pass through the gate. The gate is a consistency check: it computes no model metric and no violation share. As §3 requires for every network and split, the counts of converged, Newton-rescued and solver-indeterminate test states are reported. Test shards live in their own directory tree (`labels/test/`), which training, debugging and calibration code never reads (§2.6).
