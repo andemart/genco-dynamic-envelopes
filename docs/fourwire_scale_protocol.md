@@ -107,7 +107,7 @@ The ENWL1 generator (`gencodoe.datakit_fluvius`), applied per network:
 **Common sweep settings** (every implementation):
 - Convergence: maximum voltage update ≤ 1e-8 pu, at most 100 iterations.
 - Flat start (nominal phasors) for every state. No warm start for any method, GENCO included.
-- Thevenin root: fitted per network as in ENWL1 (amendment 2, item 1), from training-split labels only.
+- Thevenin root: fitted per network as in ENWL1 (amendment 2, item 1), from training-split labels only. **Fitting set and description amended: see Amendment 1.**
 
 **Optimised sweep implementations, both FP64:**
 - **CPU:** depth-level batched (all buses at one tree depth in one vectorised operation), compiled with Numba, parallel over states, on all cores of the timing node.
@@ -268,3 +268,20 @@ The ENWL1 generator (`gencodoe.datakit_fluvius`), applied per network:
 - leave-one-network-out evaluation;
 - that this is the official GENCO checkpoint;
 - a universal LV foundation model from 24 UK networks of one operator.
+
+## Amendment 1 (2026-11-15): Thevenin fitting set (before any E1 label is generated)
+Committed after the converter (commit 8d1c2b9) and before any Fluvius state or label is generated on the new networks. It replaces the fitting set in §3 ("Common sweep settings", Thevenin root) and corrects how the fit is described.
+
+**Fitting set.**
+1. For each network, generate the **first 500 candidate training states** in the frozen generator order (§2.5: train split, seed 1000 × network number + 0). Generation is sequential per state, so these are exactly the first 500 states of the full 10,000-state training split.
+2. Solve them with OpenDSS under the §3 failure rule. Fit the Thevenin equivalent on **all OpenDSS-converged states among them** (converged by the default algorithm or rescued by Newton). Solver-indeterminate states are left out.
+3. **Freeze that equivalent for E1, E2 and E3.** Generating the remaining training labels later does not trigger a refit.
+4. **Report per network:** the number of fitted states, the design-matrix rank and its condition number.
+5. **Rank rule:** if the design matrix is not of full rank (4), add successive frozen blocks of 500 training states, in the same order (states 501–1,000, then 1,001–1,500, then 1,501–2,000), up to 2,000 states, refitting after each block. This rule depends only on the fitting set, never on E1 results, and E1 results are not inspected before every network's equivalent is frozen. If a network is still rank-deficient at 2,000 states, it is reported and excluded from E1–E3.
+
+**Accurate description of the fit** (the existing implementation, `fourwire_net.fit_thevenin`, kept unchanged for ENWL1 replication):
+- Model: V_abc = E − Z_th · I_abc at `TRbus`. V_abc are the root phase voltages, I_abc the phase currents leaving the root (both from OpenDSS); kV, kA, ohm.
+- Ordinary complex least squares, with design matrix [1, −I_a, −I_b, −I_c] (S × 4) and the three root phase voltages as responses. It estimates an **unconstrained** complex 3-vector E and an **unconstrained** complex 3 × 3 Z_th.
+- No symmetry is imposed on Z_th and E is not fixed to nominal. ENWL1 amendment 2, item 1 ("E = 240.18 V nominal phasors with a symmetric Z_th") describes what that fit returned, not a constraint of the method.
+
+**Consequence for network_1.** Its equivalent here comes from 500 training states, not from the full ENWL1 training split, so it can differ slightly from the ENWL1 study's. The ENWL1 study's frozen results are untouched.
