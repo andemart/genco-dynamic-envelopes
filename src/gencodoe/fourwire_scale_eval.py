@@ -12,8 +12,10 @@ directly) and the U1 prior go through one device path (Pipeline): U1 on the devi
 FP32, KCL currents and the four screening quantities. The screen is the ENWL1 GlobalMargins, fitted on the
 calibration states; decisions, state accuracy, the rating-sensitivity variants and the agreement of the
 exact sweep with OpenDSS follow Amendment 8, items 8 to 11.
-- Final: runs from the frozen source only, once per network, and is the only code that reads the held-out
-  labels (TestStore). Writes results/fourwire_scale_eval/network_<n>.json and per-state outcomes outside git.
+- Final: runs from the frozen source only and is the only code that reads the held-out labels. It first
+  claims the network's evaluation folder (one valid evaluation per network; an attempt that died is set
+  aside under the rules of the fits), and TestStore serves only the process that owns that claim. Writes
+  results/fourwire_scale_eval/network_<n>.json and per-state outcomes outside git, and prints no result.
 - --dry: models of dry-run fits, train and val labels only: the first half of the val states stands in for
   the calibration set and the second half for the held-out set.
 
@@ -23,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from pathlib import Path
 
@@ -47,10 +50,34 @@ VARIANTS = [v for v in cc.RATING_VARIANTS if v != "primary"]       # §2.4 ratin
 FRESH = [n for n in fs.ELIGIBLE if n != 1]                         # network_1 = ENWL1 is not a fresh network
 
 
+def eval_runs() -> Path:
+    """One folder per evaluated network: its claim, its record and its per-state outcomes."""
+    return fs.OUT / "eval"
+
+
 class TestStore(fd.LabelStore):
-    """The one reader of the held-out labels. Only the final evaluate command creates it."""
+    """The one reader of the held-out labels. It serves one network, to the process that owns the claim on
+    that network's evaluation (tt.claim_run_folder), under the freeze, and only until that evaluation has a
+    record. evaluate creates it; anything else that tries is refused here."""
     __test__ = False               # not a pytest class
     served = ("test",)
+
+    def __init__(self, root, network: int, prov: dict):
+        tt.check_freeze(prov, variants=True)
+        folder = eval_runs() / f"network_{network}"
+        owner = folder / "attempt.json"
+        if not owner.exists() or (folder / "record.json").exists():
+            raise PermissionError(f"no open claim on the evaluation of network {network}")
+        a = json.loads(owner.read_text())
+        if (a["pid"], a["node"], a["job_id"]) != (os.getpid(), prov["node"], prov["job_id"]):
+            raise PermissionError(f"the evaluation of network {network} is claimed by another process")
+        super().__init__(root)
+        self.network = network
+
+    def load(self, network: int, split: str, n_states: int | None = None) -> dict:
+        if network != self.network:
+            raise PermissionError(f"this reader serves network {self.network} only")
+        return super().load(network, split, n_states)
 
 
 # ------------------------------------------------------------------------------------------- device path
@@ -298,15 +325,50 @@ def _halves(d: dict) -> tuple[dict, dict]:
     return {k: v[:h] for k, v in d.items()}, {k: v[h:] for k, v in d.items()}
 
 
+def missing_evaluations() -> list[int]:
+    """Networks without a valid final evaluation record under this freeze."""
+    out = []
+    for n in fs.ELIGIBLE:
+        f = eval_dir() / f"network_{n}.json"
+        if not f.exists() or not evaluation_record(n)["valid"]:
+            out.append(n)
+    return out
+
+
+def evaluation_record(network: int) -> dict:
+    """A final evaluation record, checked: the network's, not a dry run, made under this freeze or one it
+    accepts, and identical to the copy in the evaluation folder."""
+    f = eval_dir() / f"network_{network}.json"
+    rec = json.loads(f.read_text())
+    fr = json.loads(tt.freeze_file().read_text())
+    if rec["network"] != network or rec["dry_run"]:
+        raise AssertionError(f"{f.name} is not the final evaluation of network {network}")
+    if rec["freeze_sha256"] not in [fs._sha(tt.freeze_file())] + fr["earlier_freezes_accepted_for"]["evaluation"]:
+        raise AssertionError(f"{f.name}: made under another freeze")
+    if fs._sha(eval_runs() / f"network_{network}" / "record.json") != fs._sha(f):
+        raise AssertionError(f"{f.name} differs from the record in the evaluation folder")
+    return rec
+
+
+def per_state(network: int, rec: dict):
+    """The per-state outcomes of an evaluation, with the hash its record names."""
+    f = eval_runs() / f"network_{network}" / rec["per_state_file"]
+    if fs._sha(f) != rec["per_state_sha256"]:
+        raise AssertionError(f"{f} does not have the hash of its record")
+    return np.load(f)
+
+
 def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> Path:
+    final = not dry
     prov = tt.start_provenance(device, tt.set_determinism(True))
-    if dry:
-        out = fs.OUT / "eval_dry" / f"network_{network}_{time.strftime('%Y%m%dT%H%M%S')}.json"
-    else:
+    earlier = []
+    if final:
         tt.check_freeze(prov, variants=True)
         out = eval_dir() / f"network_{network}.json"
-    if out.exists():
-        raise FileExistsError(f"{out.name}: a network is evaluated once")
+        if out.exists():
+            raise tt.AlreadyDone(f"{out.name}: a network is evaluated once")
+    else:
+        out = fs.OUT / "eval_dry" / f"network_{network}_{time.strftime('%Y%m%dT%H%M%S')}.json"
     base, fits = tt.runs(dry), method_fits(network)
     runs = {}
     for name in sorted({f for f in fits.values() if f is not None}):   # every fit must be complete first
@@ -315,109 +377,117 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
             if dry:
                 continue
             raise FileNotFoundError(f"{name}: no fit record; the network is evaluated after all its fits")
-        rec = json.loads(f.read_text())
-        if not rec["valid"] or (rec["dry_run"] is not None) != dry:
-            raise AssertionError(f"{name}: not a valid {'dry-run' if dry else 'final'} fit")
-        if not dry and rec["source_sha256"] != prov["source_sha256"]:
-            raise AssertionError(f"{name}: fitted with another source than the frozen one")
+        rec = tt.check_record(json.loads(f.read_text()), name, dry)
         if rec["kind"] == "ft":                                       # the chain PG-pre -> PG-ft, same fold and seed
-            pre = json.loads((base / tt.run_name("pgpre", fold=rec["fold"], seed=rec["seed"]) / "record.json").read_text())
+            pre_name = tt.run_name("pgpre", fold=rec["fold"], seed=rec["seed"])
+            pre = tt.check_record(json.loads((base / pre_name / "record.json").read_text()), pre_name, dry)
             if (rec["started_from"] != {"name": pre["name"], "checkpoint_sha256": pre["checkpoint_sha256"]}
                     or rec["initial_weights_sha256"] != pre["selected_weights_sha256"]):
                 raise AssertionError(f"{name}: did not start from the selected checkpoint of {pre['name']}")
-        runs[name] = tt.load_run(base, name, device) if rec["checkpoint_sha256"] else {"record": rec, "state_dict": None}
-    store = fd.LabelStore(label_root)
-    st = fm.Static(*fs._case(network))
-    if dry:                                                           # train and val only
-        cal, te = _halves(store.load(network, "val"))
+        runs[name] = (tt.load_run(base, name, device, dry) if rec["checkpoint_sha256"]
+                      else {"record": rec, "state_dict": None})
+    if final:                                                         # the claim comes before any held-out label
+        folder, earlier = tt.claim_run_folder(eval_runs(), f"network_{network}", prov, final=True)
     else:
-        cal, te = store.load(network, "calib"), TestStore(label_root).load(network, "test")
-    s_cal, s_te = connection_power(st, cal), connection_power(st, te)
-    nets = {"primary": DeviceNet(st, device), **{v: DeviceNet(variant_static(network, v), device) for v in VARIANTS}}
-    flags = {"primary": te["flags"]}
-    for v in VARIANTS:                                                # truth cable flag under the variant's ratings
-        rat = (nets[v].st.net.rating_a[1:] / 1e3)[None, :, None]
-        f = te["flags"].copy()
-        f[:, 2] = (np.abs(te["I"][:, 1:, :3]) / rat).max((1, 2)) > 1.0
-        flags[v] = f
-    agree, exact_safe = sweep_agreement(st, s_te, te["flags"], te["converged"])
-    arrays = {"exact_safe": exact_safe, "converged": te["converged"],
-              "truth_safe": safe_by_direction(te["flags"], te["converged"])}
-    methods, cache = {}, {}
-
-    def pool_margins(rec, sd):                                        # PG-zs: the pool's calibration states
-        pred, truth, conv = [], [], []
-        for m in rec["pool"]:
-            stm = fm.Static(*fs._case(m))
-            d = _halves(store.load(m, "val"))[0] if dry else store.load(m, "calib")
-            pred.append(Pipeline(DeviceNet(stm, device), rec, sd).predict_host(connection_power(stm, d))[0])
-            truth.append(d["summary"])
-            conv.append(d["converged"])
-        pred, truth, conv = np.concatenate(pred), np.concatenate(truth), np.concatenate(conv)
-        return fit_margins(pred, truth, conv), {"set": "pool calib", "networks": rec["pool"],
-                                               "states": int(len(conv)), "converged": int(conv.sum())}
-
-    for key, name in fits.items():
-        if name is not None and name not in runs:
-            continue                                                  # dry run without that fit
-        rec, sd = (None, None) if name is None else (runs[name]["record"], runs[name]["state_dict"])
-        res = {"fit": name, "checkpoint_sha256": rec["checkpoint_sha256"] if rec else None,
-               "selected_epoch": rec["best_epoch"] if rec else None}
-        if name is not None and sd is None:                           # Amendment 7, item 4: no model
-            res.update({"no_model": True, "calibration": None, "state": None})
-            codes = {v: np.full((len(s_te), 2), UNCERTAIN, np.uint8) for v in nets}
+        folder = out.parent
+        folder.mkdir(parents=True, exist_ok=True)
+    with tt.halting(f"evaluation of network {network}", prov, final):
+        store = fd.LabelStore(label_root)
+        st = fm.Static(*fs._case(network))
+        if dry:                                                       # train and val only
+            cal, te = _halves(store.load(network, "val"))
         else:
-            if name not in cache:                                     # PG-pre-tc and PG-zs share one model
-                pipes = {v: Pipeline(nets[v], rec, sd) for v in nets}
-                summ, v_pred, cur = pipes["primary"].predict_host(s_te, state=True)
-                cache = {name: {"cal": pipes["primary"].predict_host(s_cal)[0], "summ": summ,
-                                "state": state_metrics(st.net, v_pred, cur, summ, te),
-                                "variants": {v: pipes[v].predict_host(s_te)[0] for v in VARIANTS}}}
-                del v_pred, cur, pipes
-            c = cache[name]
-            if key == "PG-zs":
-                margins, cal_info = pool_margins(rec, sd)
+            cal, te = store.load(network, "calib"), TestStore(label_root, network, prov).load(network, "test")
+        s_cal, s_te = connection_power(st, cal), connection_power(st, te)
+        nets = {"primary": DeviceNet(st, device), **{v: DeviceNet(variant_static(network, v), device) for v in VARIANTS}}
+        flags = {"primary": te["flags"]}
+        for v in VARIANTS:                                            # truth cable flag under the variant's ratings
+            rat = (nets[v].st.net.rating_a[1:] / 1e3)[None, :, None]
+            f = te["flags"].copy()
+            f[:, 2] = (np.abs(te["I"][:, 1:, :3]) / rat).max((1, 2)) > 1.0
+            flags[v] = f
+        agree, exact_safe = sweep_agreement(st, s_te, te["flags"], te["converged"])
+        arrays = {"exact_safe": exact_safe, "converged": te["converged"],
+                  "truth_safe": safe_by_direction(te["flags"], te["converged"])}
+        methods, cache = {}, {}
+
+        def pool_margins(rec, sd):                                    # PG-zs: the pool's calibration states
+            pred, truth, conv = [], [], []
+            for m in rec["pool"]:
+                stm = fm.Static(*fs._case(m))
+                d = _halves(store.load(m, "val"))[0] if dry else store.load(m, "calib")
+                pred.append(Pipeline(DeviceNet(stm, device), rec, sd).predict_host(connection_power(stm, d))[0])
+                truth.append(d["summary"])
+                conv.append(d["converged"])
+            pred, truth, conv = np.concatenate(pred), np.concatenate(truth), np.concatenate(conv)
+            return fit_margins(pred, truth, conv), {"set": "pool calib", "networks": rec["pool"],
+                                                   "states": int(len(conv)), "converged": int(conv.sum())}
+
+        for key, name in fits.items():
+            if name is not None and name not in runs:
+                continue                                              # dry run without that fit
+            rec, sd = (None, None) if name is None else (runs[name]["record"], runs[name]["state_dict"])
+            res = {"fit": name, "checkpoint_sha256": rec["checkpoint_sha256"] if rec else None,
+                   "selected_epoch": rec["best_epoch"] if rec else None}
+            if name is not None and sd is None:                       # Amendment 7, item 4: no model
+                res.update({"no_model": True, "calibration": None, "state": None})
+                codes = {v: np.full((len(s_te), 2), UNCERTAIN, np.uint8) for v in nets}
             else:
-                margins = fit_margins(c["cal"], cal["summary"], cal["converged"])
-                cal_info = {"set": "target calib", "states": int(len(cal["converged"])),
-                            "converged": int(cal["converged"].sum())}
-            res.update({"calibration": {**cal_info, "usable": margins is not None, "margins": margins_state(margins)},
-                        "state": c["state"]})
-            codes = {"primary": screen_codes(margins, c["summ"]),
-                     **{v: screen_codes(margins, c["variants"][v]) for v in VARIANTS}}
-            arrays[f"{key}__summary"] = c["summ"]
-        res["screen"] = decision_metrics(codes["primary"], flags["primary"], te["converged"])
-        res["fallback_exact_engine"] = fallback_agreement(codes["primary"], exact_safe, te["flags"], te["converged"])
-        for v in VARIANTS:
-            res[f"screen_{v}"] = decision_metrics(codes[v], flags[v], te["converged"])
-        arrays[f"{key}__codes"] = codes["primary"]
-        methods[key] = res
-        if dry:                                                       # a final run prints no result (Amendment 8, item 14)
-            print(key, json.dumps({k: res["screen"][k] for k in ("fallback_share", "false_safe",
-                                                                 "cleared_indeterminate")}), flush=True)
+                if name not in cache:                                 # PG-pre-tc and PG-zs share one model
+                    pipes = {v: Pipeline(nets[v], rec, sd) for v in nets}
+                    summ, v_pred, cur = pipes["primary"].predict_host(s_te, state=True)
+                    cache = {name: {"cal": pipes["primary"].predict_host(s_cal)[0], "summ": summ,
+                                    "state": state_metrics(st.net, v_pred, cur, summ, te),
+                                    "variants": {v: pipes[v].predict_host(s_te)[0] for v in VARIANTS}}}
+                    del v_pred, cur, pipes
+                c = cache[name]
+                if key == "PG-zs":
+                    margins, cal_info = pool_margins(rec, sd)
+                else:
+                    margins = fit_margins(c["cal"], cal["summary"], cal["converged"])
+                    cal_info = {"set": "target calib", "states": int(len(cal["converged"])),
+                                "converged": int(cal["converged"].sum())}
+                res.update({"calibration": {**cal_info, "usable": margins is not None, "margins": margins_state(margins)},
+                            "state": c["state"]})
+                codes = {"primary": screen_codes(margins, c["summ"]),
+                         **{v: screen_codes(margins, c["variants"][v]) for v in VARIANTS}}
+                arrays[f"{key}__summary"] = c["summ"]
+            res["screen"] = decision_metrics(codes["primary"], flags["primary"], te["converged"])
+            res["fallback_exact_engine"] = fallback_agreement(codes["primary"], exact_safe, te["flags"], te["converged"])
+            for v in VARIANTS:
+                res[f"screen_{v}"] = decision_metrics(codes[v], flags[v], te["converged"])
+            arrays[f"{key}__codes"] = codes["primary"]
+            methods[key] = res
+            if dry:                                                   # a final run prints no result (Amendment 8, item 14)
+                print(key, json.dumps({k: res["screen"][k] for k in ("fallback_share", "false_safe",
+                                                                     "cleared_indeterminate")}), flush=True)
+            else:
+                print(key, "done", flush=True)
+        unchanged = tt.checkout_unchanged(prov)
+        npz = folder / ("per_state.npz" if final else out.stem + ".npz")
+        np.savez_compressed(npz, **arrays)
+        record = {
+            "protocol": "docs/fourwire_scale_protocol.md §5-§7, Amendments 8 and 9", "network": network,
+            "fold": tt.fold_of(network), "dry_run": dry, "evaluated_split": "second half of val" if dry else "test",
+            "calibration_split": "first half of val" if dry else "calib", **prov,
+            "unchanged_during_run": unchanged, "valid": bool(unchanged), "label_commit": fd.LABEL_COMMIT,
+            "earlier_attempts": earlier,
+            "screen_implementation_sha256": fs._sha(Path(__file__).with_name("fourwire_eval.py")),
+            "alpha": ALPHA, "microbatch": MICROBATCH, "retained_buses": st.net.n_bus,
+            "states": int(len(te["converged"])), "converged": int(te["converged"].sum()),
+            "truth": {"converged_not_safe": {d: int((te["converged"] & ~safe_by_direction(te["flags"], te["converged"])[:, j]).sum())
+                                             for j, d in enumerate(DIRECTIONS)}},
+            "exact_sweep_vs_opendss": agree, "per_state_file": npz.name, "per_state_sha256": fs._sha(npz),
+            "methods": methods}
+        if final:                                                     # the folder's record first: it closes the claim
+            fs._write_json(folder / "record.json", record)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes((folder / "record.json").read_bytes())
         else:
-            print(key, "done", flush=True)
-    unchanged = tt.checkout_unchanged(prov)
-    if out.exists():
-        raise FileExistsError(out)
-    npz = (fs.OUT / "eval_dry" if dry else fs.OUT / "eval") / (out.stem + ".npz")
-    npz.parent.mkdir(parents=True, exist_ok=True)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(npz, **arrays)
-    fs._write_json(out, {
-        "protocol": "docs/fourwire_scale_protocol.md §5-§7, Amendments 8 and 9", "network": network,
-        "fold": tt.fold_of(network), "dry_run": dry, "evaluated_split": "second half of val" if dry else "test",
-        "calibration_split": "first half of val" if dry else "calib", **prov,
-        "checkout_unchanged_during_run": unchanged, "valid": bool(unchanged), "label_commit": fd.LABEL_COMMIT,
-        **tt.input_hashes(), "screen_implementation_sha256": fs._sha(Path(__file__).with_name("fourwire_eval.py")),
-        "alpha": ALPHA, "microbatch": MICROBATCH, "retained_buses": st.net.n_bus,
-        "states": int(len(te["converged"])), "converged": int(te["converged"].sum()),
-        "truth": {"converged_not_safe": {d: int((te["converged"] & ~safe_by_direction(te["flags"], te["converged"])[:, j]).sum())
-                                         for j, d in enumerate(DIRECTIONS)}},
-        "exact_sweep_vs_opendss": agree, "per_state_file": npz.name, "per_state_sha256": fs._sha(npz),
-        "methods": methods})
-    if not unchanged:
-        raise RuntimeError(f"the checkout differs from the start of the run; {out.name} is not a valid record")
+            fs._write_json(out, record)
+        if not unchanged:
+            raise RuntimeError(f"checkout, numerical mode, libraries or inputs changed during the run; "
+                               f"{out.name} is not a valid record")
     return out
 
 
@@ -430,14 +500,15 @@ def _boot(d: np.ndarray, n: int = 2000, seed: int = 0) -> list[float]:
 
 
 def report() -> Path:
-    recs = {n: json.loads((eval_dir() / f"network_{n}.json").read_text()) for n in fs.ELIGIBLE}
-    if not all(r["valid"] and not r["dry_run"] for r in recs.values()):
-        raise AssertionError("an evaluation record is not a valid final one")
+    recs = {n: evaluation_record(n) for n in fs.ELIGIBLE}
+    if not all(r["valid"] for r in recs.values()):
+        raise AssertionError("an evaluation record is not valid")
 
     def get(n, key, *path):
+        """A value of a method's record; None where the method has no model, no screen or no finite prediction."""
         x = recs[n]["methods"][key]
         for k in path:
-            x = None if x is None else x[k]
+            x = None if x is None else x.get(k)
         return x
 
     def compare(budget, seeds, nets):
@@ -509,7 +580,11 @@ def main():
     else:
         if a.label_root is None or a.network is None:
             ap.error("evaluate needs --label-root and --network")
-        print(evaluate(a.label_root, a.network, a.device, a.dry))
+        try:
+            print(evaluate(a.label_root, a.network, a.device, a.dry))
+        except tt.AlreadyDone as e:                                  # the job script reads 10 as "skip"
+            print(e)
+            raise SystemExit(10)
 
 
 if __name__ == "__main__":

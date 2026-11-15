@@ -37,6 +37,7 @@ deterministic algorithms. determinism-report compares the pairs and refuses a ve
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -128,7 +129,8 @@ def numerical_settings() -> dict:
 
 
 def start_provenance(device: str, settings: dict) -> dict:
-    """Read before a run. GENCODOE_COMMIT, set by the job script, must equal HEAD."""
+    """Read before a run: the checkout, the machine, the library versions and the hashes of the inputs.
+    GENCODOE_COMMIT, set by the job script, must equal HEAD."""
     import torch_geometric
     state, pinned = checkout_state(), os.environ.get("GENCODOE_COMMIT")
     if pinned is not None and pinned != state["head"]:
@@ -142,6 +144,7 @@ def start_provenance(device: str, settings: dict) -> dict:
             "node": platform.node(), "platform": platform.platform(), "cpus": os.cpu_count(),
             "python": platform.python_version(), "numpy": np.__version__, "torch": torch.__version__,
             "torch_geometric": torch_geometric.__version__, "device": device, **settings,
+            "software": software(), **input_hashes(), "freeze_sha256": None,
             "cuda": torch.version.cuda if cuda else None,
             "cudnn": torch.backends.cudnn.version() if cuda else None,
             "cuda_device": torch.cuda.get_device_name(dev) if cuda else None,
@@ -149,11 +152,14 @@ def start_provenance(device: str, settings: dict) -> dict:
 
 
 def checkout_unchanged(start: dict) -> bool:
-    """HEAD, the modified flag, the source hash and the numerical mode are the same as at the start."""
+    """HEAD, the modified flag, the source hash, the numerical mode, the library versions, the input hashes
+    and (for a final run) the freeze file are the same as at the start."""
     state = checkout_state()
     return (state["head"] == start["code_commit"] and state["src_dirty"] == start["src_dirty"]
             and state["source_sha256"] == start["source_sha256"]
-            and all(start[k] == v for k, v in numerical_settings().items()))
+            and all(start[k] == v for k, v in numerical_settings().items())
+            and all(start[k] == v for k, v in input_hashes().items()) and start["software"] == software()
+            and (start["freeze_sha256"] is None or start["freeze_sha256"] == fs._sha(freeze_file())))
 
 
 def weights_sha(model) -> str:
@@ -528,9 +534,9 @@ def software() -> dict:
 
 
 def input_hashes() -> dict:
-    """What a run depends on besides the source: the label manifest (pinned in fourwire_scale_data) and the
-    identification record, which holds every network's Thevenin equivalent and network-file hashes."""
-    return {"label_manifest_sha256": fd.MANIFEST_SHA256,
+    """What a run depends on besides the source, hashed from the files as they are now: the label manifest
+    and the identification record, which holds every network's Thevenin equivalent and network-file hashes."""
+    return {"label_manifest_sha256": fs._sha(fd.MANIFEST),
             "identification_sha256": fs._sha(fs.RESULTS / "fourwire_scale_identification.json")}
 
 
@@ -557,46 +563,87 @@ def profiles_sha() -> str:
 
 
 JOB_SCRIPT = fs.ROOT / "scripts/hydra_fourwire_scale_final.slurm"
+FINAL_DEVICE = "NVIDIA A100-PCIE-40GB"        # §6, Amendment 7: every final run
 
 
 def freeze() -> Path:
     """Amendment 8, item 14: record what every final command must run with: the committed source, the label
     manifest, the identification record, the rating-variant networks, the meter profiles, the job script and
-    the library versions of the machine the final runs use. Run it there, on unmodified source."""
+    the library versions of the machine the final runs use. Run it there, once, on unmodified source; the
+    file is then committed. A later freeze (after an amendment) names the earlier freezes whose fits or
+    evaluations it keeps."""
+    if freeze_file().exists():
+        raise FileExistsError(f"{freeze_file().name} exists: a new freeze needs an amendment")
     state = checkout_state()
     if state["src_dirty"]:
         raise RuntimeError("src/ differs from HEAD: commit it before freezing")
+    if input_hashes()["label_manifest_sha256"] != fd.MANIFEST_SHA256:
+        raise AssertionError("the label manifest is not the pinned one")
     files = {q.name: fs._sha(q) for q in sorted(Path(__file__).resolve().parent.glob("*.py"))}
     fs._write_json(freeze_file(), {"protocol": "docs/fourwire_scale_protocol.md Amendment 8, item 14",
                                    "source_sha256": state["source_sha256"], **input_hashes(),
                                    "variant_networks_sha256": variant_networks_sha(),
                                    "profiles_sha256": profiles_sha(), "job_script_sha256": fs._sha(JOB_SCRIPT),
-                                   "software": software(), "folds": folds(), "frozen_at_commit": state["head"],
-                                   "files_sha256": files})
+                                   "software": software(), "device": FINAL_DEVICE, "folds": folds(),
+                                   "earlier_freezes_accepted_for": {"fits": [], "evaluation": []},
+                                   "frozen_at_commit": state["head"], "files_sha256": files})
     return freeze_file()
 
 
+def freeze_committed() -> bool:
+    """The freeze file is tracked by git and identical to HEAD."""
+    f = str(freeze_file())
+    tracked = subprocess.run(["git", "ls-files", "--error-unmatch", f], capture_output=True, cwd=fs.ROOT)
+    status = subprocess.run(["git", "status", "--porcelain", "--", f], capture_output=True, text=True, cwd=fs.ROOT)
+    return tracked.returncode == 0 and status.returncode == 0 and not status.stdout.strip()
+
+
+def halt_file() -> Path:
+    return runs() / "HALT.json"
+
+
+@contextlib.contextmanager
+def halting(what: str, prov: dict, final: bool):
+    """Amendment 7, item 3: an error inside a final run is a defect of the code or the setup. It stops every
+    later final command until it is resolved under an amendment (the halt file is then removed by hand)."""
+    try:
+        yield
+    except Exception as e:
+        if final:
+            halt_file().parent.mkdir(parents=True, exist_ok=True)
+            fs._write_json(halt_file(), {"what": what, "error": f"{type(e).__name__}: {e}", "job_id": prov["job_id"],
+                                         "node": prov["node"], "time": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+        raise
+
+
 def check_freeze(prov: dict, deterministic: bool = True, variants: bool = False, profiles: bool = False) -> dict:
-    """A final command runs only when pinned to HEAD, from unmodified source equal to the freeze, with the
-    frozen inputs, job script and library versions, on an A100 when it uses CUDA, and in the numerical mode
-    it must use (deterministic algorithms, except for timing). variants and profiles: also check the
-    rating-variant networks (evaluation) and the meter profiles (envelopes). Returns the freeze."""
+    """A final command runs only: pinned to HEAD; from unmodified source equal to the committed freeze; with
+    the frozen inputs, job script and library versions; on the frozen GPU model; in the numerical mode it
+    must use (deterministic algorithms, except for timing); and while no halt is in force. variants and
+    profiles: also check the rating-variant networks (evaluation) and the meter profiles (envelopes).
+    Binds the run to the freeze (prov["freeze_sha256"]) and returns the freeze."""
+    if halt_file().exists():
+        raise RuntimeError(f"the final runs are halted: {halt_file().read_text()}")
     fr = json.loads(freeze_file().read_text())
     problems = []
+    if not freeze_committed():
+        problems.append("the freeze file is not committed")
     if prov["gencodoe_commit"] != prov["code_commit"]:
         problems.append("GENCODOE_COMMIT is not set to HEAD")
     if prov["src_dirty"]:
         problems.append("src/ is modified")
     if prov["source_sha256"] != fr["source_sha256"]:
         problems.append("the source differs from the freeze")
-    if any(fr[k] != v for k, v in input_hashes().items()) or fr["folds"] != folds():
+    if any(fr[k] != prov[k] for k in input_hashes()) or fr["folds"] != folds():
         problems.append("label manifest, identification record or folds differ from the freeze")
+    if prov["label_manifest_sha256"] != fd.MANIFEST_SHA256:
+        problems.append("the label manifest is not the pinned one")
     if fs._sha(JOB_SCRIPT) != fr["job_script_sha256"]:
         problems.append("the job script differs from the freeze")
-    if software() != fr["software"]:
+    if prov["software"] != fr["software"]:
         problems.append("library versions differ from the freeze")
-    if prov["cuda_device"] is not None and "A100" not in prov["cuda_device"]:
-        problems.append("not an A100")
+    if prov["cuda_device"] != FINAL_DEVICE or fr["device"] != FINAL_DEVICE:
+        problems.append(f"not on {FINAL_DEVICE}")
     if prov["deterministic_algorithms"] != deterministic or prov["tf32"]:
         problems.append("wrong numerical mode")
     if variants and variant_networks_sha() != fr["variant_networks_sha256"]:
@@ -605,53 +652,85 @@ def check_freeze(prov: dict, deterministic: bool = True, variants: bool = False,
         problems.append("meter profiles differ from the freeze")
     if problems:
         raise RuntimeError("not a final run: " + "; ".join(problems))
+    prov["freeze_sha256"] = fs._sha(freeze_file())
     return fr
 
 
-def load_run(base: Path, name: str, device: str) -> dict:
-    """Record and selected weights of a completed fit; the checkpoint must be the one the record names."""
-    rec = json.loads((base / name / "record.json").read_text())
+def check_record(rec: dict, name: str, dry: bool, stage: str = "fits") -> dict:
+    """A fit record is the one asked for, valid, and (final) made under this freeze or one it accepts for
+    the stage, with today's inputs."""
+    want = run_name(rec["kind"], rec["fold"], rec["network"], rec["budget"], rec["seed"])
+    if rec["name"] != name or want != name or (rec["network"] is not None and rec["fold"] != fold_of(rec["network"])):
+        raise AssertionError(f"{name}: the record is of {rec['name']} ({want})")
+    if not rec["valid"] or (rec["dry_run"] is not None) != dry:
+        raise AssertionError(f"{name}: not a valid {'dry-run' if dry else 'final'} fit")
+    if not dry:
+        fr = json.loads(freeze_file().read_text())
+        if rec["freeze_sha256"] not in [fs._sha(freeze_file())] + fr["earlier_freezes_accepted_for"][stage]:
+            raise AssertionError(f"{name}: made under another freeze")
+        if any(rec[k] != v for k, v in input_hashes().items()):
+            raise AssertionError(f"{name}: made with other inputs")
+    return rec
+
+
+def load_run(base: Path, name: str, device: str, dry: bool) -> dict:
+    """Record and selected weights of a completed fit: the record asked for (check_record) and the checkpoint
+    it names."""
+    rec = check_record(json.loads((base / name / "record.json").read_text()), name, dry)
     ck = base / name / "best.pt"
-    if not rec["valid"] or rec["checkpoint_sha256"] is None or fs._sha(ck) != rec["checkpoint_sha256"]:
-        raise AssertionError(f"{name}: no valid record with its checkpoint")
+    if rec["checkpoint_sha256"] is None or fs._sha(ck) != rec["checkpoint_sha256"]:
+        raise AssertionError(f"{name}: no checkpoint with the hash of its record")
     return {"record": rec, "state_dict": torch.load(ck, map_location=device, weights_only=True)}
 
 
 MAX_RERUNS = 2                     # Amendment 7, item 3
+RERUN_STATES = ("FAILED", "NODE_FAIL", "TIMEOUT", "OUT_OF_MEMORY", "PREEMPTED", "BOOT_FAIL")
 
 
-def _attempt_running(folder: Path) -> bool:
-    """Is the attempt that owns a run folder still running? Its Slurm job is asked for; without Slurm, its
-    process on this machine."""
-    f = folder / "attempt.json"
-    if not f.exists():
-        return False
-    a = json.loads(f.read_text())
+class AlreadyDone(FileExistsError):
+    """The run has a valid record: it is never run again."""
+
+
+def _slurm(command: list[str]) -> str:
+    """Output of a Slurm query. Without an answer nothing is assumed: the caller refuses."""
+    try:
+        out = subprocess.run(command, capture_output=True, text=True)
+    except FileNotFoundError as e:
+        raise RuntimeError(f"{command[0]} is not available here: the attempt's job cannot be checked") from e
+    if out.returncode != 0 and "Invalid job id" not in out.stderr:
+        raise RuntimeError(f"{command[0]} failed: {out.stderr.strip()}")
+    return out.stdout.strip()
+
+
+def _attempt_running(a: dict) -> bool:
+    """Is the attempt still running? Its Slurm job is asked for (SLURM_JOB_ID is one id per array task);
+    without a Slurm job, its process on this machine."""
     if a["job_id"]:
-        try:
-            out = subprocess.run(["squeue", "-h", "-j", a["job_id"].split("_")[0]], capture_output=True, text=True)
-            return bool(out.stdout.strip())
-        except FileNotFoundError:
-            pass
-    if a["node"] != platform.node() or a["pid"] == os.getpid():
-        return False
+        return bool(_slurm(["squeue", "-h", "-j", a["job_id"].split("_")[0]]))
+    if a["node"] != platform.node():
+        raise RuntimeError(f"the attempt ran on {a['node']}: it cannot be checked from here")
     try:
         os.kill(a["pid"], 0)
-        return True
+        return a["pid"] != os.getpid()
     except OSError:
         return False
 
 
-def _slurm_state(job_id: str | None) -> str | None:
-    """How Slurm accounting says a job ended (for the record of a rerun); None where there is no Slurm."""
-    if not job_id:
-        return None
-    try:
-        out = subprocess.run(["sacct", "-n", "-X", "-j", job_id.split("_")[0], "-o", "State%40"],
-                             capture_output=True, text=True)
-        return out.stdout.strip() or None
-    except FileNotFoundError:
-        return None
+def rerun_reason(a: dict) -> str:
+    """Why an attempt that left no record may be run again (Amendment 7, item 3). Raises if it may not.
+    - A Slurm job: accounting must show an infrastructure end state, or a cancellation that is not ours.
+    - Our own cancellation: only with GENCODOE_RERUN_DEVIATION set to its reason, which is recorded.
+    - No Slurm job (a run on a workstation): its process has ended."""
+    if not a["job_id"]:
+        return "no Slurm job; its process has ended"
+    state = _slurm(["sacct", "-n", "-X", "-j", a["job_id"].split("_")[0], "-o", "State%40"])
+    word = state.split()[0] if state else ""
+    if word in RERUN_STATES or (word == "CANCELLED" and f"by {os.getuid()}" not in state):
+        return f"Slurm accounting: {state}"
+    deviation = os.environ.get("GENCODOE_RERUN_DEVIATION")
+    if word == "CANCELLED" and deviation:
+        return f"DEVIATION, cancelled by us ({state}): {deviation}"
+    raise RuntimeError(f"Slurm accounting says {state or 'nothing'} for job {a['job_id']}: no reason for a rerun")
 
 
 def _curve(folder: Path) -> dict:
@@ -661,31 +740,56 @@ def _curve(folder: Path) -> dict:
     return {r["epoch"]: (r.get("train_loss"), r["val_loss"]) for r in rows if "epoch" in r}
 
 
-def claim_run_folder(base: Path, name: str, prov: dict) -> tuple[Path, list[Path]]:
-    """The run folder of a new attempt, and the folders of the earlier attempts of the same fit.
-    - A fit with a valid record is never rerun.
-    - A folder with an invalid record, or without one (a killed job), is set aside under another name; it is
-      refused while the attempt that owns it is still running, and after MAX_RERUNS earlier attempts.
-    - The new folder is created exclusively, so two attempts cannot both start."""
+def claim_run_folder(base: Path, name: str, prov: dict, final: bool) -> tuple[Path, list[dict]]:
+    """The run folder of a new attempt and what is known of the earlier attempts of the same run.
+    - A run with a valid record is never run again (AlreadyDone).
+    - A folder with an invalid record is set aside: the record states why it is invalid.
+    - A folder without a record is set aside only if its attempt has ended and, for a final run, if
+      rerun_reason allows it. A folder without an owner is refused.
+    - At most MAX_RERUNS earlier attempts.
+    - The new folder appears with its owner already in it, by one rename: two attempts cannot both start,
+      and no folder is ever without an owner."""
     out_dir = base / name
     base.mkdir(parents=True, exist_ok=True)
+
+    def set_aside():
+        return sorted(q for q in base.glob(f"{name}.*") if q.is_dir())
+
     if out_dir.exists():
-        rec = out_dir / "record.json"
+        rec, owner = out_dir / "record.json", out_dir / "attempt.json"
         if rec.exists() and json.loads(rec.read_text())["valid"]:
-            raise FileExistsError(f"{name} has a valid record: a completed fit is never rerun")
-        if not rec.exists() and _attempt_running(out_dir):
-            raise RuntimeError(f"{name}: another attempt of this fit is running")
-        kind = "invalid" if rec.exists() else "incomplete"
+            raise AlreadyDone(f"{name} has a valid record: it is never run again")
+        if not owner.exists():
+            raise RuntimeError(f"{name}: a run folder without an owner; it needs a recorded decision")
+        if len(set_aside()) >= MAX_RERUNS:
+            raise RuntimeError(f"{name}: {len(set_aside())} earlier attempts; a further rerun needs an amendment")
+        a = json.loads(owner.read_text())
+        if rec.exists():
+            kind, reason = "invalid", "its record is invalid"
+        else:
+            if _attempt_running(a):
+                raise RuntimeError(f"{name}: another attempt of this run is running")
+            kind, reason = "incomplete", rerun_reason(a) if final else "dry run"
         k = 1
         while (base / f"{name}.{kind}{k}").exists():
             k += 1
+        fs._write_json(owner, {**a, "set_aside_because": reason})
         out_dir.rename(base / f"{name}.{kind}{k}")
-    earlier = sorted(q for q in base.glob(f"{name}.*") if q.is_dir())
-    if len(earlier) > MAX_RERUNS:
-        raise RuntimeError(f"{name}: {len(earlier)} earlier attempts; a further rerun needs an amendment")
-    out_dir.mkdir(exist_ok=False)
-    fs._write_json(out_dir / "attempt.json", {"job_id": prov["job_id"], "node": prov["node"], "pid": os.getpid(),
-                                              "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+    earlier = []
+    for q in set_aside():
+        a = json.loads((q / "attempt.json").read_text())
+        earlier.append({"folder": q.name, "job_id": a["job_id"], "started": a["started"],
+                        "set_aside_because": a.get("set_aside_because")})
+    tmp = base / f".{name}.claim{os.getpid()}"
+    tmp.mkdir()
+    fs._write_json(tmp / "attempt.json", {"job_id": prov["job_id"], "node": prov["node"], "pid": os.getpid(),
+                                          "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+    try:
+        os.rename(tmp, out_dir)                                      # fails if another attempt got there first
+    except OSError as e:
+        (tmp / "attempt.json").unlink()
+        tmp.rmdir()
+        raise RuntimeError(f"{name}: another attempt of this run has just started") from e
     return out_dir, earlier
 
 
@@ -693,63 +797,59 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
               budget: int | None = None, seed: int = 0, dry: dict | None = None) -> Path:
     """One fit of §8 (Amendments 7 and 8). dry: None, or {"n_train", "n_val", "epochs"} for a dry run on
     train and val only, kept under runs/dry and never evaluated on test."""
-    cfg = FITS[kind]
+    cfg, final = FITS[kind], dry is None
     name = run_name(kind, fold, network, budget, seed)
-    base = runs(dry is not None)
+    base = runs(not final)
     prov = start_provenance(device, set_determinism(True))          # before anything is trained
-    if dry is None:
+    if final:
         check_freeze(prov)
-    out_dir, earlier = claim_run_folder(base, name, prov)
-    store = fd.LabelStore(label_root)
     start = init = None
     if kind == "pgpre":
         pool, n_train = pool_of(fold), N_PRE
     else:
         pool, n_train = [network], fs.N_STATES["train"] if kind == "pgnet" else budget
-        fold = fold_of(network)
-        if kind == "ft":                                             # the selected PG-pre checkpoint, same seed
-            pre = json.loads((base / run_name("pgpre", fold=fold, seed=seed) / "record.json").read_text())
-            if not pre["valid"]:
-                raise AssertionError(f"{pre['name']}: no valid record")
+        if kind == "ft":                                             # the selected PG-pre checkpoint, same seed;
+            pre_name = run_name("pgpre", fold=fold_of(network), seed=seed)   # it must exist before PG-ft claims anything
+            pre = check_record(json.loads((base / pre_name / "record.json").read_text()), pre_name, not final)
             start = {"record": pre}
             if pre["checkpoint_sha256"] is not None:
-                start = load_run(base, pre["name"], device)
+                start = load_run(base, pre_name, device, not final)
                 init = {"state_dict": start["state_dict"], "scalers": start["record"]["scalers"]}
-    epochs, n_val = cfg["epochs"], None
-    if dry is not None:
-        n_train, n_val, epochs = min(n_train, dry["n_train"]), dry["n_val"], dry["epochs"]
-    t0 = time.perf_counter()
-    if start is not None and init is None:                           # PG-pre ended without a model: neither has PG-ft
-        res = {"pool": pool, "seed": seed, "best_epoch": -1, "curve": [], "scalers": None,
-               "numerical_failure": {"what": f"{start['record']['name']} has no model"},
-               "initial_weights_sha256": None, "selected_weights_sha256": None}
-    else:
-        res = fit(store, pool, epochs, device, seed=seed, out_dir=out_dir, n_train=n_train, n_val=n_val,
-                  lr=cfg["lr"], patience=cfg["patience"], init=init, prepared=True)
-    if start is not None and res["initial_weights_sha256"] != start["record"]["selected_weights_sha256"]:
-        raise AssertionError("PG-ft did not start from the selected PG-pre weights")
-    unchanged = checkout_unchanged(prov)
-    ck = out_dir / "best.pt"
-    new = {c["epoch"]: (c.get("train_loss"), c["val_loss"]) for c in res["curve"]}
-    attempts = []
-    for q in earlier:                                                # a rerun must retrace what was recorded before
-        old = _curve(q)
-        a = json.loads((q / "attempt.json").read_text()) if (q / "attempt.json").exists() else {}
-        attempts.append({"folder": q.name, "job_id": a.get("job_id"), "started": a.get("started"),
-                         "slurm_state": _slurm_state(a.get("job_id")), "epochs_recorded": len(old),
-                         "reproduced_by_this_run": all(new.get(e) == v for e, v in old.items())})
-    rec = {"protocol": "docs/fourwire_scale_protocol.md §4, §8, Amendments 5, 7 and 8", "name": name,
-           "kind": kind, "fold": fold, "network": network, "budget": budget, "dry_run": dry, **prov,
-           "software": software(), "checkout_and_mode_unchanged_during_run": unchanged,
-           "label_commit": fd.LABEL_COMMIT, **input_hashes(),
-           "started_from": None if start is None else {"name": start["record"]["name"],
-                                                         "checkpoint_sha256": start["record"]["checkpoint_sha256"]},
-           "earlier_attempts": attempts, "fit_s": time.perf_counter() - t0, **res,
-           "checkpoint_sha256": fs._sha(ck) if ck.exists() else None}
-    rec["valid"] = bool(unchanged and prov["deterministic_algorithms"])
-    fs._write_json(out_dir / "record.json", rec)
-    if not unchanged:
-        raise RuntimeError(f"the checkout or the numerical mode changed during the run; {name} is not a valid fit")
+    out_dir, earlier = claim_run_folder(base, name, prov, final)
+    with halting(name, prov, final):
+        store = fd.LabelStore(label_root)
+        epochs, n_val = cfg["epochs"], None
+        if not final:
+            n_train, n_val, epochs = min(n_train, dry["n_train"]), dry["n_val"], dry["epochs"]
+        t0 = time.perf_counter()
+        if start is not None and init is None:                       # PG-pre ended without a model: neither has PG-ft
+            res = {"pool": pool, "seed": seed, "best_epoch": -1, "curve": [], "scalers": None,
+                   "numerical_failure": {"what": f"{start['record']['name']} has no model"},
+                   "initial_weights_sha256": None, "selected_weights_sha256": None}
+        else:
+            res = fit(store, pool, epochs, device, seed=seed, out_dir=out_dir, n_train=n_train, n_val=n_val,
+                      lr=cfg["lr"], patience=cfg["patience"], init=init, prepared=True)
+        if start is not None and res["initial_weights_sha256"] != start["record"]["selected_weights_sha256"]:
+            raise AssertionError("PG-ft did not start from the selected PG-pre weights")
+        unchanged = checkout_unchanged(prov)
+        ck = out_dir / "best.pt"
+        new = {c["epoch"]: (c.get("train_loss"), c["val_loss"]) for c in res["curve"]}
+        for a in earlier:                                            # a rerun must retrace what was recorded before
+            old = _curve(base / a["folder"])
+            a.update({"epochs_recorded": len(old), "reproduced_by_this_run": all(new.get(e) == v for e, v in old.items())})
+        rec = {"protocol": "docs/fourwire_scale_protocol.md §4, §8, Amendments 5, 7 and 8", "name": name,
+               "kind": kind, "fold": fold if kind == "pgpre" else fold_of(network), "network": network,
+               "budget": budget, "dry_run": dry, **prov,
+               "unchanged_during_run": unchanged, "label_commit": fd.LABEL_COMMIT,
+               "started_from": None if start is None else {"name": start["record"]["name"],
+                                                             "checkpoint_sha256": start["record"]["checkpoint_sha256"]},
+               "earlier_attempts": earlier, "fit_s": time.perf_counter() - t0, **res,
+               "checkpoint_sha256": fs._sha(ck) if ck.exists() else None}
+        rec["valid"] = bool(unchanged and prov["deterministic_algorithms"])
+        fs._write_json(out_dir / "record.json", rec)
+        if not unchanged:
+            raise RuntimeError(f"checkout, numerical mode, libraries or inputs changed during the run; "
+                               f"{name} is not a valid fit")
     return out_dir / "record.json"
 
 
@@ -883,8 +983,13 @@ def main():
             ap.error("--kind pgpre takes --fold; pgnet takes --network; scratch and ft take --network and --budget")
         if a.kind != "pgpre" and a.seed not in ([0] if a.kind == "pgnet" else BUDGETS[a.budget]):
             ap.error("that seed is not among the fits of §4")
-        print(final_fit(a.label_root, a.kind, a.device, a.fold if a.kind == "pgpre" else None, a.network, a.budget,
-                        a.seed, None if dry[0] is None else {"n_train": dry[0], "n_val": dry[1], "epochs": dry[2]}))
+        try:
+            print(final_fit(a.label_root, a.kind, a.device, a.fold if a.kind == "pgpre" else None, a.network,
+                            a.budget, a.seed,
+                            None if dry[0] is None else {"n_train": dry[0], "n_val": dry[1], "epochs": dry[2]}))
+        except AlreadyDone as e:                                     # the job script reads 10 as "skip"
+            print(e)
+            sys.exit(10)
     elif a.cmd == "determinism":
         print(determinism(a.label_root, a.device, a.deterministic, a.out))
     else:

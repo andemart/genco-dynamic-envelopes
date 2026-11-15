@@ -34,9 +34,9 @@ def use_manifest(monkeypatch, path):
 
 
 @pytest.fixture
-def store(tmp_path, monkeypatch):
-    """24 train, 12 val and 12 calib states of networks 10 and 25 in shards of 12, with their manifest, and
-    a decoy test tree that nothing may open or list."""
+def store(tmp_path, monkeypatch, pretend_held_out):
+    """24 train and 12 val states of networks 10 and 25 in shards of 12, 12 val-day states that play calib
+    (conftest.pretend_held_out), their manifest, and a decoy test tree that nothing may open or list."""
     monkeypatch.setattr(fs, "OUT", tmp_path / "out")
     monkeypatch.setattr(fs, "N_STATES", {"train": 24, "val": 12, "calib": 12, "test": 12})
     monkeypatch.setattr(fs, "SHARD", 12)
