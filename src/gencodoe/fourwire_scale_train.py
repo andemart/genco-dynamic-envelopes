@@ -115,6 +115,11 @@ def set_determinism(deterministic: bool) -> dict:
     torch.backends.cudnn.benchmark = False
     torch.backends.cuda.matmul.allow_tf32 = False                    # FP32 without TF32 (§6), for every run
     torch.backends.cudnn.allow_tf32 = False
+    return numerical_settings()
+
+
+def numerical_settings() -> dict:
+    """The numerical mode in effect now (read at the start of a run and again at its end)."""
     return {"deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
             "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG"),
             "cudnn_benchmark": torch.backends.cudnn.benchmark,
@@ -144,10 +149,11 @@ def start_provenance(device: str, settings: dict) -> dict:
 
 
 def checkout_unchanged(start: dict) -> bool:
-    """HEAD, the modified flag and the source hash are the same as at the start."""
+    """HEAD, the modified flag, the source hash and the numerical mode are the same as at the start."""
     state = checkout_state()
     return (state["head"] == start["code_commit"] and state["src_dirty"] == start["src_dirty"]
-            and state["source_sha256"] == start["source_sha256"])
+            and state["source_sha256"] == start["source_sha256"]
+            and all(start[k] == v for k, v in numerical_settings().items()))
 
 
 def weights_sha(model) -> str:
@@ -232,7 +238,7 @@ def pooled_scales(tr: dict, statics: dict) -> tuple[np.ndarray, float, float]:
 def fit(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: int = 0,
         out_dir: Path | None = None, n_train: int | None = None, n_val: int | None = None,
         record_steps: bool = False, lr: float = CONFIG["lr"], patience: int = CONFIG["patience"],
-        init: dict | None = None) -> dict:
+        init: dict | None = None, prepared: bool = False) -> dict:
     """One fit on the first n_train train states (default N_PRE) and the val states of every network of
     pool. Batches hold states of one network (the model's graph context needs equal graph sizes); an epoch
     visits every training state once, with the batches of all networks shuffled.
@@ -241,12 +247,25 @@ def fit(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: i
     - The selected checkpoint is the epoch >= 1 with the lowest validation loss, the earliest on a tie
       (out_dir/best.pt); epoch 0 is recorded and not eligible.
     - A non-finite gradient ends the fit there (Amendment 7, item 4): the result names it and the
-      checkpoint is the one selected among the completed epochs.
-    out_dir must not exist: a run folder is never overwritten. n_val and record_steps serve the determinism
-    probe and dry runs. Deterministic algorithms are switched by set_determinism before this is called."""
+      checkpoint is the one selected among the completed epochs. A target scale that is zero or not finite
+      ends it before the first step. An epoch whose validation loss is not finite is never selected.
+    out_dir must not exist, or (prepared) hold neither a checkpoint nor a curve: a run folder is never
+    overwritten. Every epoch is appended to out_dir/curve.jsonl as it completes. n_val and record_steps
+    serve the determinism probe and dry runs. Deterministic algorithms are switched by set_determinism
+    before this is called."""
     n_train = N_PRE if n_train is None else n_train
     if out_dir is not None:
-        out_dir.mkdir(parents=True, exist_ok=False)
+        if not prepared:
+            out_dir.mkdir(parents=True, exist_ok=False)
+        elif (out_dir / "best.pt").exists() or (out_dir / "curve.jsonl").exists():
+            raise FileExistsError(out_dir)
+
+    def log(rec):                                                    # the curve, kept even if the run is killed
+        print(json.dumps(rec), flush=True)
+        if out_dir is not None:
+            with open(out_dir / "curve.jsonl", "a") as f:
+                f.write(json.dumps(rec) + "\n")
+
     torch.manual_seed(seed)
     np.random.seed(seed)
     dev = torch.device(device)
@@ -327,13 +346,17 @@ def fit(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: i
 
     rng = np.random.default_rng(seed)
     v0, _ = evaluate()
-    curve, best, best_ep, bad = [{"epoch": 0, "val_loss": v0, "note": "untrained = U1 prior"}], np.inf, -1, 0
-    print(json.dumps(curve[-1]), flush=True)
+    curve, best, best_ep, bad = [{"epoch": 0, "val_loss": v0, "note": "before training"}], np.inf, -1, 0
+    log(curve[-1])
     if dev.type == "cuda":
-        torch.cuda.reset_peak_memory_stats()
+        torch.cuda.reset_peak_memory_stats(dev)
     step_s, step_n, eval_s = {n: 0.0 for n in pool}, {n: 0 for n in pool}, {n: 0.0 for n in pool}
     step_losses, failure, selected_sha = [], None, None
-    for ep in range(1, epochs + 1):
+    scales = np.concatenate([rs, [vpn_scale, kvl_scale]])
+    if not (np.isfinite(scales).all() and (scales > 0).all()):
+        failure = {"what": "zero or non-finite target scale", "epoch": 0, "step_in_epoch": 0}
+        log({"numerical_failure": failure})
+    for ep in range(1, (0 if failure else epochs) + 1):
         t_ep = time.perf_counter()
         batches = []
         for n in pool:
@@ -360,7 +383,7 @@ def fit(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: i
                 step_s[n] += time.perf_counter() - t
                 step_n[n] += 1
         if failure is not None:                                       # the epoch is not completed
-            print(json.dumps({"numerical_failure": failure}), flush=True)
+            log({"numerical_failure": failure})
             break
         train_s = time.perf_counter() - t_ep
         sched.step()
@@ -371,10 +394,10 @@ def fit(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: i
         cuda = dev.type == "cuda"
         rec = {"epoch": ep, "train_loss": tl / max(nb, 1), "val_loss": vl, "epoch_s": time.perf_counter() - t_ep,
                "train_s": train_s, "eval_s": sum(secs.values()), "steps": nb,
-               "gpu_peak_allocated_mb": torch.cuda.max_memory_allocated() / 2 ** 20 if cuda else None,
-               "gpu_peak_reserved_mb": torch.cuda.max_memory_reserved() / 2 ** 20 if cuda else None}
+               "gpu_peak_allocated_mb": torch.cuda.max_memory_allocated(dev) / 2 ** 20 if cuda else None,
+               "gpu_peak_reserved_mb": torch.cuda.max_memory_reserved(dev) / 2 ** 20 if cuda else None}
         curve.append(rec)
-        print(json.dumps(rec), flush=True)
+        log(rec)
         if vl < best:
             best, best_ep, bad, selected_sha = vl, ep, 0, weights_sha(model)
             if out_dir is not None:
@@ -489,6 +512,21 @@ def all_fits() -> list[dict]:
     return fits
 
 
+def software() -> dict:
+    """The library versions a run uses (Amendment 7, item 5: one software stack for all final runs)."""
+    import numba
+    import scipy
+    import torch_geometric
+    try:
+        import opendssdirect
+        dss = opendssdirect.__version__
+    except ImportError:
+        dss = None
+    return {"python": platform.python_version(), "numpy": np.__version__, "scipy": scipy.__version__,
+            "torch": torch.__version__, "torch_cuda": torch.version.cuda, "torch_geometric": torch_geometric.__version__,
+            "numba": numba.__version__, "opendssdirect": dss}
+
+
 def input_hashes() -> dict:
     """What a run depends on besides the source: the label manifest (pinned in fourwire_scale_data) and the
     identification record, which holds every network's Thevenin equivalent and network-file hashes."""
@@ -496,21 +534,53 @@ def input_hashes() -> dict:
             "identification_sha256": fs._sha(fs.RESULTS / "fourwire_scale_identification.json")}
 
 
+def variant_networks_sha() -> str:
+    """SHA-256 over the converted files of every eligible network under the two rating variants (the primary
+    files are checked against the identification record whenever a network is loaded)."""
+    h = hashlib.sha256()
+    for n in fs.ELIGIBLE:
+        for variant in cc.RATING_VARIANTS:
+            if variant != "primary":
+                for f in sorted(fs.ensure_network_folder(n, variant).glob("*.dss")):
+                    h.update(f"{n}|{variant}|{f.name}|{fs._sha(f)}|".encode())
+    return h.hexdigest()
+
+
+def profiles_sha() -> str:
+    """Content hash of the Fluvius meter profiles (the envelope scenarios are drawn from them)."""
+    from .fluvius import GROUPS, load_group
+    h = hashlib.sha256()
+    for name in GROUPS:
+        g = load_group(name)
+        h.update(fs.content_sha({"ean": g.ean, "offtake_kw": g.offtake_kw, "injection_kw": g.injection_kw}).encode())
+    return h.hexdigest()
+
+
+JOB_SCRIPT = fs.ROOT / "scripts/hydra_fourwire_scale_final.slurm"
+
+
 def freeze() -> Path:
-    """Amendment 8, item 14: record the hash of the committed source that every final command must run."""
+    """Amendment 8, item 14: record what every final command must run with: the committed source, the label
+    manifest, the identification record, the rating-variant networks, the meter profiles, the job script and
+    the library versions of the machine the final runs use. Run it there, on unmodified source."""
     state = checkout_state()
     if state["src_dirty"]:
         raise RuntimeError("src/ differs from HEAD: commit it before freezing")
     files = {q.name: fs._sha(q) for q in sorted(Path(__file__).resolve().parent.glob("*.py"))}
     fs._write_json(freeze_file(), {"protocol": "docs/fourwire_scale_protocol.md Amendment 8, item 14",
                                    "source_sha256": state["source_sha256"], **input_hashes(),
-                                   "folds": folds(), "frozen_at_commit": state["head"], "files_sha256": files})
+                                   "variant_networks_sha256": variant_networks_sha(),
+                                   "profiles_sha256": profiles_sha(), "job_script_sha256": fs._sha(JOB_SCRIPT),
+                                   "software": software(), "folds": folds(), "frozen_at_commit": state["head"],
+                                   "files_sha256": files})
     return freeze_file()
 
 
-def check_freeze(prov: dict, deterministic: bool = True) -> None:
+def check_freeze(prov: dict, deterministic: bool = True, variants: bool = False, profiles: bool = False) -> dict:
     """A final command runs only when pinned to HEAD, from unmodified source equal to the freeze, with the
-    frozen inputs and the numerical mode it must use (deterministic algorithms, except for timing)."""
+    frozen inputs, job script and library versions, on an A100 when it uses CUDA, and in the numerical mode
+    it must use (deterministic algorithms, except for timing). variants and profiles: also check the
+    rating-variant networks (evaluation) and the meter profiles (envelopes). Returns the freeze."""
     fr = json.loads(freeze_file().read_text())
     problems = []
     if prov["gencodoe_commit"] != prov["code_commit"]:
@@ -521,10 +591,21 @@ def check_freeze(prov: dict, deterministic: bool = True) -> None:
         problems.append("the source differs from the freeze")
     if any(fr[k] != v for k, v in input_hashes().items()) or fr["folds"] != folds():
         problems.append("label manifest, identification record or folds differ from the freeze")
-    if prov["deterministic_algorithms"] != deterministic:
+    if fs._sha(JOB_SCRIPT) != fr["job_script_sha256"]:
+        problems.append("the job script differs from the freeze")
+    if software() != fr["software"]:
+        problems.append("library versions differ from the freeze")
+    if prov["cuda_device"] is not None and "A100" not in prov["cuda_device"]:
+        problems.append("not an A100")
+    if prov["deterministic_algorithms"] != deterministic or prov["tf32"]:
         problems.append("wrong numerical mode")
+    if variants and variant_networks_sha() != fr["variant_networks_sha256"]:
+        problems.append("rating-variant networks differ from the freeze")
+    if profiles and profiles_sha() != fr["profiles_sha256"]:
+        problems.append("meter profiles differ from the freeze")
     if problems:
         raise RuntimeError("not a final run: " + "; ".join(problems))
+    return fr
 
 
 def load_run(base: Path, name: str, device: str) -> dict:
@@ -536,6 +617,78 @@ def load_run(base: Path, name: str, device: str) -> dict:
     return {"record": rec, "state_dict": torch.load(ck, map_location=device, weights_only=True)}
 
 
+MAX_RERUNS = 2                     # Amendment 7, item 3
+
+
+def _attempt_running(folder: Path) -> bool:
+    """Is the attempt that owns a run folder still running? Its Slurm job is asked for; without Slurm, its
+    process on this machine."""
+    f = folder / "attempt.json"
+    if not f.exists():
+        return False
+    a = json.loads(f.read_text())
+    if a["job_id"]:
+        try:
+            out = subprocess.run(["squeue", "-h", "-j", a["job_id"].split("_")[0]], capture_output=True, text=True)
+            return bool(out.stdout.strip())
+        except FileNotFoundError:
+            pass
+    if a["node"] != platform.node() or a["pid"] == os.getpid():
+        return False
+    try:
+        os.kill(a["pid"], 0)
+        return True
+    except OSError:
+        return False
+
+
+def _slurm_state(job_id: str | None) -> str | None:
+    """How Slurm accounting says a job ended (for the record of a rerun); None where there is no Slurm."""
+    if not job_id:
+        return None
+    try:
+        out = subprocess.run(["sacct", "-n", "-X", "-j", job_id.split("_")[0], "-o", "State%40"],
+                             capture_output=True, text=True)
+        return out.stdout.strip() or None
+    except FileNotFoundError:
+        return None
+
+
+def _curve(folder: Path) -> dict:
+    """epoch -> (train loss, validation loss) of the epochs an attempt recorded."""
+    f = folder / "curve.jsonl"
+    rows = [json.loads(line) for line in f.read_text().splitlines()] if f.exists() else []
+    return {r["epoch"]: (r.get("train_loss"), r["val_loss"]) for r in rows if "epoch" in r}
+
+
+def claim_run_folder(base: Path, name: str, prov: dict) -> tuple[Path, list[Path]]:
+    """The run folder of a new attempt, and the folders of the earlier attempts of the same fit.
+    - A fit with a valid record is never rerun.
+    - A folder with an invalid record, or without one (a killed job), is set aside under another name; it is
+      refused while the attempt that owns it is still running, and after MAX_RERUNS earlier attempts.
+    - The new folder is created exclusively, so two attempts cannot both start."""
+    out_dir = base / name
+    base.mkdir(parents=True, exist_ok=True)
+    if out_dir.exists():
+        rec = out_dir / "record.json"
+        if rec.exists() and json.loads(rec.read_text())["valid"]:
+            raise FileExistsError(f"{name} has a valid record: a completed fit is never rerun")
+        if not rec.exists() and _attempt_running(out_dir):
+            raise RuntimeError(f"{name}: another attempt of this fit is running")
+        kind = "invalid" if rec.exists() else "incomplete"
+        k = 1
+        while (base / f"{name}.{kind}{k}").exists():
+            k += 1
+        out_dir.rename(base / f"{name}.{kind}{k}")
+    earlier = sorted(q for q in base.glob(f"{name}.*") if q.is_dir())
+    if len(earlier) > MAX_RERUNS:
+        raise RuntimeError(f"{name}: {len(earlier)} earlier attempts; a further rerun needs an amendment")
+    out_dir.mkdir(exist_ok=False)
+    fs._write_json(out_dir / "attempt.json", {"job_id": prov["job_id"], "node": prov["node"], "pid": os.getpid(),
+                                              "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+    return out_dir, earlier
+
+
 def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None, network: int | None = None,
               budget: int | None = None, seed: int = 0, dry: dict | None = None) -> Path:
     """One fit of §8 (Amendments 7 and 8). dry: None, or {"n_train", "n_val", "epochs"} for a dry run on
@@ -543,17 +696,10 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
     cfg = FITS[kind]
     name = run_name(kind, fold, network, budget, seed)
     base = runs(dry is not None)
-    out_dir = base / name
-    if (out_dir / "record.json").exists():
-        raise FileExistsError(f"{name} has a record: a completed fit is never rerun")
     prov = start_provenance(device, set_determinism(True))          # before anything is trained
     if dry is None:
         check_freeze(prov)
-    if out_dir.exists():                                             # an interrupted run: kept under another name
-        k = 1
-        while (base / f"{name}.incomplete{k}").exists():
-            k += 1
-        out_dir.rename(base / f"{name}.incomplete{k}")
+    out_dir, earlier = claim_run_folder(base, name, prov)
     store = fd.LabelStore(label_root)
     start = init = None
     if kind == "pgpre":
@@ -562,30 +708,48 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
         pool, n_train = [network], fs.N_STATES["train"] if kind == "pgnet" else budget
         fold = fold_of(network)
         if kind == "ft":                                             # the selected PG-pre checkpoint, same seed
-            start = load_run(base, run_name("pgpre", fold=fold, seed=seed), device)
-            init = {"state_dict": start["state_dict"], "scalers": start["record"]["scalers"]}
+            pre = json.loads((base / run_name("pgpre", fold=fold, seed=seed) / "record.json").read_text())
+            if not pre["valid"]:
+                raise AssertionError(f"{pre['name']}: no valid record")
+            start = {"record": pre}
+            if pre["checkpoint_sha256"] is not None:
+                start = load_run(base, pre["name"], device)
+                init = {"state_dict": start["state_dict"], "scalers": start["record"]["scalers"]}
     epochs, n_val = cfg["epochs"], None
     if dry is not None:
         n_train, n_val, epochs = min(n_train, dry["n_train"]), dry["n_val"], dry["epochs"]
     t0 = time.perf_counter()
-    res = fit(store, pool, epochs, device, seed=seed, out_dir=out_dir, n_train=n_train, n_val=n_val,
-              lr=cfg["lr"], patience=cfg["patience"], init=init)
+    if start is not None and init is None:                           # PG-pre ended without a model: neither has PG-ft
+        res = {"pool": pool, "seed": seed, "best_epoch": -1, "curve": [], "scalers": None,
+               "numerical_failure": {"what": f"{start['record']['name']} has no model"},
+               "initial_weights_sha256": None, "selected_weights_sha256": None}
+    else:
+        res = fit(store, pool, epochs, device, seed=seed, out_dir=out_dir, n_train=n_train, n_val=n_val,
+                  lr=cfg["lr"], patience=cfg["patience"], init=init, prepared=True)
     if start is not None and res["initial_weights_sha256"] != start["record"]["selected_weights_sha256"]:
         raise AssertionError("PG-ft did not start from the selected PG-pre weights")
     unchanged = checkout_unchanged(prov)
     ck = out_dir / "best.pt"
+    new = {c["epoch"]: (c.get("train_loss"), c["val_loss"]) for c in res["curve"]}
+    attempts = []
+    for q in earlier:                                                # a rerun must retrace what was recorded before
+        old = _curve(q)
+        a = json.loads((q / "attempt.json").read_text()) if (q / "attempt.json").exists() else {}
+        attempts.append({"folder": q.name, "job_id": a.get("job_id"), "started": a.get("started"),
+                         "slurm_state": _slurm_state(a.get("job_id")), "epochs_recorded": len(old),
+                         "reproduced_by_this_run": all(new.get(e) == v for e, v in old.items())})
     rec = {"protocol": "docs/fourwire_scale_protocol.md §4, §8, Amendments 5, 7 and 8", "name": name,
            "kind": kind, "fold": fold, "network": network, "budget": budget, "dry_run": dry, **prov,
-           "checkout_unchanged_during_run": unchanged, "label_commit": fd.LABEL_COMMIT, **input_hashes(),
+           "software": software(), "checkout_and_mode_unchanged_during_run": unchanged,
+           "label_commit": fd.LABEL_COMMIT, **input_hashes(),
            "started_from": None if start is None else {"name": start["record"]["name"],
                                                          "checkpoint_sha256": start["record"]["checkpoint_sha256"]},
-           "incomplete_attempts": sorted(q.name for q in base.glob(f"{name}.incomplete*")),
-           "fit_s": time.perf_counter() - t0, **res,
+           "earlier_attempts": attempts, "fit_s": time.perf_counter() - t0, **res,
            "checkpoint_sha256": fs._sha(ck) if ck.exists() else None}
     rec["valid"] = bool(unchanged and prov["deterministic_algorithms"])
     fs._write_json(out_dir / "record.json", rec)
     if not unchanged:
-        raise RuntimeError(f"the checkout differs from the start of the run; {name} is not a valid fit")
+        raise RuntimeError(f"the checkout or the numerical mode changed during the run; {name} is not a valid fit")
     return out_dir / "record.json"
 
 
@@ -657,13 +821,15 @@ def determinism_report(folder: Path, out: Path) -> dict:
         return p
 
     probs = {k: problems(k) for k in PROBE_RUNS}
-    build = ("code_commit", "source_sha256", "node", "cuda_device", "torch", "torch_geometric", "cuda", "cudnn")
+    build = ("code_commit", "source_sha256", "node", "cuda_device", "python", "numpy", "torch", "torch_geometric",
+             "cuda", "cudnn")
     same_build = len({tuple(runs[k][b] for b in build) for k in PROBE_RUNS}) == 1
+    mode = ("deterministic_algorithms", "cublas_workspace_config", "cudnn_benchmark", "cudnn_deterministic", "tf32")
 
     def pair(a, b):
-        if probs[a] or probs[b] or not same_build:
-            return {"valid": False}
         x, y = runs[a], runs[b]
+        if probs[a] or probs[b] or not same_build or any(x.get(k) != y.get(k) for k in mode):
+            return {"valid": False}
         d = np.abs(np.array(x["step_losses"]) - np.array(y["step_losses"]))
         return {"valid": True, "same_initial_weights": x["initial_weights_sha256"] == y["initial_weights_sha256"],
                 "same_final_weights": x["final_weights_sha256"] == y["final_weights_sha256"],

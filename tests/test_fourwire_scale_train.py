@@ -249,7 +249,8 @@ def test_one_network_target_scales_follow_the_enwl1_formulas(store):
 
 def _probe_run(deterministic, **changes):
     r = {"code_commit": "c" * 40, "gencodoe_commit": "c" * 40, "src_dirty": False, "source_sha256": "s" * 64,
-         "node": "node1", "cuda_device": "A100", "torch": "2", "torch_geometric": "2", "cuda": "12", "cudnn": 9,
+         "node": "node1", "cuda_device": "A100", "python": "3.12", "numpy": "2", "torch": "2", "torch_geometric": "2",
+         "cuda": "12", "cudnn": 9, "cublas_workspace_config": ":4096:8" if deterministic else None,
          "checkout_unchanged_during_run": True, "deterministic_algorithms": deterministic,
          "initial_weights_sha256": "i", "final_weights_sha256": "f", "step_losses": [1.0] * tt.PROBE_STEPS,
          "val_loss": [2.0, 1.0]}
@@ -284,3 +285,9 @@ def test_determinism_report_gives_no_verdict_on_invalid_runs(tmp_path):
     _write_probe(tmp_path / "other node", default_a=_probe_run(False, node="node2"))
     rep = tt.determinism_report(tmp_path / "other node", tmp_path / "other node.json")
     assert not rep["default"]["valid"] and not rep["deterministic_algorithms"]["valid"]
+    for name, run in {"inf val": _probe_run(True, val_loss=[2.0, float("inf")]),          # non-finite validation loss
+                      "other numpy": _probe_run(True, numpy="3"),
+                      "other mode": _probe_run(True, cublas_workspace_config=":16:8")}.items():
+        _write_probe(tmp_path / name, deterministic_a=run)
+        rep = tt.determinism_report(tmp_path / name, tmp_path / f"{name}.json")
+        assert not rep["deterministic_algorithms"]["valid"], name
