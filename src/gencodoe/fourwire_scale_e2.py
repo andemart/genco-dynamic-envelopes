@@ -246,7 +246,7 @@ def _models(network: int, device: str, dry: bool) -> tuple[dict, dict]:
             raise RuntimeError(f"networks {missing} have no valid evaluation record yet")
         rec_file, rec = ev.eval_dir() / f"network_{network}.json", ev.evaluation_record(network)
     name = tt.run_name("pgnet", network=network)
-    fit = tt.check_record(json.loads((tt.runs(dry) / name / "record.json").read_text()), name, dry)
+    fit = tt.fit_record(tt.runs(dry), name, dry)
     if fit["checkpoint_sha256"] != rec["methods"]["PG-net"]["checkpoint_sha256"]:
         raise AssertionError("the PG-net checkpoint is not the one that was evaluated")
     has_model = fit["checkpoint_sha256"] is not None
@@ -270,9 +270,13 @@ def _run_files(kind: str, network: int, dry: bool, prov: dict):
         folder = fs.OUT / "e2_dry"
         folder.mkdir(parents=True, exist_ok=True)
         return folder, folder / f"{kind}_network_{network}_{time.strftime('%Y%m%dT%H%M%S')}.json", []
-    out = fs.RESULTS / f"fourwire_scale_e2_{kind}" / f"network_{network}.json"
-    if out.exists():
+    out, done = fs.RESULTS / f"fourwire_scale_e2_{kind}" / f"network_{network}.json", fs.OUT / "e2" / f"{kind}_network_{network}"
+    if tt.completed(done, lambda rec: tt.check_final_record(rec, done.name, kind)):
+        tt.publish(done, out)                                         # also after a crash between the two writes
+        e2_record(kind, network)
         raise tt.AlreadyDone(f"{out.name}: a network has one {kind} run")
+    if out.exists():
+        raise RuntimeError(f"{out} exists without a completed run behind it")
     folder, earlier = tt.claim_run_folder(fs.OUT / "e2", f"{kind}_network_{network}", prov, final=True)
     return folder, out, earlier
 
@@ -281,9 +285,9 @@ def _write_record(folder: Path, out: Path, record: dict, dry: bool) -> None:
     if dry:
         fs._write_json(out, record)
     else:                                                             # the folder's record closes the claim
+        from . import fourwire_scale_train as tt
         fs._write_json(folder / "record.json", record)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_bytes((folder / "record.json").read_bytes())
+        tt.publish(folder, out)
 
 
 def e2_record(kind: str, network: int) -> dict:
@@ -291,14 +295,34 @@ def e2_record(kind: str, network: int) -> dict:
     copy in its run folder."""
     from . import fourwire_scale_train as tt
     f = fs.RESULTS / f"fourwire_scale_e2_{kind}" / f"network_{network}.json"
+    folder = fs.OUT / "e2" / f"{kind}_network_{network}"
     rec = json.loads(f.read_text())
-    if rec["network"] != network or rec["dry_run"] or not rec["valid"]:
-        raise AssertionError(f"{f}: not a valid final {kind} record of network {network}")
-    if rec["freeze_sha256"] != fs._sha(tt.freeze_file()):
-        raise AssertionError(f"{f}: made under another freeze")
-    if fs._sha(fs.OUT / "e2" / f"{kind}_network_{network}" / "record.json") != fs._sha(f):
+    if rec["network"] != network:
+        raise AssertionError(f"{f}: not the {kind} record of network {network}")
+    tt.check_final_record(rec, str(f), kind)
+    if fs._sha(folder / "record.json") != fs._sha(f):
         raise AssertionError(f"{f} differs from the record in its run folder")
+    if kind == "timing" and fs._sha(folder / rec["decisions_file"]) != rec["decisions_sha256"]:
+        raise AssertionError(f"{folder / rec['decisions_file']} does not have the hash of its record")
+    if kind == "envelopes":
+        check_envelopes(rec, str(f))
     return rec
+
+
+def check_envelopes(rec: dict, what: str) -> None:
+    """A final envelope record holds exactly the check of Amendment 9, item 7: the 12 days x 24 hours x 2
+    directions, each once, with the frozen settings, and the summary that follows from its intervals."""
+    want = {(day, day * 96 + 4 * hour, d) for day in envelope_days() for hour in range(24) for d in ("import", "export")}
+    got = [(r["day"], r["step"], r["direction"]) for r in rec["intervals"]]
+    settings = {"scenarios": N_SCENARIOS, "eps": EPS, "beta": BETA, "levels_per_round": LEVELS,
+                "relative_tolerance": REL_TOL, "cap_kw": CAP_KW, "mix_hp_ev_pv": list(MIX), "hours": 24,
+                "days": envelope_days()}
+    if len(got) != len(want) or set(got) != want:
+        raise AssertionError(f"{what}: not the {len(want)} intervals of the envelope check, each once")
+    if any(rec[k] != v for k, v in settings.items()):
+        raise AssertionError(f"{what}: not the frozen envelope settings")
+    if rec["summary"] != json.loads(json.dumps(envelope_summary(rec["intervals"]))):
+        raise AssertionError(f"{what}: the summary is not that of its intervals")
 
 
 def timing(network: int, device: str, dry: bool = False, warmup: int = WARMUP, repeats: int = REPEATS,
@@ -510,7 +534,7 @@ def envelopes(network: int, device: str, dry: bool = False, days: int | None = N
                                  "direction": direction,
                                  **{f"{k}_{a}": v for k, d in levels.items() for a, v in d.items()}})
             print(day, len(rows), flush=True)
-        unchanged = tt.checkout_unchanged(prov)
+        unchanged = tt.checkout_unchanged(prov, profiles=final)
         for d in count.values():
             d["fallback_share"] = d["to_fallback"] / max(d["states"], 1)
         _write_record(folder, out, {
@@ -520,7 +544,6 @@ def envelopes(network: int, device: str, dry: bool = False, days: int | None = N
             "beta": BETA, "acceptance_share": env.acceptance_threshold(N_SCENARIOS, EPS, BETA),
             "levels_per_round": LEVELS, "relative_tolerance": REL_TOL, "cap_kw": CAP_KW, "mix_hp_ev_pv": list(MIX),
             "pgnet_has_model": m["model"], "evaluator_b": count,
-            "complete": bool(final and len(rows) == 2 * 24 * len(envelope_days())),
             "summary": envelope_summary(rows), "intervals": rows}, dry)
         if not unchanged:
             raise RuntimeError(f"checkout, numerical mode, libraries or inputs changed during the run; "
@@ -575,18 +598,16 @@ def report() -> Path:
     """E2 from the final records of the six networks. Every record is checked against the freeze and against
     the copy in its run folder, and every per-state file against the hash its record names."""
     from . import fourwire_scale_eval as ev
+    from . import fourwire_scale_train as tt
+    if tt.halt_file().exists():
+        raise RuntimeError(f"the final runs are halted: {tt.halt_file().read_text()}")
     nets = []
     for n in E2_NETWORKS:
         tim, rec, envl = e2_record("timing", n), ev.evaluation_record(n), e2_record("envelopes", n)
-        if not rec["valid"] or not envl["complete"]:
-            raise AssertionError(f"network {n}: the evaluation is not valid or the envelope run is not complete")
         f = ev.eval_dir() / f"network_{n}.json"
         if not tim["evaluation_record_sha256"] == envl["evaluation_record_sha256"] == fs._sha(f):
             raise AssertionError(f"network {n}: timed or enveloped with the margins of another evaluation record")
-        z_file = fs.OUT / "e2" / f"timing_network_{n}" / tim["decisions_file"]
-        if fs._sha(z_file) != tim["decisions_sha256"]:
-            raise AssertionError(f"{z_file} does not have the hash of its record")
-        z, e = np.load(z_file), ev.per_state(n, rec)
+        z, e = np.load(fs.OUT / "e2" / f"timing_network_{n}" / tim["decisions_file"]), ev.per_state(n, rec)
         screens = {k: {a: rec["methods"][m]["screen"][a] for a in ("fallback_share", "false_safe",
                                                                   "cleared_indeterminate", "false_unsafe")}
                    for k, m in (("pgnet", "PG-net"), ("u1", "U1"))}

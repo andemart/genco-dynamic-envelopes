@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from test_fourwire_scale_eval import fit_all, study  # noqa: F401  (the tiny two-network study)
+from test_fourwire_scale_eval import final_fields, fit_all, study  # noqa: F401  (the tiny two-network study)
 
 from gencodoe import datakit_fluvius as dk
 from gencodoe import fourwire_scale as fs
@@ -174,8 +174,13 @@ def _e2_records(tmp, plan, later_false_safe=()):
     sha = lambda f: hashlib.sha256(f.read_bytes()).hexdigest()         # noqa: E731
     for d in ("results/fourwire_scale_e2_timing", "results/fourwire_scale_e2_envelopes", "results/fourwire_scale_eval"):
         (tmp / d).mkdir(parents=True)
-    freeze = tmp / "results/fourwire_scale_freeze.json"
-    freeze.write_text(json.dumps({"earlier_freezes_accepted_for": {"fits": [], "evaluation": []}}))
+    common = final_fields(tmp)
+    rows = [{"day": day, "step": day * 96 + 4 * hour, "direction": d, "A_level_kw": 3.0, "B_level_kw": 3.0}
+            for day in e2.envelope_days() for hour in range(24) for d in ("import", "export")]
+    envelope = {"intervals": rows, "summary": json.loads(json.dumps(e2.envelope_summary(rows))),
+                "scenarios": e2.N_SCENARIOS, "eps": e2.EPS, "beta": e2.BETA, "levels_per_round": e2.LEVELS,
+                "relative_tolerance": e2.REL_TOL, "cap_kw": e2.CAP_KW, "mix_hp_ev_pv": list(e2.MIX), "hours": 24,
+                "days": e2.envelope_days()}
     rng = np.random.default_rng(0)
     buses = {25: 79, 10: 94, 1: 397, 7: 876, 2: 1089, 17: 1668}
 
@@ -201,7 +206,7 @@ def _e2_records(tmp, plan, later_false_safe=()):
         np.savez(ef / "per_state.npz", **{"PG-net__codes": codes, "exact_safe": exact, "truth_safe": truth,
                                           "converged": np.array([1, 1, 0], bool)})
         put("fourwire_scale_eval", ef, f"network_{n}.json", {
-            "network": n, "valid": True, "dry_run": False, "freeze_sha256": sha(freeze), "per_state_file": "per_state.npz",
+            "network": n, **common, "per_state_file": "per_state.npz",
             "per_state_sha256": sha(ef / "per_state.npz"), "exact_sweep_vs_opendss": {},
             "methods": {k: {"screen": screen, "fallback_exact_engine": {}} for k in ("PG-net", "U1")}})
         ev_sha = sha(tmp / f"results/fourwire_scale_eval/network_{n}.json")
@@ -219,12 +224,11 @@ def _e2_records(tmp, plan, later_false_safe=()):
         tf.mkdir(parents=True)
         np.savez(tf / "decisions.npz", **arrays)
         put("fourwire_scale_e2_timing", tf, f"network_{n}.json", {
-            "network": n, "valid": True, "dry_run": False, "freeze_sha256": sha(freeze), "retained_buses": buses[n],
+            "network": n, **common, "retained_buses": buses[n],
             "allocated_cores": 16, "evaluation_record_sha256": ev_sha, "decisions_file": "decisions.npz",
             "decisions_sha256": sha(tf / "decisions.npz"), "repeats_with_other_decisions": {}, "batches": batches})
         put("fourwire_scale_e2_envelopes", tmp / f"out/e2/envelopes_network_{n}", f"network_{n}.json", {
-            "network": n, "valid": True, "dry_run": False, "freeze_sha256": sha(freeze), "complete": True,
-            "evaluation_record_sha256": ev_sha, "summary": {"agreement_criterion_met": True},
+            "network": n, **common, **envelope, "evaluation_record_sha256": ev_sha,
             "evaluator_b": {"import": {"fallback_share": 0.2}, "export": {"fallback_share": 0.1}}})
 
 
@@ -262,6 +266,7 @@ def test_report_applies_the_criterion_of_section_7(tmp_path, monkeypatch):
     assert by[1]["first_timed_repeat_vs_evaluation_record"] == {"pgnet_cpu": 0, "pgnet_gpu": 0}
     assert by[10]["first_timed_repeat_vs_evaluation_record"] == {"pgnet_cpu": 0, "pgnet_gpu": 1}
     assert by[1]["envelopes"]["evaluator_b"]["import"]["fallback_share"] == 0.2
+    assert by[1]["envelopes"]["both"]["intervals"] == 576 and by[1]["envelopes"]["agreement_criterion_met"]
     assert rep["loglog_exponent_of_p50_time_against_retained_buses"]["sweep_cpu"] > 0
 
 
@@ -289,12 +294,40 @@ def test_report_refuses_records_and_files_that_are_not_the_recorded_ones(tmp_pat
     with pytest.raises(AssertionError, match="does not have the hash of its record"):
         e2.report()
     z.write_bytes(kept)
-    f = tmp_path / "results/fourwire_scale_e2_envelopes/network_2.json"
+    f, g = tmp_path / "results/fourwire_scale_e2_envelopes/network_2.json", tmp_path / "out/e2/envelopes_network_2/record.json"
     kept = f.read_text()
-    f.write_text(kept.replace('"complete": true', '"complete": false'))   # an edited copy of a record
+    f.write_text(kept + " ")                                          # an edited copy of a record
     with pytest.raises(AssertionError, match="differs from the record in its run folder"):
         e2.report()
-    f.write_text(kept)
+
+    def both(change):
+        rec = json.loads(kept)
+        change(rec)
+        for x in (f, g):
+            x.write_text(json.dumps(rec))
+
+    both(lambda rec: rec["intervals"].pop())                          # an envelope record that is not the whole check
+    with pytest.raises(AssertionError, match="not the 576 intervals"):
+        e2.report()
+    both(lambda rec: rec["intervals"].__setitem__(0, rec["intervals"][1]))            # 576 rows, one of them twice
+    with pytest.raises(AssertionError, match="not the 576 intervals"):
+        e2.report()
+    both(lambda rec: rec.update(scenarios=50))
+    with pytest.raises(AssertionError, match="not the frozen envelope settings"):
+        e2.report()
+    both(lambda rec: rec["summary"]["both"].update(unsafe_envelopes=0, share_within_tolerance=0.5))
+    with pytest.raises(AssertionError, match="summary is not that of its intervals"):
+        e2.report()
+    both(lambda rec: rec.update(source_sha256="0" * 64))
+    with pytest.raises(AssertionError, match="source and libraries of its freeze"):
+        e2.report()
+    both(lambda rec: None)
+    e2.report()                                                       # restored: accepted again
+    (tmp_path / "out/runs/final").mkdir(parents=True)
+    tt.halt_file().write_text("{}")                                   # no report during a halt
+    with pytest.raises(RuntimeError, match="halted"):
+        e2.report()
+    tt.halt_file().unlink()
     g = tmp_path / "results/fourwire_scale_freeze.json"
     g.write_text(g.read_text() + " ")                                 # records of another freeze
     with pytest.raises(AssertionError, match="another freeze"):
@@ -329,7 +362,9 @@ def test_timing_and_envelope_runs_end_to_end_on_val_states(study, monkeypatch):
 
     env_out = e2.envelopes(25, "cpu", dry=True, days=1, hours=1)
     envl = json.loads(env_out.read_text())
-    assert [r["direction"] for r in envl["intervals"]] == ["import", "export"] and not envl["complete"]
+    assert [r["direction"] for r in envl["intervals"]] == ["import", "export"]
+    with pytest.raises(AssertionError, match="not the 576 intervals"):                # a dry run is not the check
+        e2.check_envelopes(envl, "dry")
     assert set(envl["evaluator_b"]) == {"import", "export"}                           # the fallback share, per direction
     assert all(0 <= d["fallback_share"] <= 1 and d["states"] > 0 for d in envl["evaluator_b"].values())
     assert envl["summary"]["both"]["intervals"] == 2 and envl["pgnet_has_model"]
