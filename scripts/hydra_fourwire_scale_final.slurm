@@ -1,18 +1,22 @@
 #!/bin/bash
 # Four-wire scale study: the final runs (docs/fourwire_scale_protocol.md §8, Amendments 7 to 9).
-# One script, five stages; the stage and the array say what a task does. Submit from the worktree that was
+# One script, six stages; the stage and the array say what a task does. Submit from the worktree that was
 # created for the frozen commit and is never moved, after `python -m gencodoe.fourwire_scale_eval networks`:
 #
-#   E="--export=ALL,GENCODOE_COMMIT=<full sha>,GENCODOE_WORKTREE=$PWD,GENCODOE_LABEL_ROOT=<label folder>"
-#   sbatch $E,GENCODOE_STAGE=pgpre     --array=0-11          --time=06:00:00 scripts/hydra_fourwire_scale_final.slurm
-#   sbatch $E,GENCODOE_STAGE=target    --array=1-12,14-25    --time=03:00:00 scripts/hydra_fourwire_scale_final.slurm
-#   sbatch $E,GENCODOE_STAGE=ft        --array=1-12,14-25    --time=01:30:00 --dependency=afterok:<pgpre job> ...
-#   sbatch $E,GENCODOE_STAGE=evaluate  --array=1-12,14-25    --time=01:30:00 --dependency=afterok:<target>:<ft> ...
-#   sbatch $E,GENCODOE_STAGE=timing    --array=25,10,1,7,2,17 --time=08:00:00 --cpus-per-task=16 --dependency=afterok:<evaluate> ...
-#   sbatch $E,GENCODOE_STAGE=envelopes --array=25,10,1,7,2,17 --time=04:00:00 --dependency=afterok:<evaluate> ...
+#   scripts/hydra_fourwire_scale_submit.sh <label folder> [<job ids of the A100 dry runs>]
+# which submits, with their dependencies:
+#   stage      array                 time limit   cores
+#   pgpre      0-11                  12 h         8
+#   target     1-12,14-25            6 h          8      PG-net and the five PG-scratch fits of a network
+#   ft         1-12,14-25            3 h          8      after every pgpre task
+#   evaluate   1-12,14-25            1.5 h        8      after every target and ft task
+#   timing     25,10,1,7,2,17        8 h          16     after every evaluate task
+#   envelopes  25,10,1,7,2,17        4 h          8      after every evaluate task
 #
 # pgpre: task = 3 x fold + seed. Every other stage: task = network number.
-# A fit that already has a record is skipped: a completed fit is never rerun (Amendment 7).
+# A run with a valid record is skipped (the command says so with exit code 10): it is never run again.
+# Whether an attempt that left no valid record may be run again is decided by the command (Amendment 7).
+# An error inside a final run halts every later final command (data_out/fourwire_scale/runs/final/HALT.json).
 #SBATCH --job-name=fwscale-final
 #SBATCH --partition=ampere_gpu
 #SBATCH --gpus=1
@@ -35,15 +39,19 @@ nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
 T=$SLURM_ARRAY_TASK_ID
 echo "commit=$HEAD node=$(hostname) cpus=$SLURM_CPUS_PER_TASK stage=$GENCODOE_STAGE task=$T"
 PY=.venv/bin/python
-RUNS=data_out/fourwire_scale/runs/final
 FAILED=0
 
+run() {  # run <what> <python module and arguments>: 10 means "it has a valid record", which is a skip
+  local what=$1; shift
+  echo "RUN $what"
+  $PY -m "$@"
+  local rc=$?
+  if [ $rc -eq 10 ]; then echo "SKIP $what: it has a valid record"
+  elif [ $rc -ne 0 ]; then echo "FAILED $what (exit $rc)"; FAILED=1; fi
+}
 fit() {  # fit <run name> <arguments of the fit command>
   local name=$1; shift
-  if [ -f "$RUNS/$name/record.json" ]; then echo "SKIP $name: it has a record"; return; fi
-  echo "FIT $name"
-  $PY -m gencodoe.fourwire_scale_train fit --label-root "$GENCODOE_LABEL_ROOT" --device cuda "$@" \
-    || { echo "FAILED $name"; FAILED=1; }
+  run "$name" gencodoe.fourwire_scale_train fit --label-root "$GENCODOE_LABEL_ROOT" --device cuda "$@"
 }
 
 case "$GENCODOE_STAGE" in
@@ -59,11 +67,11 @@ case "$GENCODOE_STAGE" in
     for s in 0 1 2; do fit "ft_net${T}_b1000_seed$s" --kind ft --network "$T" --budget 1000 --seed $s; done
     fit "ft_net${T}_b5000_seed0" --kind ft --network "$T" --budget 5000 --seed 0 ;;
   evaluate)
-    $PY -m gencodoe.fourwire_scale_eval evaluate --network "$T" --label-root "$GENCODOE_LABEL_ROOT" --device cuda || FAILED=1 ;;
+    run "evaluation of network $T" gencodoe.fourwire_scale_eval evaluate --network "$T" --label-root "$GENCODOE_LABEL_ROOT" --device cuda ;;
   timing)
-    $PY -m gencodoe.fourwire_scale_e2 timing --network "$T" --device cuda || FAILED=1 ;;
+    run "timing of network $T" gencodoe.fourwire_scale_e2 timing --network "$T" --device cuda ;;
   envelopes)
-    $PY -m gencodoe.fourwire_scale_e2 envelopes --network "$T" --device cuda || FAILED=1 ;;
+    run "envelopes of network $T" gencodoe.fourwire_scale_e2 envelopes --network "$T" --device cuda ;;
   *) echo "ABORT: unknown stage $GENCODOE_STAGE"; exit 4 ;;
 esac
 exit $FAILED
