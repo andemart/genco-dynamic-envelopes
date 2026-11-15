@@ -2,19 +2,22 @@
 
     python -m gencodoe.fourwire_scale_train smoke --label-root <dir> --fold 0 --epochs 3 --device cuda
     python -m gencodoe.fourwire_scale_train determinism --label-root <dir> --device cuda [--deterministic] --out <file>
+    python -m gencodoe.fourwire_scale_train determinism-report --out-dir <dir with the four runs> --out <file>
 
 PhaseGraph (fourwire_model.GNS_heterogeneous_4wire) pretrained on the 18 networks outside a fold: the first
 5,000 train states of each, validation on their val states, with the ENWL1 amendment 1 configuration and
 loss of fourwire_train, unchanged. Labels are read through fourwire_scale_data.LabelStore: train and val
 only, from the label root given on the command line.
 
-smoke writes results/fourwire_scale_smoke_pgpre_<job>.json: peak GPU memory, epoch time, time per step and
-per validation state for each network, and the fit-only projection of the §8 fits. The commit is read
-before the run (GENCODOE_COMMIT, when set, must equal HEAD) and the checkout must not move during it.
+smoke writes results/fourwire_scale_smoke_pgpre_fold<f>_<job>.json: peak GPU memory, epoch time, time per
+step and per validation state for each network, and the fit-only projection of the §8 fits. The commit and
+a hash of src/gencodoe are read before the run (GENCODOE_COMMIT, when set, must equal HEAD) and compared
+again at the end. That detects a checkout that is different at the end; only a checkout that is never
+moved guarantees more.
 
 determinism trains 32 steps on networks 10 and 17 and writes the initial-weight hash, every step loss and
 the final-weight hash, so that two processes can be compared bit for bit, with or without PyTorch's
-deterministic algorithms.
+deterministic algorithms. determinism-report compares the pairs and refuses a verdict on invalid runs.
 """
 from __future__ import annotations
 
@@ -25,6 +28,7 @@ import os
 import platform
 import resource
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -56,32 +60,62 @@ def pool_of(fold: int) -> list[int]:
     return sorted(set(fs.ELIGIBLE) - set(folds()[fold]))
 
 
+def source_sha() -> str:
+    """SHA-256 over the names and contents of src/gencodoe/*.py in the checkout this code runs in."""
+    h = hashlib.sha256()
+    for p in sorted(Path(__file__).resolve().parent.glob("*.py")):
+        h.update(p.name.encode())
+        h.update(p.read_bytes())
+    return h.hexdigest()
+
+
 def checkout_state() -> dict:
-    """HEAD of the checkout this code runs in, and whether src/ differs from it."""
-    git = lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, cwd=fs.ROOT).stdout.strip()  # noqa: E731
-    return {"head": git("rev-parse", "HEAD"), "src_dirty": bool(git("status", "--porcelain", "src"))}
+    """HEAD of the checkout this code runs in, whether src/ differs from it, and the source hash."""
+    def git(*a):
+        return subprocess.run(["git", *a], capture_output=True, text=True, cwd=fs.ROOT, check=True).stdout.strip()
+    return {"head": git("rev-parse", "HEAD"), "src_dirty": bool(git("status", "--porcelain", "src")),
+            "source_sha256": source_sha()}
 
 
-def start_provenance(device: str) -> dict:
+def set_determinism(deterministic: bool) -> dict:
+    """Switch PyTorch's deterministic algorithms on or off explicitly. Call before the first CUDA call.
+    Returns the settings in effect, not the request."""
+    if deterministic:
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    torch.use_deterministic_algorithms(deterministic)
+    torch.backends.cudnn.benchmark = False
+    return {"deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
+            "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG"),
+            "cudnn_benchmark": torch.backends.cudnn.benchmark,
+            "cudnn_deterministic": torch.backends.cudnn.deterministic}
+
+
+def start_provenance(device: str, settings: dict) -> dict:
     """Read before a run. GENCODOE_COMMIT, set by the job script, must equal HEAD."""
     import torch_geometric
     state, pinned = checkout_state(), os.environ.get("GENCODOE_COMMIT")
     if pinned is not None and pinned != state["head"]:
         raise RuntimeError(f"GENCODOE_COMMIT {pinned} != HEAD {state['head']}")
-    cuda = device.startswith("cuda")
+    dev = torch.device(device)
+    cuda = dev.type == "cuda"
+    job = os.environ.get("SLURM_JOB_ID")
+    task = os.environ.get("SLURM_ARRAY_TASK_ID")
     return {"code_commit": state["head"], "gencodoe_commit": pinned, "src_dirty": state["src_dirty"],
-            "job_id": os.environ.get("SLURM_JOB_ID"), "node": platform.node(), "platform": platform.platform(),
-            "cpus": os.cpu_count(), "python": platform.python_version(), "numpy": np.__version__,
-            "torch": torch.__version__, "torch_geometric": torch_geometric.__version__, "device": device,
+            "source_sha256": state["source_sha256"], "job_id": f"{job}_{task}" if job and task else job,
+            "node": platform.node(), "platform": platform.platform(), "cpus": os.cpu_count(),
+            "python": platform.python_version(), "numpy": np.__version__, "torch": torch.__version__,
+            "torch_geometric": torch_geometric.__version__, "device": device, **settings,
             "cuda": torch.version.cuda if cuda else None,
             "cudnn": torch.backends.cudnn.version() if cuda else None,
-            "cuda_device": torch.cuda.get_device_name(0) if cuda else None,
-            "cuda_total_mb": torch.cuda.get_device_properties(0).total_memory / 2 ** 20 if cuda else None}
+            "cuda_device": torch.cuda.get_device_name(dev) if cuda else None,
+            "cuda_total_mb": torch.cuda.get_device_properties(dev).total_memory / 2 ** 20 if cuda else None}
 
 
 def checkout_unchanged(start: dict) -> bool:
+    """HEAD, the modified flag and the source hash are the same as at the start."""
     state = checkout_state()
-    return state["head"] == start["code_commit"] and state["src_dirty"] == start["src_dirty"]
+    return (state["head"] == start["code_commit"] and state["src_dirty"] == start["src_dirty"]
+            and state["source_sha256"] == start["source_sha256"])
 
 
 def weights_sha(model) -> str:
@@ -158,18 +192,15 @@ def pooled_scales(tr: dict, statics: dict) -> tuple[np.ndarray, float, float]:
 
 def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, seed: int = 0,
              out_dir: Path | None = None, n_train: int | None = None, n_val: int | None = None,
-             deterministic: bool = False, record_steps: bool = False) -> dict:
+             record_steps: bool = False) -> dict:
     """One PG-pre fit on the first N_PRE train states and the val states of every pool network. Batches
     hold states of one network (the model's graph context needs equal graph sizes); an epoch visits every
     training state once, with the batches of all networks shuffled. out_dir must not exist: a run folder is
-    never overwritten. n_train, n_val, deterministic and record_steps serve the determinism probe."""
+    never overwritten. n_train, n_val and record_steps serve the determinism probe. Deterministic
+    algorithms are switched by set_determinism before this is called."""
     n_train = N_PRE if n_train is None else n_train
     if out_dir is not None:
         out_dir.mkdir(parents=True, exist_ok=False)
-    if deterministic:                                                  # must precede the first CUDA call
-        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
-        torch.use_deterministic_algorithms(True)
-        torch.backends.cudnn.benchmark = False
     torch.manual_seed(seed)
     np.random.seed(seed)
     dev = torch.device(device)
@@ -298,7 +329,9 @@ def pretrain(store: fd.LabelStore, pool: list[int], epochs: int, device: str, se
                 break
     timed = max(len(curve) - 2, 0)                                    # epochs after the first
     return {"pool": pool, "seed": seed, "config": CONFIG, "n_params": sum(p.numel() for p in model.parameters()),
-            "deterministic_algorithms": deterministic, "initial_weights_sha256": initial_sha,
+            "epochs_requested": epochs, "scheduler_t_max": max(epochs, 1),
+            "deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
+            "initial_weights_sha256": initial_sha,
             "final_weights_sha256": weights_sha(model), **({"step_losses": step_losses} if record_steps else {}),
             "states": {"train_per_network": n_train, "train": int(sum(len(tr[n]["x"]) for n in pool)),
                        "train_converged": int(sum(tr[n]["conv"].sum() for n in pool)),
@@ -349,60 +382,124 @@ def projection(per_network: dict, buses: dict) -> dict:
             "gpu_hours_total": sum(hours.values())}
 
 
-def smoke(label_root: Path, fold: int, epochs: int, device: str) -> Path:
+def smoke(label_root: Path, fold: int, epochs: int, device: str, deterministic: bool = False) -> Path:
     if epochs < 2:
         raise ValueError("the smoke needs at least 2 epochs: the first one is not timed")
-    prov = start_provenance(device)                                   # before anything is trained
+    prov = start_provenance(device, set_determinism(deterministic))   # before anything is trained
     tag = f"job{prov['job_id']}" if prov["job_id"] else time.strftime("local%Y%m%dT%H%M%S")
-    out = fs.RESULTS / f"fourwire_scale_smoke_pgpre_{tag}.json"
+    out = fs.RESULTS / f"fourwire_scale_smoke_pgpre_fold{fold}_{tag}.json"
     if out.exists():
         raise FileExistsError(out)
     store = fd.LabelStore(label_root)
     res = pretrain(store, pool_of(fold), epochs, device, out_dir=fs.OUT / "runs" / f"pgpre_fold{fold}_seed0_smoke_{tag}")
     buses = {u["network"]: u["retained_buses"] for u in json.loads(fd.MANIFEST.read_text())["splits"]}
     unchanged = checkout_unchanged(prov)
+    if out.exists():
+        raise FileExistsError(out)
     fs._write_json(out, {
         "protocol": "docs/fourwire_scale_protocol.md §9 gate 5 (smoke fit, train and val only)",
         **prov, "checkout_unchanged_during_run": unchanged,
         "label_commit": fd.LABEL_COMMIT, "label_root_name": Path(label_root).name, "fold": fold, "folds": folds(),
-        "held_out": folds()[fold], "epochs_requested": epochs,
-        **res, "projection": projection(res["per_network"], buses)})
+        "held_out": folds()[fold], **res, "projection": projection(res["per_network"], buses)})
     if not unchanged:
-        raise RuntimeError(f"the checkout moved during the run; {out.name} is written but not a valid record")
+        raise RuntimeError(f"the checkout differs from the start of the run; {out.name} is not a valid record")
     return out
+
+
+PROBE_RUNS = ("default_a", "default_b", "deterministic_a", "deterministic_b")
+PROBE_STEPS = 32
 
 
 def determinism(label_root: Path, device: str, deterministic: bool, out: Path) -> Path:
     """32 training steps on networks 10 and 17 (500 train and 500 val states each), every step loss kept.
-    Two processes with the same settings are bit-identical only if training is deterministic."""
-    prov = start_provenance(device)
+    Two processes with the same settings are bit-identical only if training is deterministic. An error is
+    recorded with its type; only a missing deterministic implementation says something about determinism."""
+    if out.exists():
+        raise FileExistsError(out)
+    prov = start_provenance(device, set_determinism(deterministic))
     rec = {**prov, "deterministic_requested": deterministic}
     try:
-        res = pretrain(fd.LabelStore(label_root), [10, 17], 1, device, n_train=500, n_val=500,
-                       deterministic=deterministic, record_steps=True)
-        rec.update({k: res[k] for k in ("initial_weights_sha256", "final_weights_sha256", "step_losses")})
+        res = pretrain(fd.LabelStore(label_root), [10, 17], 1, device, n_train=500, n_val=500, record_steps=True)
+        rec.update({k: res[k] for k in ("initial_weights_sha256", "final_weights_sha256", "step_losses",
+                                        "epochs_requested", "scheduler_t_max")})
         rec["val_loss"] = [c["val_loss"] for c in res["curve"]]
-    except RuntimeError as e:                                          # an operation without a deterministic form
-        rec["error"] = str(e)
+    except RuntimeError as e:
+        rec.update({"error_type": type(e).__name__, "error": str(e),
+                    "missing_deterministic_implementation": "deterministic" in str(e).lower()})
     rec["checkout_unchanged_during_run"] = checkout_unchanged(prov)
     fs._write_json(out, rec)
     return out
 
 
+def determinism_report(folder: Path, out: Path) -> dict:
+    """Compare the two default runs with each other and the two deterministic runs with each other. A pair
+    gets a verdict only if both runs are valid: pinned commit equal to HEAD, unmodified and unchanged
+    source, the requested setting in effect, all 32 step losses finite, no error, and the four runs share
+    commit, source, node, GPU and library versions."""
+    if out.exists():
+        raise FileExistsError(out)
+    runs = {k: json.loads((folder / f"{k}.json").read_text()) for k in PROBE_RUNS}
+
+    def problems(k):
+        r, p = runs[k], []
+        if "error" in r:
+            p.append(f"error: {r['error_type']}")
+        elif len(r["step_losses"]) != PROBE_STEPS or not np.isfinite(r["step_losses"]).all():
+            p.append("step losses incomplete or not finite")
+        if r["gencodoe_commit"] != r["code_commit"]:
+            p.append("commit not pinned")
+        if r["src_dirty"] or not r["checkout_unchanged_during_run"]:
+            p.append("source modified or checkout changed")
+        if r["deterministic_algorithms"] != k.startswith("deterministic"):
+            p.append("requested setting not in effect")
+        return p
+
+    probs = {k: problems(k) for k in PROBE_RUNS}
+    build = ("code_commit", "source_sha256", "node", "cuda_device", "torch", "torch_geometric", "cuda", "cudnn")
+    same_build = len({tuple(runs[k][b] for b in build) for k in PROBE_RUNS}) == 1
+
+    def pair(a, b):
+        if probs[a] or probs[b] or not same_build:
+            return {"valid": False}
+        x, y = runs[a], runs[b]
+        d = np.abs(np.array(x["step_losses"]) - np.array(y["step_losses"]))
+        return {"valid": True, "same_initial_weights": x["initial_weights_sha256"] == y["initial_weights_sha256"],
+                "same_final_weights": x["final_weights_sha256"] == y["final_weights_sha256"],
+                "identical_step_losses": x["step_losses"] == y["step_losses"],
+                "identical_val_losses": x["val_loss"] == y["val_loss"], "steps": len(d),
+                "first_step_that_differs": int(np.flatnonzero(d > 0)[0]) if (d > 0).any() else None,
+                "max_abs_step_loss_difference": float(d.max())}
+
+    rep = {"what": "two processes per setting, 32 PG-pre training steps on networks 10 and 17 (train and val "
+                   "only); a falsification probe, not a certificate for a full fit",
+           "problems": probs, "same_commit_source_node_gpu_and_libraries": same_build,
+           "default": pair("default_a", "default_b"),
+           "deterministic_algorithms": pair("deterministic_a", "deterministic_b"), "runs": runs}
+    fs._write_json(out, rep)
+    return rep
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["smoke", "determinism"])
-    ap.add_argument("--label-root", type=Path, required=True, help="folder holding <split>/network_N/ label shards")
+    ap.add_argument("cmd", choices=["smoke", "determinism", "determinism-report"])
+    ap.add_argument("--label-root", type=Path, help="folder holding <split>/network_N/ label shards")
     ap.add_argument("--fold", type=int, default=0, choices=range(4))
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--device", default="cpu")
-    ap.add_argument("--deterministic", action="store_true", help="determinism: use PyTorch's deterministic algorithms")
-    ap.add_argument("--out", type=Path, help="determinism: output file")
+    ap.add_argument("--deterministic", action="store_true", help="use PyTorch's deterministic algorithms")
+    ap.add_argument("--out", type=Path, help="determinism, determinism-report: output file")
+    ap.add_argument("--out-dir", type=Path, help="determinism-report: folder with the four probe runs")
     a = ap.parse_args()
+    if a.cmd == "determinism-report":
+        rep = determinism_report(a.out_dir, a.out)
+        print(json.dumps({k: rep[k] for k in rep if k != "runs"}, indent=1))
+        sys.exit(0 if rep["default"]["valid"] and rep["deterministic_algorithms"]["valid"] else 4)
+    if a.label_root is None:
+        ap.error("--label-root is required")
     if a.cmd == "determinism":
         print(determinism(a.label_root, a.device, a.deterministic, a.out))
     else:
-        print(smoke(a.label_root, a.fold, a.epochs, a.device))
+        print(smoke(a.label_root, a.fold, a.epochs, a.device, a.deterministic))
 
 
 if __name__ == "__main__":

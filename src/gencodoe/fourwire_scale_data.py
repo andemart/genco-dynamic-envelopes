@@ -3,18 +3,25 @@ Amendments 4 and 5).
 
 The only label reader for training, smoke, debugging and calibration code.
 - It serves train, val and calib. Any other split is refused before a path is built.
-- The manifest and the label commit are fixed here; the caller supplies only the label root.
-- It never lists a directory. A file is read only if its manifest name is shard_NNN.npz and its resolved
-  path is exactly <root>/<split>/network_<n>/<name>, so a symbolic link or a path with ".." cannot redirect
-  a read into another split's folder.
+- The manifest, its SHA-256 and the label commit are fixed here; the caller supplies only the label root.
+- It never lists a directory. A file is read only if its manifest name is shard_NNN.npz, its resolved path
+  is exactly <root>/<split>/network_<n>/<name>, and it is a regular file with a single hard link. A symbolic
+  link, a path with ".." or a hard link below the root therefore cannot redirect a read into another
+  split's folder.
+- Limits: the label root itself is trusted as given (it may be an alias), and the path check and the read
+  are two steps. This guards against mistakes in our own code and data layout, not against a process that
+  changes the file system while a shard is being opened.
 - Before a split's states are returned they are checked against the committed manifest
   (results/fourwire_scale_labels_manifest.json): the label commit, the split's state count, contiguous
   shards, and the content hash and provenance of every shard that is read.
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import re
+import stat
 from pathlib import Path
 
 import numpy as np
@@ -24,6 +31,7 @@ from .fourwire_scale import RESULTS, content_sha
 SERVED = ("train", "val", "calib")
 LABEL_COMMIT = "6ad2af67233ebb162ece7640cd047e1a4f1dd631"
 MANIFEST = RESULTS / "fourwire_scale_labels_manifest.json"
+MANIFEST_SHA256 = "5625aa637941593ba7212abc69bd277cac58afcf57ff482b23749742785b7dc9"
 SHARD_NAME = re.compile(r"shard_\d{3}\.npz")
 
 
@@ -31,7 +39,10 @@ class LabelStore:
     def __init__(self, root):
         """root: the folder holding <split>/network_N/shard_NNN.npz."""
         self.root = Path(root).resolve()
-        man = json.loads(MANIFEST.read_text())
+        raw = MANIFEST.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != MANIFEST_SHA256:
+            raise AssertionError(f"{MANIFEST.name} is not the frozen label manifest (SHA-256 differs)")
+        man = json.loads(raw)
         if man["label_code_commits"] != [LABEL_COMMIT]:
             raise AssertionError(f"manifest label commits {man['label_code_commits']} != [{LABEL_COMMIT}]")
         self.states, self.shard = man["states"], man["shard_states"]
@@ -39,7 +50,11 @@ class LabelStore:
 
     def _path(self, network: int, split: str, name: str) -> Path:
         path = self.root / split / f"network_{int(network)}" / name
-        if not SHARD_NAME.fullmatch(name) or path.resolve() != path:
+        ok = SHARD_NAME.fullmatch(name) is not None and path.resolve() == path
+        if ok:
+            st = os.lstat(path)
+            ok = stat.S_ISREG(st.st_mode) and st.st_nlink == 1
+        if not ok:
             raise AssertionError(f"{split}/network_{network}/{name} is not a plain shard file under the label root")
         return path
 

@@ -1,6 +1,7 @@
 """Training-side label access and the PG-pre smoke of the 25-network study
 (docs/fourwire_scale_protocol.md §2.6, §4, §9 gate 5). Tiny label sets of networks 10 and 25, train/val/calib."""
 import builtins
+import hashlib
 import inspect
 import io
 import json
@@ -9,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
 
 from gencodoe import datakit_fluvius as dk
 from gencodoe import fourwire_model as fm
@@ -23,6 +25,12 @@ pytestmark = pytest.mark.skipif(not (dk.ROOT / "data_out/fluvius/geen_ZP.npz").e
                                 reason="Fluvius meter profiles not available")
 COMMIT = "0" * 40
 POOL = [10, 25]
+
+
+def use_manifest(monkeypatch, path):
+    """Make a manifest file the frozen one: path and SHA-256, as the code pins them."""
+    monkeypatch.setattr(fd, "MANIFEST", path)
+    monkeypatch.setattr(fd, "MANIFEST_SHA256", hashlib.sha256(path.read_bytes()).hexdigest())
 
 
 @pytest.fixture
@@ -41,7 +49,7 @@ def store(tmp_path, monkeypatch):
     decoy.mkdir(parents=True)
     (decoy / "shard_000.npz").write_bytes(b"not for training code")
     (decoy / "manifest.json").write_text("{}")
-    monkeypatch.setattr(fd, "MANIFEST", manifest)                   # the store takes only the label root
+    use_manifest(monkeypatch, manifest)                             # the store takes only the label root
     monkeypatch.setattr(fd, "LABEL_COMMIT", COMMIT)
     return fd.LabelStore(tmp_path / "out/labels")
 
@@ -105,18 +113,27 @@ def test_loader_verifies_before_exposing_states(store, tmp_path, monkeypatch):
     unit["shards"] = unit["shards"][:1]                             # a split with a missing shard
     (tmp_path / "short.json").write_text(json.dumps(man))
     monkeypatch.setattr(fd, "MANIFEST", tmp_path / "short.json")
+    with pytest.raises(AssertionError, match="SHA-256 differs"):      # a replaced manifest is not accepted
+        fd.LabelStore(store.root)
+    use_manifest(monkeypatch, tmp_path / "short.json")
     with pytest.raises(AssertionError, match="not the frozen label set"):
         fd.LabelStore(store.root).load(25, "train", 12)
 
 
-def test_loader_cannot_be_redirected_into_another_split(store, test_tree_guard, tmp_path, monkeypatch):
-    """A manifest name with '..', a linked shard or a linked folder is refused before any byte is read."""
+def test_loader_refuses_links_and_climbing_names_below_the_root(store, test_tree_guard, tmp_path, monkeypatch):
+    """Four constructed cases, each refused before any byte is read: a shard that is a symbolic link, a
+    shard that is a hard link, a linked network folder, and a manifest name with '..'. Not covered: an
+    alias of the label root itself (trusted by design) and a file system that changes during the read."""
     decoy = store.root / "test/network_25/shard_000.npz"
     val = store.root / "val/network_25"
     (val / "shard_000.npz").unlink()
     (val / "shard_000.npz").symlink_to(decoy)                       # a shard that is a link into the test tree
     with pytest.raises(AssertionError, match="not a plain shard file"):
         store.load(25, "val")
+    (store.root / "val/network_10/shard_000.npz").unlink()
+    os.link(decoy, store.root / "val/network_10/shard_000.npz")     # a hard link to a test-tree file
+    with pytest.raises(AssertionError, match="not a plain shard file"):
+        store.load(10, "val")
     (store.root / "calib/network_25").rename(tmp_path / "moved")
     (store.root / "calib/network_25").symlink_to(store.root / "test/network_25")   # a linked folder
     with pytest.raises(AssertionError, match="not a plain shard file"):
@@ -125,7 +142,7 @@ def test_loader_cannot_be_redirected_into_another_split(store, test_tree_guard, 
     unit = next(u for u in man["splits"] if (u["network"], u["split"]) == (25, "train"))
     unit["shards"][0]["file"] = "../../test/network_25/shard_000.npz"                # a path that climbs out
     (tmp_path / "evil.json").write_text(json.dumps(man))
-    monkeypatch.setattr(fd, "MANIFEST", tmp_path / "evil.json")
+    use_manifest(monkeypatch, tmp_path / "evil.json")
     with pytest.raises(AssertionError, match="not a plain shard file"):
         fd.LabelStore(store.root).load(25, "train", 12)
     assert test_tree_guard == []
@@ -154,7 +171,9 @@ def test_training_and_smoke_never_open_or_list_the_test_tree(store, test_tree_gu
     assert test_tree_guard == [] and decoy.exists()
     assert rep["code_commit"] == rep["gencodoe_commit"] == head and rep["checkout_unchanged_during_run"]
     assert len(rep["initial_weights_sha256"]) == 64 and rep["initial_weights_sha256"] != rep["final_weights_sha256"]
-    assert report.name.startswith("fourwire_scale_smoke_pgpre_local") and "upper bound" not in report.read_text()
+    assert report.name.startswith("fourwire_scale_smoke_pgpre_fold0_local") and "upper bound" not in report.read_text()
+    assert rep["deterministic_algorithms"] is False and rep["scheduler_t_max"] == rep["epochs_requested"] == 2
+    assert rep["source_sha256"] == tt.source_sha()
     run = next((fs.OUT / "runs").iterdir())
     with pytest.raises(FileExistsError):                             # a run folder is never overwritten
         tt.pretrain(store, POOL, 1, "cpu", out_dir=run)
@@ -201,22 +220,67 @@ def test_projection_counts_the_runs_of_section_8():
     assert np.isclose(p["gpu_hours_total"], sum(h.values())) and p["fits"]["train_ms_per_step"]["r2"] > 0.999
 
 
-def test_cpu_training_is_bit_reproducible_and_scales_match_the_enwl1_formulas(store):
-    """Two fits with the same seed on CPU: same initial weights, step losses and final weights. For a pool
-    of one network the pooled target scales are the ENWL1 ones (fourwire_train.run_fit), up to its use of
-    the sample standard deviation in float32 for the V_pn scale."""
+def test_two_cpu_fits_in_one_process_are_bit_identical(store):
+    """Default settings, two optimiser steps each. Separate processes and the deterministic mode are covered
+    by the determinism command, not here."""
     runs = [tt.pretrain(store, POOL, 1, "cpu", n_train=24, n_val=12, record_steps=True) for _ in range(2)]
     for k in ("initial_weights_sha256", "step_losses", "final_weights_sha256"):
         assert runs[0][k] == runs[1][k], k
     assert len(runs[0]["step_losses"]) == 2 and all(np.isfinite(runs[0]["step_losses"]))
-    from gencodoe.fourwire_net import V_PN_NOM, phase_neutral_pu
+
+
+def test_one_network_target_scales_follow_the_enwl1_formulas(store):
+    """fourwire_train.run_fit, recomputed here with its own operations: NumPy for the residual and the
+    voltage-drop scale, Torch FP32 with the sample standard deviation for the V_pn scale."""
+    from gencodoe.fourwire_net import V_PN_NOM
     st = fm.Static(*fs._case(25))
     tr = tt.prepare(store, st, 25, "train", 24)
     rs, vpn, kvl = tt.pooled_scales({25: tr}, {25: st})
     c = tr["conv"]
-    r = ((tr["V"] - tr["v1"]) / V_PN_NOM)[c]                                             # fourwire_train.residual_scale
+    r = ((tr["V"] - tr["v1"]) / V_PN_NOM)[c]
     assert np.allclose(rs, np.concatenate([r.real.reshape(-1, 4).std(0), r.imag.reshape(-1, 4).std(0)]), rtol=1e-5)
-    d = phase_neutral_pu(st.net, tr["V"][c][:2000]) - phase_neutral_pu(st.net, tr["v1"][c][:2000])
-    assert np.isclose(vpn, d.std(ddof=1), rtol=5e-3)                                     # sample SD there, population SD here
+    phys = fm.Physics(st, torch.device("cpu"))
+    d = phys.vpn(torch.as_tensor(tr["V"][c][:2000])) - phys.vpn(torch.as_tensor(tr["v1"][c][:2000]))
+    n = d.numel()
+    assert np.isclose(vpn, float(d.std()) * np.sqrt((n - 1) / n), rtol=2e-5)   # population SD here, sample SD there
     drop = (tr["V"][c][:2000][:, st.net.parent[1:]] - tr["V"][c][:2000][:, 1:]) / V_PN_NOM
     assert np.isclose(kvl, np.abs(drop).std(), rtol=1e-5)
+
+
+def _probe_run(deterministic, **changes):
+    r = {"code_commit": "c" * 40, "gencodoe_commit": "c" * 40, "src_dirty": False, "source_sha256": "s" * 64,
+         "node": "node1", "cuda_device": "A100", "torch": "2", "torch_geometric": "2", "cuda": "12", "cudnn": 9,
+         "checkout_unchanged_during_run": True, "deterministic_algorithms": deterministic,
+         "initial_weights_sha256": "i", "final_weights_sha256": "f", "step_losses": [1.0] * tt.PROBE_STEPS,
+         "val_loss": [2.0, 1.0]}
+    return {**r, **changes}
+
+
+def _write_probe(folder, **runs):
+    folder.mkdir()
+    for k in tt.PROBE_RUNS:
+        (folder / f"{k}.json").write_text(json.dumps(runs.get(k, _probe_run(k.startswith("deterministic")))))
+
+
+def test_determinism_report_gives_no_verdict_on_invalid_runs(tmp_path):
+    _write_probe(tmp_path / "ok", default_b=_probe_run(False, step_losses=[1.0] * 31 + [1.5], final_weights_sha256="g"))
+    rep = tt.determinism_report(tmp_path / "ok", tmp_path / "ok.json")
+    assert rep["default"]["valid"] and not rep["default"]["identical_step_losses"]
+    assert rep["default"]["first_step_that_differs"] == 31 and not rep["default"]["same_final_weights"]
+    assert rep["deterministic_algorithms"] == {**rep["deterministic_algorithms"], "valid": True,
+                                               "identical_step_losses": True, "same_final_weights": True}
+    with pytest.raises(FileExistsError):                             # evidence is never overwritten
+        tt.determinism_report(tmp_path / "ok", tmp_path / "ok.json")
+    bad = {"moved": _probe_run(True, checkout_unchanged_during_run=False),
+           "unpinned": _probe_run(True, gencodoe_commit=None),
+           "not in effect": _probe_run(True, deterministic_algorithms=False),
+           "short": _probe_run(True, step_losses=[1.0] * 5),
+           "error": {**_probe_run(True), "error": "CUDA out of memory", "error_type": "OutOfMemoryError"}}
+    for name, run in bad.items():
+        _write_probe(tmp_path / name, deterministic_a=run)
+        rep = tt.determinism_report(tmp_path / name, tmp_path / f"{name}.json")
+        assert rep["deterministic_algorithms"] == {"valid": False} and rep["problems"]["deterministic_a"], name
+        assert rep["default"]["valid"], name
+    _write_probe(tmp_path / "other node", default_a=_probe_run(False, node="node2"))
+    rep = tt.determinism_report(tmp_path / "other node", tmp_path / "other node.json")
+    assert not rep["default"]["valid"] and not rep["deterministic_algorithms"]["valid"]

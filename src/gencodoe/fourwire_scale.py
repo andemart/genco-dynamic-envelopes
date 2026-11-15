@@ -599,7 +599,14 @@ def integrity_split(task: tuple[int, str]) -> dict:
     return rep
 
 
+def _one_label_commit(reps: list[dict], mans: list[dict]) -> bool:
+    """One label commit in the shard files of every unit, the same one the unit manifests name."""
+    shard_commits = {c for r in reps for c in r["label_code_commits"]}
+    return len(shard_commits) == 1 and shard_commits == {pr["code_commit"] for m in mans for pr in m["provenance"]}
+
+
 def label_integrity(networks: list[int], splits: list[str], processes: int) -> Path:
+    checker = _provenance()                                        # read before the run, compared after it
     tasks = sorted((n, s) for n in networks for s in splits)
     with Pool(processes) as pool:
         reps = pool.map(integrity_split, tasks, chunksize=1)
@@ -609,10 +616,10 @@ def label_integrity(networks: list[int], splits: list[str], processes: int) -> P
             "label_code_commits": sorted({pr["code_commit"] for m in mans for pr in m["provenance"]})}
     _write_json(RESULTS / "fourwire_scale_labels_manifest.json", {**head, "splits": mans})
     out = RESULTS / "fourwire_scale_label_integrity.json"
-    shard_commits = sorted({c for r in reps for c in r["label_code_commits"]})     # from the shard files
-    one_commit = len(shard_commits) == 1 and shard_commits == head["label_code_commits"]
-    _write_json(out, {**head, "checker": _provenance(), "one_label_commit_across_units": one_commit,
-                      "all_ok": all(r["ok"] for r in reps) and one_commit, "splits": reps})
+    one_commit, unchanged = _one_label_commit(reps, mans), _provenance() == checker
+    _write_json(out, {**head, "checker": checker, "checker_unchanged_during_run": unchanged,
+                      "one_label_commit_across_units": one_commit,
+                      "all_ok": all(r["ok"] for r in reps) and one_commit and unchanged, "splits": reps})
     return out
 
 

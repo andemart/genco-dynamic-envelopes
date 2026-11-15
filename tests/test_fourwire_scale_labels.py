@@ -72,12 +72,6 @@ def test_integrity_passes_and_fails_closed(small):
     bad = fs.integrity_split(TASK)
     assert not bad["content_hashes_match"] and not bad["inputs_reproduced"] and not bad["ok"]
 
-    arrays0, prov0 = fs._read_shard(folder / "shard_000.npz")       # a shard whose own provenance names another commit
-    np.savez(folder / "shard_000.npz", provenance=json.dumps({**prov0, "code_commit": "f" * 40}), **arrays0)
-    other = fs.integrity_split(TASK)
-    assert len(other["label_code_commits"]) == 2 and not other["single_clean_commit"] and not other["ok"]
-    np.savez(folder / "shard_000.npz", provenance=json.dumps(prov0), **arrays0)
-
     man = {**small, "shards": small["shards"][:2]}                 # a missing shard
     (folder / "manifest.json").write_text(json.dumps(man))
     short = fs.integrity_split(TASK)
@@ -96,3 +90,23 @@ def test_constant_power_range_uses_the_declared_load_rating(tmp_path):
     cc.convert_all(tmp_path)
     declared = {m for f in tmp_path.glob("network_*/Loads.dss") for m in re.findall(r"kV=([0-9.]+)", f.read_text())}
     assert declared == {str(fs.LOAD_KV)}                          # every load of the 25 networks
+
+
+def test_integrity_reads_the_commit_from_the_shard_files(small):
+    """Only the provenance is changed here; the content hash covers the arrays, so nothing else fails."""
+    folder = fs.labels_dir(*TASK)
+    clean = fs.integrity_split(TASK)
+    assert clean["label_code_commits"] == [small["provenance"][0]["code_commit"]]
+    arrays, prov = fs._read_shard(folder / "shard_000.npz")
+    np.savez(folder / "shard_000.npz", provenance=json.dumps({**prov, "code_commit": "f" * 40}), **arrays)
+    other = fs.integrity_split(TASK)
+    assert other["content_hashes_match"] and other["inputs_reproduced"] and other["semantic"]["ok"]
+    assert len(other["label_code_commits"]) == 2 and not other["single_clean_commit"] and not other["ok"]
+
+
+def test_one_label_commit_is_required_across_units():
+    man = lambda c: {"provenance": [{"code_commit": c}]}            # noqa: E731
+    unit = lambda c: {"label_code_commits": [c]}                    # noqa: E731
+    assert fs._one_label_commit([unit("a"), unit("a")], [man("a"), man("a")])
+    assert not fs._one_label_commit([unit("a"), unit("b")], [man("a"), man("b")])     # two units, two commits
+    assert not fs._one_label_commit([unit("a"), unit("a")], [man("b"), man("b")])     # manifests name another

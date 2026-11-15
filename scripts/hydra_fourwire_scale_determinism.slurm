@@ -10,6 +10,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:30:00
+#SBATCH --no-requeue
 #SBATCH --output=logs/%x-%j.out
 set -euo pipefail
 cd "${GENCODOE_WORKTREE:?GENCODOE_WORKTREE must be set}"
@@ -24,29 +25,13 @@ git diff --quiet HEAD -- src scripts results || { echo "ABORT: tracked source, s
 nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
 echo "commit=$HEAD node=$(hostname) cpus=$SLURM_CPUS_PER_TASK"
 OUT="data_out/fourwire_scale/determinism/job$SLURM_JOB_ID"
-mkdir -p "$OUT"
+mkdir -p "$(dirname "$OUT")"
+mkdir "$OUT"                                               # fails if this job's folder exists: nothing is overwritten
 for run in default_a default_b; do
   .venv/bin/python -m gencodoe.fourwire_scale_train determinism --label-root "$GENCODOE_LABEL_ROOT" --device cuda --out "$OUT/$run.json"
 done
 for run in deterministic_a deterministic_b; do
   .venv/bin/python -m gencodoe.fourwire_scale_train determinism --label-root "$GENCODOE_LABEL_ROOT" --device cuda --deterministic --out "$OUT/$run.json"
 done
-.venv/bin/python - "$OUT" "results/fourwire_scale_determinism_job$SLURM_JOB_ID.json" <<'PY'
-import json, sys
-from pathlib import Path
-runs = {p.stem: json.loads(p.read_text()) for p in sorted(Path(sys.argv[1]).glob("*.json"))}
-def pair(a, b):
-    a, b = runs[a], runs[b]
-    if "error" in a or "error" in b:
-        return {"error": a.get("error") or b.get("error")}
-    d = [abs(x - y) for x, y in zip(a["step_losses"], b["step_losses"])]
-    return {"same_initial_weights": a["initial_weights_sha256"] == b["initial_weights_sha256"],
-            "same_final_weights": a["final_weights_sha256"] == b["final_weights_sha256"],
-            "identical_step_losses": a["step_losses"] == b["step_losses"], "steps": len(d),
-            "first_step_that_differs": next((i for i, x in enumerate(d) if x > 0), None), "max_abs_step_loss_difference": max(d)}
-out = {"what": "two processes per setting, 32 PG-pre training steps on networks 10 and 17 (train/val only)",
-       "default": pair("default_a", "default_b"), "deterministic_algorithms": pair("deterministic_a", "deterministic_b"),
-       "default_vs_deterministic": pair("default_a", "deterministic_a"), "runs": runs}
-Path(sys.argv[2]).write_text(json.dumps(out, indent=1) + "\n")
-print(json.dumps({k: out[k] for k in ("default", "deterministic_algorithms", "default_vs_deterministic")}, indent=1))
-PY
+# exits 4 if a pair has no valid verdict
+.venv/bin/python -m gencodoe.fourwire_scale_train determinism-report --out-dir "$OUT" --out "results/fourwire_scale_determinism_job$SLURM_JOB_ID.json"
