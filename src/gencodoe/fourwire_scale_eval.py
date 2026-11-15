@@ -57,26 +57,34 @@ def eval_runs() -> Path:
 
 class TestStore(fd.LabelStore):
     """The one reader of the held-out labels. It serves one network, to the process that owns the claim on
-    that network's evaluation (tt.claim_run_folder), under the freeze, and only until that evaluation has a
-    record. evaluate creates it; anything else that tries is refused here."""
+    that network's evaluation (tt.claim_run_folder), after that evaluation has checked its fits, under the
+    freeze, and only until the evaluation has a record. All of this is checked when the reader is made and
+    again at every read. evaluate creates it; anything else that tries is refused here."""
     __test__ = False               # not a pytest class
     served = ("test",)
 
     def __init__(self, root, network: int, prov: dict):
-        tt.check_freeze(prov, variants=True)
-        folder = eval_runs() / f"network_{network}"
-        owner = folder / "attempt.json"
-        if not owner.exists() or (folder / "record.json").exists():
-            raise PermissionError(f"no open claim on the evaluation of network {network}")
-        a = json.loads(owner.read_text())
-        if (a["pid"], a["node"], a["job_id"]) != (os.getpid(), prov["node"], prov["job_id"]):
-            raise PermissionError(f"the evaluation of network {network} is claimed by another process")
+        self.network, self.prov = network, prov
+        self._authorised()
         super().__init__(root)
-        self.network = network
+
+    def _authorised(self) -> None:
+        tt.check_freeze(self.prov, variants=True)
+        folder = eval_runs() / f"network_{self.network}"
+        owner, fits = folder / "attempt.json", folder / "fits_checked.json"
+        if not owner.exists() or (folder / "record.json").exists():
+            raise PermissionError(f"no open claim on the evaluation of network {self.network}")
+        a = json.loads(owner.read_text())
+        if (a["pid"], a["node"], a["job_id"]) != (os.getpid(), self.prov["node"], self.prov["job_id"]):
+            raise PermissionError(f"the evaluation of network {self.network} is claimed by another process")
+        want = sorted({f for f in method_fits(self.network).values() if f is not None})
+        if not fits.exists() or sorted(json.loads(fits.read_text())) != want:
+            raise PermissionError(f"the fits of network {self.network} have not been checked by this evaluation")
 
     def load(self, network: int, split: str, n_states: int | None = None) -> dict:
         if network != self.network:
             raise PermissionError(f"this reader serves network {self.network} only")
+        self._authorised()
         return super().load(network, split, n_states)
 
 
@@ -336,17 +344,16 @@ def missing_evaluations() -> list[int]:
 
 
 def evaluation_record(network: int) -> dict:
-    """A final evaluation record, checked: the network's, not a dry run, made under this freeze or one it
-    accepts, and identical to the copy in the evaluation folder."""
+    """A final evaluation record, checked: the network's, usable under this freeze (tt.check_final_record),
+    identical to the copy in the evaluation folder, with the per-state file its record names."""
     f = eval_dir() / f"network_{network}.json"
     rec = json.loads(f.read_text())
-    fr = json.loads(tt.freeze_file().read_text())
-    if rec["network"] != network or rec["dry_run"]:
-        raise AssertionError(f"{f.name} is not the final evaluation of network {network}")
-    if rec["freeze_sha256"] not in [fs._sha(tt.freeze_file())] + fr["earlier_freezes_accepted_for"]["evaluation"]:
-        raise AssertionError(f"{f.name}: made under another freeze")
+    if rec["network"] != network:
+        raise AssertionError(f"{f.name} is not the evaluation of network {network}")
+    tt.check_final_record(rec, f.name, "evaluation")
     if fs._sha(eval_runs() / f"network_{network}" / "record.json") != fs._sha(f):
         raise AssertionError(f"{f.name} differs from the record in the evaluation folder")
+    per_state(network, rec)
     return rec
 
 
@@ -364,9 +371,13 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
     earlier = []
     if final:
         tt.check_freeze(prov, variants=True)
-        out = eval_dir() / f"network_{network}.json"
-        if out.exists():
+        out, done = eval_dir() / f"network_{network}.json", eval_runs() / f"network_{network}"
+        if tt.completed(done, lambda rec: tt.check_final_record(rec, done.name, "evaluation")):
+            tt.publish(done, out)                                     # also after a crash between the two writes
+            evaluation_record(network)
             raise tt.AlreadyDone(f"{out.name}: a network is evaluated once")
+        if out.exists():
+            raise RuntimeError(f"{out} exists without a completed evaluation behind it")
     else:
         out = fs.OUT / "eval_dry" / f"network_{network}_{time.strftime('%Y%m%dT%H%M%S')}.json"
     base, fits = tt.runs(dry), method_fits(network)
@@ -377,10 +388,10 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
             if dry:
                 continue
             raise FileNotFoundError(f"{name}: no fit record; the network is evaluated after all its fits")
-        rec = tt.check_record(json.loads(f.read_text()), name, dry)
+        rec = tt.fit_record(base, name, dry)
         if rec["kind"] == "ft":                                       # the chain PG-pre -> PG-ft, same fold and seed
             pre_name = tt.run_name("pgpre", fold=rec["fold"], seed=rec["seed"])
-            pre = tt.check_record(json.loads((base / pre_name / "record.json").read_text()), pre_name, dry)
+            pre = tt.fit_record(base, pre_name, dry)
             if (rec["started_from"] != {"name": pre["name"], "checkpoint_sha256": pre["checkpoint_sha256"]}
                     or rec["initial_weights_sha256"] != pre["selected_weights_sha256"]):
                 raise AssertionError(f"{name}: did not start from the selected checkpoint of {pre['name']}")
@@ -388,6 +399,7 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
                       else {"record": rec, "state_dict": None})
     if final:                                                         # the claim comes before any held-out label
         folder, earlier = tt.claim_run_folder(eval_runs(), f"network_{network}", prov, final=True)
+        fs._write_json(folder / "fits_checked.json", sorted(runs))    # what the reader of the held-out labels asks for
     else:
         folder = out.parent
         folder.mkdir(parents=True, exist_ok=True)
@@ -463,7 +475,7 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
                                                                      "cleared_indeterminate")}), flush=True)
             else:
                 print(key, "done", flush=True)
-        unchanged = tt.checkout_unchanged(prov)
+        unchanged = tt.checkout_unchanged(prov, variants=final)
         npz = folder / ("per_state.npz" if final else out.stem + ".npz")
         np.savez_compressed(npz, **arrays)
         record = {
@@ -481,8 +493,7 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
             "methods": methods}
         if final:                                                     # the folder's record first: it closes the claim
             fs._write_json(folder / "record.json", record)
-            out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_bytes((folder / "record.json").read_bytes())
+            tt.publish(folder, out)
         else:
             fs._write_json(out, record)
         if not unchanged:
@@ -500,6 +511,8 @@ def _boot(d: np.ndarray, n: int = 2000, seed: int = 0) -> list[float]:
 
 
 def report() -> Path:
+    if tt.halt_file().exists():
+        raise RuntimeError(f"the final runs are halted: {tt.halt_file().read_text()}")
     recs = {n: evaluation_record(n) for n in fs.ELIGIBLE}
     if not all(r["valid"] for r in recs.values()):
         raise AssertionError("an evaluation record is not valid")

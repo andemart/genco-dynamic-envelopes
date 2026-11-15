@@ -151,15 +151,21 @@ def start_provenance(device: str, settings: dict) -> dict:
             "cuda_total_mb": torch.cuda.get_device_properties(dev).total_memory / 2 ** 20 if cuda else None}
 
 
-def checkout_unchanged(start: dict) -> bool:
-    """HEAD, the modified flag, the source hash, the numerical mode, the library versions, the input hashes
-    and (for a final run) the freeze file are the same as at the start."""
+def checkout_unchanged(start: dict, variants: bool = False, profiles: bool = False) -> bool:
+    """HEAD, the modified flag, the source hash, the numerical mode, the library versions and the input
+    hashes are the same as at the start. For a final run also: the freeze file, the job script and, where
+    the stage uses them, the rating-variant networks and the meter profiles still match the freeze."""
     state = checkout_state()
-    return (state["head"] == start["code_commit"] and state["src_dirty"] == start["src_dirty"]
+    same = (state["head"] == start["code_commit"] and state["src_dirty"] == start["src_dirty"]
             and state["source_sha256"] == start["source_sha256"]
             and all(start[k] == v for k, v in numerical_settings().items())
-            and all(start[k] == v for k, v in input_hashes().items()) and start["software"] == software()
-            and (start["freeze_sha256"] is None or start["freeze_sha256"] == fs._sha(freeze_file())))
+            and all(start[k] == v for k, v in input_hashes().items()) and start["software"] == software())
+    if same and start["freeze_sha256"] is not None:
+        fr = json.loads(freeze_file().read_text())
+        same = (start["freeze_sha256"] == fs._sha(freeze_file()) and fs._sha(JOB_SCRIPT) == fr["job_script_sha256"]
+                and (not variants or variant_networks_sha() == fr["variant_networks_sha256"])
+                and (not profiles or profiles_sha() == fr["profiles_sha256"]))
+    return same
 
 
 def weights_sha(model) -> str:
@@ -519,18 +525,24 @@ def all_fits() -> list[dict]:
 
 
 def software() -> dict:
-    """The library versions a run uses (Amendment 7, item 5: one software stack for all final runs)."""
+    """The library versions a run uses (Amendment 7, item 5: one software stack for all final runs), with
+    the optional native backends of PyTorch Geometric. cuDNN is recorded per run (start_provenance) and not
+    part of this: the model has no operation that uses it, and its version cannot be read without a GPU."""
     import numba
     import scipy
     import torch_geometric
-    try:
-        import opendssdirect
-        dss = opendssdirect.__version__
-    except ImportError:
-        dss = None
+    import importlib
+
+    def optional(module):                                            # None where it is not installed
+        try:
+            return importlib.import_module(module).__version__
+        except ImportError:
+            return None
+
     return {"python": platform.python_version(), "numpy": np.__version__, "scipy": scipy.__version__,
             "torch": torch.__version__, "torch_cuda": torch.version.cuda, "torch_geometric": torch_geometric.__version__,
-            "numba": numba.__version__, "opendssdirect": dss}
+            "numba": numba.__version__, "opendssdirect": optional("opendssdirect"),
+            **{m: optional(m) for m in ("pyg_lib", "torch_scatter", "torch_sparse", "torch_cluster")}}
 
 
 def input_hashes() -> dict:
@@ -656,31 +668,86 @@ def check_freeze(prov: dict, deterministic: bool = True, variants: bool = False,
     return fr
 
 
-def check_record(rec: dict, name: str, dry: bool, stage: str = "fits") -> dict:
-    """A fit record is the one asked for, valid, and (final) made under this freeze or one it accepts for
-    the stage, with today's inputs."""
-    want = run_name(rec["kind"], rec["fold"], rec["network"], rec["budget"], rec["seed"])
-    if rec["name"] != name or want != name or (rec["network"] is not None and rec["fold"] != fold_of(rec["network"])):
-        raise AssertionError(f"{name}: the record is of {rec['name']} ({want})")
-    if not rec["valid"] or (rec["dry_run"] is not None) != dry:
-        raise AssertionError(f"{name}: not a valid {'dry-run' if dry else 'final'} fit")
-    if not dry:
-        fr = json.loads(freeze_file().read_text())
-        if rec["freeze_sha256"] not in [fs._sha(freeze_file())] + fr["earlier_freezes_accepted_for"][stage]:
-            raise AssertionError(f"{name}: made under another freeze")
-        if any(rec[k] != v for k, v in input_hashes().items()):
-            raise AssertionError(f"{name}: made with other inputs")
+def canonical_fits() -> dict:
+    """Run name -> what the fit of that name is (§4, §8): kind, fold, network, budget, seed and pool."""
+    out = {}
+    for a in all_fits():
+        pre = a["kind"] == "pgpre"
+        fold = a["fold"] if pre else fold_of(a["network"])
+        out[run_name(a["kind"], a.get("fold"), a.get("network"), a.get("budget"), a["seed"])] = {
+            "kind": a["kind"], "fold": fold, "network": a.get("network"), "budget": a.get("budget"),
+            "seed": a["seed"], "pool": pool_of(fold) if pre else [a["network"]]}
+    return out
+
+
+def check_final_record(rec: dict, what: str, stage: str) -> dict:
+    """A final record (fit, evaluation, timing or envelopes) can be used: valid, not a dry run, made with
+    today's inputs under this freeze (then also with its source and library versions) or under an earlier
+    freeze that this one accepts for the stage."""
+    fr = json.loads(freeze_file().read_text())
+    if not rec["valid"] or rec["dry_run"]:
+        raise AssertionError(f"{what}: not a valid final record")
+    if rec["freeze_sha256"] == fs._sha(freeze_file()):
+        if rec["source_sha256"] != fr["source_sha256"] or rec["software"] != fr["software"]:
+            raise AssertionError(f"{what}: not made with the source and libraries of its freeze")
+    elif rec["freeze_sha256"] not in fr["earlier_freezes_accepted_for"].get(stage, []):
+        raise AssertionError(f"{what}: made under another freeze")
+    if any(rec[k] != v for k, v in input_hashes().items()):
+        raise AssertionError(f"{what}: made with other inputs")
+    return rec
+
+
+def check_record(rec: dict, name: str, dry: bool) -> dict:
+    """A fit record is the one asked for: the fit that the name stands for in §8 (kind, fold, network, budget,
+    seed, pool), valid, and (final) usable under this freeze (check_final_record)."""
+    want = canonical_fits().get(name)
+    if want is None or rec["name"] != name or any(rec[k] != v for k, v in want.items()):
+        raise AssertionError(f"{name}: the record is not that fit (it says {rec['name']})")
+    if dry:
+        if not rec["valid"] or rec["dry_run"] is None:
+            raise AssertionError(f"{name}: not a valid dry-run fit")
+        return rec
+    return check_final_record(rec, name, "fits")
+
+
+def completed(folder: Path, validate) -> bool:
+    """Does a run folder hold a completed run? If its record says valid, the record must pass validate
+    (which raises otherwise): a run is skipped only when what it left can be used."""
+    f = folder / "record.json"
+    if not f.exists():
+        return False
+    rec = json.loads(f.read_text())
+    if not rec["valid"]:
+        return False
+    validate(rec)
+    return True
+
+
+def publish(folder: Path, out: Path) -> None:
+    """Copy a run folder's record to results/, atomically; also after a crash between the two writes."""
+    data = (folder / "record.json").read_bytes()
+    if not out.exists() or out.read_bytes() != data:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = out.with_name("." + out.name + ".partial")
+        tmp.write_bytes(data)
+        os.replace(tmp, out)
+
+
+def fit_record(base: Path, name: str, dry: bool) -> dict:
+    """The record of a completed fit, checked (check_record), with its checkpoint where it has one."""
+    rec = check_record(json.loads((base / name / "record.json").read_text()), name, dry)
+    ck = base / name / "best.pt"
+    if (rec["checkpoint_sha256"] is None) == ck.exists() or (ck.exists() and fs._sha(ck) != rec["checkpoint_sha256"]):
+        raise AssertionError(f"{name}: the checkpoint is not the one its record names")
     return rec
 
 
 def load_run(base: Path, name: str, device: str, dry: bool) -> dict:
-    """Record and selected weights of a completed fit: the record asked for (check_record) and the checkpoint
-    it names."""
-    rec = check_record(json.loads((base / name / "record.json").read_text()), name, dry)
-    ck = base / name / "best.pt"
-    if rec["checkpoint_sha256"] is None or fs._sha(ck) != rec["checkpoint_sha256"]:
-        raise AssertionError(f"{name}: no checkpoint with the hash of its record")
-    return {"record": rec, "state_dict": torch.load(ck, map_location=device, weights_only=True)}
+    """Record and selected weights of a completed fit that has a model."""
+    rec = fit_record(base, name, dry)
+    if rec["checkpoint_sha256"] is None:
+        raise AssertionError(f"{name}: the fit has no model")
+    return {"record": rec, "state_dict": torch.load(base / name / "best.pt", map_location=device, weights_only=True)}
 
 
 MAX_RERUNS = 2                     # Amendment 7, item 3
@@ -718,14 +785,17 @@ def _attempt_running(a: dict) -> bool:
 
 def rerun_reason(a: dict) -> str:
     """Why an attempt that left no record may be run again (Amendment 7, item 3). Raises if it may not.
-    - A Slurm job: accounting must show an infrastructure end state, or a cancellation that is not ours.
+    - A Slurm job: accounting must show an infrastructure end state, or a cancellation that names another
+      account than ours.
     - Our own cancellation: only with GENCODOE_RERUN_DEVIATION set to its reason, which is recorded.
     - No Slurm job (a run on a workstation): its process has ended."""
     if not a["job_id"]:
         return "no Slurm job; its process has ended"
     state = _slurm(["sacct", "-n", "-X", "-j", a["job_id"].split("_")[0], "-o", "State%40"])
-    word = state.split()[0] if state else ""
-    if word in RERUN_STATES or (word == "CANCELLED" and f"by {os.getuid()}" not in state):
+    words = state.split()
+    word = words[0] if words else ""
+    by = words[2] if len(words) == 3 and words[1] == "by" else None   # "CANCELLED by <uid>"
+    if word in RERUN_STATES or (word == "CANCELLED" and by is not None and by != str(os.getuid())):
         return f"Slurm accounting: {state}"
     deviation = os.environ.get("GENCODOE_RERUN_DEVIATION")
     if word == "CANCELLED" and deviation:
@@ -751,46 +821,58 @@ def claim_run_folder(base: Path, name: str, prov: dict, final: bool) -> tuple[Pa
       and no folder is ever without an owner."""
     out_dir = base / name
     base.mkdir(parents=True, exist_ok=True)
-
-    def set_aside():
-        return sorted(q for q in base.glob(f"{name}.*") if q.is_dir())
-
-    if out_dir.exists():
-        rec, owner = out_dir / "record.json", out_dir / "attempt.json"
-        if rec.exists() and json.loads(rec.read_text())["valid"]:
-            raise AlreadyDone(f"{name} has a valid record: it is never run again")
-        if not owner.exists():
-            raise RuntimeError(f"{name}: a run folder without an owner; it needs a recorded decision")
-        if len(set_aside()) >= MAX_RERUNS:
-            raise RuntimeError(f"{name}: {len(set_aside())} earlier attempts; a further rerun needs an amendment")
-        a = json.loads(owner.read_text())
-        if rec.exists():
-            kind, reason = "invalid", "its record is invalid"
-        else:
-            if _attempt_running(a):
-                raise RuntimeError(f"{name}: another attempt of this run is running")
-            kind, reason = "incomplete", rerun_reason(a) if final else "dry run"
-        k = 1
-        while (base / f"{name}.{kind}{k}").exists():
-            k += 1
-        fs._write_json(owner, {**a, "set_aside_because": reason})
-        out_dir.rename(base / f"{name}.{kind}{k}")
-    earlier = []
-    for q in set_aside():
-        a = json.loads((q / "attempt.json").read_text())
-        earlier.append({"folder": q.name, "job_id": a["job_id"], "started": a["started"],
-                        "set_aside_because": a.get("set_aside_because")})
-    tmp = base / f".{name}.claim{os.getpid()}"
-    tmp.mkdir()
-    fs._write_json(tmp / "attempt.json", {"job_id": prov["job_id"], "node": prov["node"], "pid": os.getpid(),
-                                          "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+    lock = base / f".{name}.lock"
     try:
-        os.rename(tmp, out_dir)                                      # fails if another attempt got there first
-    except OSError as e:
-        (tmp / "attempt.json").unlink()
-        tmp.rmdir()
-        raise RuntimeError(f"{name}: another attempt of this run has just started") from e
-    return out_dir, earlier
+        lock.mkdir()                                                 # one claimant at a time, from inspection to claim
+    except FileExistsError as e:
+        raise RuntimeError(f"{name}: another attempt is being claimed ({lock.name} exists; if no process holds "
+                           "it, removing it is a recorded decision)") from e
+    try:
+        earlier = [q for q in sorted(base.glob(f"{name}.*")) if q.is_dir()]
+        if out_dir.exists():
+            rec, owner = out_dir / "record.json", out_dir / "attempt.json"
+            if rec.exists() and json.loads(rec.read_text())["valid"]:
+                raise AlreadyDone(f"{name} has a valid record: it is never run again")
+            if not owner.exists():
+                raise RuntimeError(f"{name}: a run folder without an owner; it needs a recorded decision")
+            if len(earlier) >= MAX_RERUNS:
+                if final:                                            # Amendment 7, item 3: a third failure stops the runs
+                    halt_file().parent.mkdir(parents=True, exist_ok=True)
+                    fs._write_json(halt_file(), {"what": name, "error": f"{len(earlier)} earlier attempts",
+                                                 "job_id": prov["job_id"], "node": prov["node"],
+                                                 "time": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+                raise RuntimeError(f"{name}: {len(earlier)} earlier attempts; a further rerun needs an amendment")
+            a = json.loads(owner.read_text())
+            if rec.exists():
+                kind, reason = "invalid", "its record is invalid"
+            else:
+                if _attempt_running(a):
+                    raise RuntimeError(f"{name}: another attempt of this run is running")
+                kind, reason = "incomplete", rerun_reason(a) if final else "dry run"
+            k = 1
+            while (base / f"{name}.{kind}{k}").exists():
+                k += 1
+            fs._write_json(owner, {**a, "set_aside_because": reason})
+            out_dir.rename(base / f"{name}.{kind}{k}")
+            earlier.append(base / f"{name}.{kind}{k}")
+        known = []
+        for q in sorted(earlier):
+            a = json.loads((q / "attempt.json").read_text())
+            known.append({"folder": q.name, "job_id": a["job_id"], "started": a["started"],
+                          "set_aside_because": a.get("set_aside_because")})
+        tmp = base / f".{name}.claim{os.getpid()}"
+        tmp.mkdir()
+        fs._write_json(tmp / "attempt.json", {"job_id": prov["job_id"], "node": prov["node"], "pid": os.getpid(),
+                                              "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
+        try:
+            os.rename(tmp, out_dir)                                  # the folder appears with its owner in it
+        except OSError as e:
+            (tmp / "attempt.json").unlink()
+            tmp.rmdir()
+            raise RuntimeError(f"{name}: another attempt of this run has just started") from e
+        return out_dir, known
+    finally:
+        lock.rmdir()
 
 
 def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None, network: int | None = None,
@@ -803,6 +885,8 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
     prov = start_provenance(device, set_determinism(True))          # before anything is trained
     if final:
         check_freeze(prov)
+    if completed(base / name, lambda rec: fit_record(base, name, not final)):
+        raise AlreadyDone(f"{name} has a valid record: it is never run again")
     start = init = None
     if kind == "pgpre":
         pool, n_train = pool_of(fold), N_PRE
@@ -810,9 +894,8 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
         pool, n_train = [network], fs.N_STATES["train"] if kind == "pgnet" else budget
         if kind == "ft":                                             # the selected PG-pre checkpoint, same seed;
             pre_name = run_name("pgpre", fold=fold_of(network), seed=seed)   # it must exist before PG-ft claims anything
-            pre = check_record(json.loads((base / pre_name / "record.json").read_text()), pre_name, not final)
-            start = {"record": pre}
-            if pre["checkpoint_sha256"] is not None:
+            start = {"record": fit_record(base, pre_name, not final)}
+            if start["record"]["checkpoint_sha256"] is not None:
                 start = load_run(base, pre_name, device, not final)
                 init = {"state_dict": start["state_dict"], "scalers": start["record"]["scalers"]}
     out_dir, earlier = claim_run_folder(base, name, prov, final)
@@ -854,7 +937,9 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
 
 
 def collect() -> Path:
-    """The records of the final fits, gathered for git (checkpoints stay outside it)."""
+    """The records of the final fits, gathered for git (checkpoints stay outside it). Not during a halt."""
+    if halt_file().exists():
+        raise RuntimeError(f"the final runs are halted: {halt_file().read_text()}")
     recs, missing = [], []
     for a in all_fits():
         f = runs() / run_name(a["kind"], a.get("fold"), a.get("network"), a.get("budget"), a["seed"]) / "record.json"

@@ -246,14 +246,33 @@ def test_final_fits_are_frozen_run_once_and_chained(study, monkeypatch):
 
     # a record is accepted only as the fit it names, under this freeze, with today's inputs
     other = tt.runs() / "scratch_net25_b12_seed0/record.json"
-    with pytest.raises(AssertionError, match="the record is of"):
+    with pytest.raises(AssertionError, match="not that fit"):
         tt.check_record(json.loads(other.read_text()), "pgnet_net25", dry=False)
+    for field, value in (("seed", 2), ("budget", 12), ("pool", [10]), ("fold", 1), ("kind", "scratch")):
+        with pytest.raises(AssertionError, match="not that fit"):                     # the fit the name stands for in §8
+            tt.check_record({**rec, field: value}, "pgnet_net25", dry=False)
+    with pytest.raises(AssertionError, match="not that fit"):
+        tt.check_record({**rec, "name": "pgnet_net99"}, "pgnet_net99", dry=False)     # no such fit
     with pytest.raises(AssertionError, match="another freeze"):
         tt.check_record({**rec, "freeze_sha256": "0" * 64}, "pgnet_net25", dry=False)
     with pytest.raises(AssertionError, match="other inputs"):
         tt.check_record({**rec, "identification_sha256": "0" * 64}, "pgnet_net25", dry=False)
-    with pytest.raises(AssertionError, match="not a valid final fit"):
+    with pytest.raises(AssertionError, match="source and libraries of its freeze"):
+        tt.check_record({**rec, "source_sha256": "0" * 64}, "pgnet_net25", dry=False)
+    with pytest.raises(AssertionError, match="source and libraries of its freeze"):
+        tt.check_record({**rec, "software": {}}, "pgnet_net25", dry=False)
+    with pytest.raises(AssertionError, match="not a valid final record"):
         tt.check_record({**rec, "dry_run": {"epochs": 1}}, "pgnet_net25", dry=False)
+
+    ck = tt.runs() / "scratch_net25_b12_seed0/best.pt"                                # a fit is skipped only if what it left
+    kept = ck.read_bytes()                                                            # can be used
+    ck.write_bytes(kept + b"x")
+    with pytest.raises(AssertionError, match="checkpoint is not the one its record names"):
+        tt.final_fit(root, "scratch", "cpu", network=25, budget=12, seed=0)
+    ck.write_bytes(kept)
+    with pytest.raises(tt.AlreadyDone):
+        tt.final_fit(root, "scratch", "cpu", network=25, budget=12, seed=0)
+    assert not list(tt.runs().glob(".*"))                                             # no lock or claim left behind
     torch.use_deterministic_algorithms(False)
 
 
@@ -275,7 +294,14 @@ def test_reruns_are_registered_and_must_retrace_the_killed_attempt(study, monkey
         tt.final_fit(root, "pgnet", "cpu", network=25)
     assert run.exists() and not (tt.runs() / f"{name}.incomplete1").exists()            # nothing was moved
     (run / "attempt.json").write_text(json.dumps({**attempt, "pid": 2 ** 22 + 12345}))   # that process is gone
+    lock = tt.runs() / f".{name}.lock"
+    lock.mkdir()                                                      # another claimant is in the middle of it
+    with pytest.raises(RuntimeError, match="another attempt is being claimed"):
+        tt.final_fit(root, "pgnet", "cpu", network=25)
+    assert run.exists() and lock.exists()                             # refused: nothing moved, their lock untouched
+    lock.rmdir()
     tt.final_fit(root, "pgnet", "cpu", network=25)
+    assert not lock.exists()
     second = json.loads((run / "record.json").read_text())
     assert second["earlier_attempts"] == [{"folder": f"{name}.incomplete1", "job_id": None, "started": attempt["started"],
                                            "set_aside_because": "no Slurm job; its process has ended",
@@ -296,7 +322,12 @@ def test_reruns_are_registered_and_must_retrace_the_killed_attempt(study, monkey
     (run / "record.json").unlink()
     with pytest.raises(RuntimeError, match="needs an amendment"):     # two reruns at most
         tt.final_fit(root, "pgnet", "cpu", network=25)
-    assert run.exists()                                               # and the refused attempt moved nothing
+    assert run.exists() and not (tt.runs() / f".{name}.lock").exists()   # the refused attempt moved nothing
+    assert json.loads(tt.halt_file().read_text())["what"] == name     # and the final runs stop (Amendment 7, item 3)
+    with pytest.raises(RuntimeError, match="halted"):
+        tt.final_fit(root, "scratch", "cpu", network=25, budget=12, seed=0)
+    with pytest.raises(RuntimeError, match="halted"):
+        tt.collect()
     torch.use_deterministic_algorithms(False)
 
 
@@ -317,7 +348,11 @@ def test_a_rerun_of_a_slurm_job_needs_an_infrastructure_reason(study, monkeypatc
         (run / "attempt.json").write_text(json.dumps({**a, "job_id": "4242_7", "pid": 1}))
 
     killed_job()
-    for state, refused in (("COMPLETED", True), (f"CANCELLED by {os.getuid()}", True), ("RUNNING", True), ("", True)):
+    assert tt.rerun_reason({"job_id": "1"}) == "Slurm accounting: FAILED"
+    answers["sacct"] = f"CANCELLED by {os.getuid() + 1}"              # cancelled by an administrator
+    assert tt.rerun_reason({"job_id": "1"}).startswith("Slurm accounting: CANCELLED by")
+    for state, refused in (("COMPLETED", True), (f"CANCELLED by {os.getuid()}", True), ("CANCELLED", True),
+                           ("RUNNING", True), ("", True)):
         answers["sacct"] = state
         with pytest.raises(RuntimeError, match="no reason for a rerun"):
             tt.final_fit(root, "pgnet", "cpu", network=25)
@@ -385,6 +420,7 @@ def test_a_fit_without_a_model_is_a_terminal_record_and_the_method_defers(study)
         f = tt.runs() / f"pgpre_fold0_seed{seed}/record.json"
         rec = json.loads(f.read_text())
         f.write_text(json.dumps({**rec, "checkpoint_sha256": None, "selected_weights_sha256": None, "best_epoch": -1}))
+        (f.parent / "best.pt").unlink()
     for seed in (0, 1):
         (tt.runs() / f"ft_net25_b12_seed{seed}/record.json").unlink()
     tt.final_fit(root, "ft", "cpu", network=25, budget=12, seed=0)
@@ -427,16 +463,25 @@ def test_the_held_out_reader_serves_only_the_claimed_final_evaluation(study, mon
     with pytest.raises(PermissionError, match="no open claim"):                       # the reader, taken directly
         ev.TestStore(root, 25, prov)
     folder, _ = tt.claim_run_folder(ev.eval_runs(), "network_25", prov, final=True)
+    with pytest.raises(PermissionError, match="have not been checked"):               # a claim alone is not enough
+        ev.TestStore(root, 25, prov)
+    (folder / "fits_checked.json").write_text(json.dumps(sorted({f for f in ev.method_fits(25).values() if f})))
     a = json.loads((folder / "attempt.json").read_text())
     (folder / "attempt.json").write_text(json.dumps({**a, "pid": os.getppid()}))
     with pytest.raises(PermissionError, match="claimed by another process"):
         ev.TestStore(root, 25, prov)
     (folder / "attempt.json").write_text(json.dumps(a))
-    with pytest.raises(PermissionError, match="serves network 25 only"):
-        ev.TestStore(root, 25, prov).load(10, "test")
     with pytest.raises(RuntimeError, match="differs from the freeze"):                # and not outside the freeze
         ev.TestStore(root, 25, {**prov, "source_sha256": "t" * 64})
-    (folder / "attempt.json").unlink()
+    reader = ev.TestStore(root, 25, prov)                                             # made, but nothing is read here
+    with pytest.raises(PermissionError, match="serves network 25 only"):
+        reader.load(10, "test")
+    (folder / "record.json").write_text("{}")                                         # the evaluation has its record:
+    with pytest.raises(PermissionError, match="no open claim"):                       # the same reader is refused
+        reader.load(25, "test")
+    assert all(o[0] != "TestStore" for o in opened)                                   # that reader never read anything
+    for f in ("record.json", "fits_checked.json", "attempt.json"):
+        (folder / f).unlink()
     folder.rmdir()
 
     del opened[:]
@@ -472,9 +517,21 @@ def test_the_held_out_reader_serves_only_the_claimed_final_evaluation(study, mon
     with pytest.raises(PermissionError, match="no open claim"):                       # the claim closed with the record
         ev.TestStore(root, 25, prov)
     assert ev.evaluation_record(25)["network"] == 25 and ev.missing_evaluations() == [10]
+    published = out.read_bytes()
     out.write_text(out.read_text() + " ")                                             # the committed copy was altered
     with pytest.raises(AssertionError, match="differs from the record in the evaluation folder"):
         ev.evaluation_record(25)
+    out.unlink()                                                      # as if the run died between its two writes:
+    del opened[:]
+    with pytest.raises(tt.AlreadyDone):                               # the next call publishes the record it finds,
+        ev.evaluate(root, 25, "cpu")
+    assert out.read_bytes() == published and opened == []             # without reading a label again
+    z_file = ev.eval_runs() / "network_25/per_state.npz"
+    kept = z_file.read_bytes()
+    z_file.write_bytes(kept[:-1])                                     # a damaged per-state file is not a skip
+    with pytest.raises(AssertionError, match="does not have the hash of its record"):
+        ev.evaluate(root, 25, "cpu")
+    z_file.write_bytes(kept)
     torch.use_deterministic_algorithms(False)
 
 
@@ -494,19 +551,33 @@ def test_an_evaluation_that_dies_is_set_aside_and_named(study, monkeypatch):
     torch.use_deterministic_algorithms(False)
 
 
+def final_fields(tmp):
+    """What every final record carries, for synthetic records under a freeze in tmp/results."""
+    (tmp / "results").mkdir(parents=True, exist_ok=True)
+    freeze, ident = tmp / "results/fourwire_scale_freeze.json", tmp / "results/fourwire_scale_identification.json"
+    if not freeze.exists():
+        ident.write_text("{}")
+        freeze.write_text(json.dumps({"source_sha256": "s" * 64, "software": {"torch": "x"},
+                                      "earlier_freezes_accepted_for": {"fits": [], "evaluation": []}}))
+    return {"valid": True, "dry_run": False, "freeze_sha256": hashlib.sha256(freeze.read_bytes()).hexdigest(),
+            "source_sha256": "s" * 64, "software": {"torch": "x"},
+            "label_manifest_sha256": hashlib.sha256(fd.MANIFEST.read_bytes()).hexdigest(),
+            "identification_sha256": hashlib.sha256(ident.read_bytes()).hexdigest()}
+
+
 def _e3_records(tmp, values):
     """Evaluation records {network: {method: fallback share}} with no errors, in results/ and in the run
     folders, under one freeze."""
     (tmp / "results/fourwire_scale_eval").mkdir(parents=True, exist_ok=True)
-    (tmp / "results/fourwire_scale_freeze.json").write_text(json.dumps({"earlier_freezes_accepted_for":
-                                                                        {"fits": [], "evaluation": []}}))
-    sha = hashlib.sha256((tmp / "results/fourwire_scale_freeze.json").read_bytes()).hexdigest()
     for n, fb in values.items():
         methods = {k: {"screen": {"fallback_share": v, "false_safe": 0, "cleared_indeterminate": 0, "false_unsafe": 0},
                        "state": {"vpn": {"mae": 0.001}}, "calibration": {"usable": True}} for k, v in fb.items()}
-        text = json.dumps({"network": n, "valid": True, "dry_run": False, "freeze_sha256": sha, "methods": methods})
-        (tmp / f"out/eval/network_{n}").mkdir(parents=True, exist_ok=True)
-        (tmp / f"out/eval/network_{n}/record.json").write_text(text)
+        folder = tmp / f"out/eval/network_{n}"
+        folder.mkdir(parents=True, exist_ok=True)
+        np.savez(folder / "per_state.npz", x=np.zeros(1))
+        text = json.dumps({"network": n, **final_fields(tmp), "methods": methods, "per_state_file": "per_state.npz",
+                           "per_state_sha256": hashlib.sha256((folder / "per_state.npz").read_bytes()).hexdigest()})
+        (folder / "record.json").write_text(text)
         (tmp / f"results/fourwire_scale_eval/network_{n}.json").write_text(text)
 
 
@@ -559,8 +630,15 @@ def test_e3_report_statistics(tmp_path, monkeypatch):
     assert e3["methods_seed0_fresh"]["PG-pre-tc"]["networks_without_model_or_screen"] == 1
     assert e3["methods_seed0_fresh"]["PG-net"]["vpn_mae"] == 0.001
 
-    (tmp_path / "results/fourwire_scale_eval/network_4.json").write_text("{}")       # not the folder's record
-    with pytest.raises((AssertionError, KeyError)):
+    f = tmp_path / "results/fourwire_scale_eval/network_4.json"
+    kept = f.read_text()
+    f.write_text(kept + " ")                                          # not the folder's record
+    with pytest.raises(AssertionError, match="differs from the record in the evaluation folder"):
+        ev.report()
+    f.write_text(kept)
+    (tmp_path / "out/runs/final").mkdir(parents=True)
+    tt.halt_file().write_text("{}")                                   # and no report during a halt
+    with pytest.raises(RuntimeError, match="halted"):
         ev.report()
 
 
