@@ -302,3 +302,31 @@ Committed after the converter (commit 8d1c2b9) and before any Fluvius state or l
 **Consequences.**
 - The cap still allows transformer overload (up to 10% before losses) and every cable and voltage violation; remaining solver-indeterminate states stay operationally unsafe and are reported as in §3.
 - **No further change to the state distribution** after the capped identification run, whatever its indeterminate shares. All 25 identification runs are redone with the cap and their Thevenin equivalents frozen (Amendment 1), and only then is E1 run.
+
+## Amendment 3 (2026-11-15): validation gate and timing rules for the optimised sweeps (before they are implemented)
+Clarifies §3 ("Optimised sweep implementations") and the timing procedure of §6. Committed before any optimised sweep code exists and before any timing. It also records one E1 bookkeeping correction.
+
+**E1 bookkeeping correction (already applied, commits 4413c71 and 9572669).** §7 compares every state where OpenDSS converges. The first E1 report compared only states where the sweep had also converged, which left out one network_7 state (it converges at iteration 108 and agrees with OpenDSS to 1.5e-5 pu at iteration 100). The report was rerun with the frozen mask: 24 of 25 networks pass, as before.
+
+**Reference.** The NumPy sweep run one state at a time, flat start (`fourwire_scale.reference_sweep_state`), as in E1.
+- A state is **converged** if the voltage update of its last performed iteration is below 1e-8 pu, within 100 iterations. The reference code tests `update < 1e-8`; every implementation uses the same strict test.
+- **Per-state semantics:** in a batch, each state stops at its own convergence iteration and returns that iterate. A batched implementation must therefore return, for every state, what the one-state reference returns.
+
+**Validation set.** The full val split of each of the 24 eligible networks (3,000 states per network, §2.5, with the Amendment 2 cap). Inputs only: no OpenDSS label is needed.
+
+**Gate, for each implementation** (Numba CPU, PyTorch):
+1. **On reference-converged states:** max |V − V_ref| ≤ 1e-9 pu of 240.18 V, over all retained buses and all four conductors (complex difference).
+2. **On reference-nonconverged states:** the implementation must also classify the state as non-converged at 100 iterations. The final iterates of such states are unstable and are **not** gated.
+3. **Reported per network and implementation:** convergence-mask differences (count, in each direction), iteration-count differences (count and largest), and the largest branch-current difference relative to the rating on reference-converged states.
+4. **Devices:** the PyTorch implementation is validated locally on CPU (the same code path with `device="cpu"`). The validation is **repeated on the A100 CUDA path, on the same states, before any timing**. No device is timed unless its own validation has passed.
+
+**Implementation notes (disclosed design, not a change of algorithm).**
+- **CPU (Numba):** parallel over states. Within a state the buses are processed level by level (by tree depth) in compiled loops, which is what a vectorised depth-level operation compiles to.
+- **GPU/CPU (PyTorch, complex128):** tensors batched over states; each tree depth is one tensor operation in the backward (current) and forward (voltage) pass. States that have converged leave the working batch.
+- Both return, per state: node voltages, branch currents from the final voltages (as the reference), the iteration count and the convergence flag. They also compute the four screening quantities with the ENWL1 definitions (`fourwire_model.summaries`): minimum and maximum V_pn, maximum phase loading of the non-root branches, and the LV-root transformer-loading proxy.
+
+**Timing rules (add to §6; identical for every timed method, the GENCO pipelines included).**
+- **Excluded, one-off:** compilation (Numba JIT, CUDA kernel loading), the 3 warm-up repeats, moving network constants (topology, impedances, ratings, the Thevenin equivalent, model weights) to the device, and allocating reusable buffers.
+- **Included, every batch:** every operation from the batch's inputs in host memory (customer P and Q) to its deliverable in host memory. That covers host-to-device transfer of the batch, the solve or the model with its screen, convergence checks, the final-current and screening-quantity computation, device-to-host transfer of the deliverable, and the fallback solves (§3, §5).
+- **Deliverable, the same for every method:** per state, the four screening quantities, the decision per direction and the convergence flag. Full voltage and current tensors stay on the device and are not part of the timed transfer for any method.
+- **CUDA:** `torch.cuda.synchronize()` immediately before the start and immediately before the end of every timed measurement.
