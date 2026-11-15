@@ -96,6 +96,11 @@ def test_speedup_takes_the_faster_variant_on_both_sides_and_bootstraps_each_seri
     boot = {k: np.median(np.array(t[k])[g.integers(0, 100, (2000, 100))], axis=1) for k in t}
     ratio = np.minimum(boot["sweep_cpu"], boot["sweep_gpu"]) / np.minimum(boot["pgnet_cpu"], boot["pgnet_gpu"])
     assert np.allclose(sp["ci95"], [np.percentile(ratio, 2.5), np.percentile(ratio, 97.5)])
+    rounds = np.random.default_rng(0).integers(0, 100, (2000, 100))                   # whole rounds resampled together
+    boot = {k: np.median(np.array(t[k])[rounds], axis=1) for k in t}
+    ratio = np.minimum(boot["sweep_cpu"], boot["sweep_gpu"]) / np.minimum(boot["pgnet_cpu"], boot["pgnet_gpu"])
+    assert np.allclose(sp["ci95_paired_rounds"], [np.percentile(ratio, 2.5), np.percentile(ratio, 97.5)])
+    assert sp["ci95_paired_rounds"] != sp["ci95"]
 
 
 def test_envelope_days_and_scenarios_follow_amendment_9():
@@ -156,7 +161,8 @@ def test_uniform_envelope_of_the_exact_evaluator_is_the_largest_feasible_level()
 
 def test_report_applies_the_criterion_of_section_7(tmp_path, monkeypatch):
     """Synthetic records of the six networks. GENCO is 'faster' only with a speed-up of at least 1.10, an
-    interval above 1, and no false-safe and no cleared-indeterminate decision of its screen."""
+    interval above 1, no false-safe and no cleared-indeterminate decision of its screen, and none in what
+    the faster timed variant delivered."""
     import json
     monkeypatch.setattr(fs, "RESULTS", tmp_path / "results")
     monkeypatch.setattr(fs, "OUT", tmp_path / "out")
@@ -164,10 +170,11 @@ def test_report_applies_the_criterion_of_section_7(tmp_path, monkeypatch):
         (tmp_path / d).mkdir(parents=True)
     rng = np.random.default_rng(0)
     buses = {25: 79, 10: 94, 1: 397, 7: 876, 2: 1089, 17: 1668}
-    #          sweep (with OpenDSS), sweep alone, pipeline (with OpenDSS), pipeline alone, false-safe
-    plan = {25: (1.0, 1.0, 3.0, 3.0, 0), 10: (1.0, 1.0, 3.0, 3.0, 0), 1: (4.0, 1.0, 2.0, 2.0, 0),
-            7: (4.0, 1.0, 3.8, 2.0, 0), 2: (4.0, 1.0, 2.0, 2.0, 1), 17: (6.0, 1.0, 2.0, 2.0, 0)}
-    for n, (sw, sw0, pg, pg0, false_safe) in plan.items():
+    #          sweep (with OpenDSS), sweep alone, pipeline (with OpenDSS), pipeline alone, screen false-safe,
+    #          a false-safe delivered by the faster timed variant
+    plan = {25: (1.0, 1.0, 3.0, 3.0, 0, 0), 10: (4.0, 1.0, 2.0, 2.0, 0, 1), 1: (4.0, 1.0, 2.0, 2.0, 0, 0),
+            7: (4.0, 1.0, 3.8, 2.0, 0, 0), 2: (4.0, 1.0, 2.0, 2.0, 1, 0), 17: (6.0, 1.0, 2.0, 2.0, 0, 0)}
+    for n, (sw, sw0, pg, pg0, false_safe, delivered_false_safe) in plan.items():
         t = lambda m: (m * (1 + 0.01 * rng.normal(size=100))).tolist()     # noqa: E731
         series = {"sweep_cpu": sw, "sweep_gpu": 2 * sw, "sweep_cpu_noopendss": sw0, "sweep_gpu_noopendss": 2 * sw0,
                   "pgnet_cpu": 2 * pg, "pgnet_gpu": pg, "pgnet_cpu_noopendss": 2 * pg0, "pgnet_gpu_noopendss": pg0,
@@ -181,9 +188,14 @@ def test_report_applies_the_criterion_of_section_7(tmp_path, monkeypatch):
         f.write_text(json.dumps(rec))
         codes = np.array([[ev.SAFE, ev.SAFE], [ev.UNCERTAIN, ev.SAFE], [ev.VIOLATED, ev.VIOLATED]], np.uint8)
         exact = np.array([[True, True], [False, False], [True, True]])
-        np.savez(tmp_path / f"out/eval/network_{n}.npz", **{"PG-net__codes": codes, "exact_safe": exact})
+        truth = np.array([[True, True], [False, False], [False, False]])               # the third state: not converged
+        np.savez(tmp_path / f"out/eval/network_{n}.npz", **{"PG-net__codes": codes, "exact_safe": exact,
+                                                             "truth_safe": truth, "converged": np.array([1, 1, 0], bool)})
         want = np.array([[True, True], [False, False], [False, False]])                # one solve serves both directions
-        np.savez(tmp_path / f"out/e2/timing_network_{n}_decisions.npz", pgnet_cpu__safe=want, pgnet_gpu__safe=~want)
+        gpu = want.copy()
+        gpu[1, 0] = bool(delivered_false_safe)                                         # clears a state OpenDSS flags
+        np.savez(tmp_path / f"out/e2/timing_network_{n}_decisions.npz", pgnet_cpu__safe=want, pgnet_gpu__safe=gpu,
+                 pgnet_gpu_noopendss__safe=gpu, sweep_cpu__safe=~truth)
         (tmp_path / f"results/fourwire_scale_e2_timing/network_{n}.json").write_text(json.dumps({
             "valid": True, "dry_run": False, "retained_buses": buses[n], "allocated_cores": 16,
             "evaluation_record_sha256": fs._sha(f), "decisions_file": f"timing_network_{n}_decisions.npz",
@@ -195,10 +207,20 @@ def test_report_applies_the_criterion_of_section_7(tmp_path, monkeypatch):
     assert by[1]["criterion"]["genco_faster"] and by[17]["criterion"]["genco_faster"]
     assert not by[25]["criterion"]["genco_faster"] and not by[25]["criterion"]["speedup_ge_1.10"]
     assert by[7]["criterion"]["ci_excludes_1"] and not by[7]["criterion"]["speedup_ge_1.10"]      # 1.05x is not enough
-    assert by[2]["criterion"]["speedup_ge_1.10"] and not by[2]["criterion"]["genco_faster"]       # one false-safe
+    c = by[2]["criterion"]                                                                        # a screen false-safe
+    assert c["speedup_ge_1.10"] and not c["screen_no_false_safe_no_cleared_indeterminate"] and not c["genco_faster"]
+    c = by[10]["criterion"]                                                 # a false-safe in what the timed variant delivered
+    assert c["screen_no_false_safe_no_cleared_indeterminate"] and not c["delivered_no_false_safe_no_cleared_indeterminate"]
+    assert c["speedup_ge_1.10"] and not c["genco_faster"]
+    d = by[10]["delivered_decisions_vs_opendss"]
+    assert d["pgnet_gpu"]["false_safe"] == 1 and d["pgnet_gpu"]["by_direction"]["import"]["false_safe"] == 1
+    assert d["pgnet_cpu"] == {**d["pgnet_cpu"], "false_safe": 0, "cleared_indeterminate": 0, "false_unsafe": 0}
+    assert d["sweep_cpu"]["cleared_indeterminate"] == 2 and d["sweep_cpu"]["false_safe"] == 2 and d["sweep_cpu"]["false_unsafe"] == 2
     assert rep["networks_where_genco_is_faster"] == [1, 17] and rep["break_even_retained_buses"] == 1668
     assert rep["networks_where_it_is_faster_without_the_opendss_solves"] == []                   # the §3 rule made it
-    assert by[1]["timed_decisions_vs_evaluation_record"] == {"pgnet_cpu": 0, "pgnet_gpu": 6}
+    assert by[1]["timed_decisions_vs_evaluation_record"] == {"pgnet_cpu": 0, "pgnet_gpu": 0}
+    assert by[10]["timed_decisions_vs_evaluation_record"] == {"pgnet_cpu": 0, "pgnet_gpu": 1}
+    assert "ci95_paired_rounds" in by[1]["batches"]["4096"]["speedup"]["pgnet"]
     assert rep["loglog_exponent_of_p50_time_against_retained_buses"]["sweep_cpu"] > 0
     (tmp_path / "results/fourwire_scale_eval/network_1.json").write_text(json.dumps({**rec, "valid": True, "x": 1}))
     with pytest.raises(AssertionError, match="another evaluation record"):

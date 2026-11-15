@@ -71,9 +71,13 @@ def _init_engine(network: int):
 
 
 def _solve_chunk(args) -> np.ndarray:
-    """(k, 5): the four quantities and the convergence flag of a chunk, solved in order (§3 failure rule)."""
+    """(k, 5): the four quantities and the convergence flag of a chunk. The engine first solves the no-load
+    case, so a chunk does not depend on what the worker solved before; its states are then solved in order
+    under the §3 failure rule, each from the previous solution (as in label generation)."""
     p, q = args
     out = np.empty((len(p), 5))
+    if len(p):
+        _ENGINE._reset()
     for i in range(len(p)):
         r = _ENGINE.solve(p[i], q[i])
         out[i] = [r["v_pn_min"], r["v_pn_max"], r["line_loading_max"], r["transformer_loading"], r["converged"]]
@@ -284,7 +288,7 @@ def timing(network: int, device: str, dry: bool = False, warmup: int = WARMUP, r
         for r in range(warmup + repeats):
             idx = (r * b + np.arange(b)) % n_all                     # the same states for every series
             s = s_all[idx]
-            for k in names:
+            for k in names[r % len(names):] + names[:r % len(names)]:   # the starting series rotates
                 ser.opendss_calls = 0
                 dt, res = timed(table[k], s)
                 if r < warmup:
@@ -295,6 +299,8 @@ def timing(network: int, device: str, dry: bool = False, warmup: int = WARMUP, r
                                "fallback_states_first_timed_repeat": int(res[3].sum()) if len(res) > 3 else None}
                     if b == n_all:
                         decisions[k] = {"safe": res[1].copy(), "converged": res[2].copy(), "quantities": res[0].copy()}
+                        if len(res) > 3:
+                            decisions[k]["fallback"] = res[3].copy()
                 elif b == n_all and k in decisions:
                     d = decisions[k]
                     d["repeats_with_other_decisions"] = d.get("repeats_with_other_decisions", 0) + int(
@@ -374,7 +380,7 @@ def envelopes(network: int, device: str, dry: bool = False, days: int | None = N
     out = (fs.OUT / "e2_dry" / f"envelopes_{tag}_{time.strftime('%Y%m%dT%H%M%S')}.json" if dry
            else fs.RESULTS / "fourwire_scale_e2_envelopes" / f"{tag}.json")
     if not dry:
-        tt.check_freeze(prov)
+        tt.check_freeze(prov, profiles=True)
     if out.exists():
         raise FileExistsError(out)
     models, sources = _models(network, device, dry)
@@ -465,18 +471,26 @@ def envelope_summary(rows: list[dict]) -> dict:
 
 # ------------------------------------------------------------------------------------------- report
 def speedup(times: dict, baseline: tuple, pipeline: tuple, n: int = 2000, seed: int = 0) -> dict:
-    """Ratio of the lower median of the baseline series to the lower median of the pipeline series, with the
-    percentile interval of a bootstrap that resamples the repeats of every series independently
-    (§7, Amendment 9, item 6)."""
-    rng = np.random.default_rng(seed)
+    """Ratio of the lower median of the baseline series to the lower median of the pipeline series.
+    - ci95 (§7, the criterion): percentile interval of a bootstrap that resamples the repeats of every series
+      independently and recomputes both minima.
+    - ci95_paired_rounds (sensitivity, Amendment 9, item 6): the same with whole rounds resampled, which
+      keeps what the series of one round share (the round-robin runs them one after another)."""
     t = {k: np.array(times[k]) for k in baseline + pipeline}
     med = {k: float(np.median(v)) for k, v in t.items()}
-    boot = {k: np.median(v[rng.integers(0, len(v), (n, len(v)))], axis=1) for k, v in t.items()}
-    ratio = np.min([boot[k] for k in baseline], 0) / np.min([boot[k] for k in pipeline], 0)
+
+    def interval(index):
+        boot = {k: np.median(v[index(len(v))], axis=1) for k, v in t.items()}
+        ratio = np.min([boot[k] for k in baseline], 0) / np.min([boot[k] for k in pipeline], 0)
+        return [float(np.percentile(ratio, 2.5)), float(np.percentile(ratio, 97.5))]
+
+    rng = np.random.default_rng(seed)
+    independent = interval(lambda m: rng.integers(0, m, (n, m)))
+    rounds = np.random.default_rng(seed).integers(0, len(t[baseline[0]]), (n, len(t[baseline[0]])))
     return {"baseline": min(baseline, key=med.get), "pipeline": min(pipeline, key=med.get),
             "baseline_p50_s": min(med[k] for k in baseline), "pipeline_p50_s": min(med[k] for k in pipeline),
             "speedup": min(med[k] for k in baseline) / min(med[k] for k in pipeline),
-            "ci95": [float(np.percentile(ratio, 2.5)), float(np.percentile(ratio, 97.5))]}
+            "ci95": independent, "ci95_paired_rounds": interval(lambda m: rounds)}
 
 
 def report() -> Path:
@@ -509,14 +523,37 @@ def report() -> Path:
                                  "opendss_solves_first_timed_repeat": {
                                      k: v.get("opendss_solves_first_timed_repeat") for k, v in series.items()},
                                  "speedup": sp}
-        p = row["batches"][str(BATCHES[-1])]["speedup"]["pgnet"]
-        safe = screen["false_safe"] == 0 and screen["cleared_indeterminate"] == 0
-        row["criterion"] = {"speedup_ge_1.10": bool(p["speedup"] >= 1.10), "ci_excludes_1": bool(p["ci95"][0] > 1.0 or p["ci95"][1] < 1.0),
-                            "no_false_safe_no_cleared_indeterminate": bool(safe),
-                            "genco_faster": bool(p["speedup"] >= 1.10 and p["ci95"][0] > 1.0 and safe)}
-        s0 = row["batches"][str(BATCHES[-1])]["speedup"]["pgnet_without_opendss_solves"]
-        row["sensitivity_without_opendss_solves"] = {"genco_faster": bool(s0["speedup"] >= 1.10 and s0["ci95"][0] > 1.0 and safe)}
         z, e = np.load(fs.OUT / "e2" / tim["decisions_file"]), np.load(fs.OUT / "eval" / rec["per_state_file"])
+        truth, conv = e["truth_safe"], e["converged"][:, None]
+
+        def delivered(k):
+            """What a timed series delivered at the primary batch, against OpenDSS: every decision, whether
+            it came from the screen or from an exact solve (Amendment 9, item 6)."""
+            safe = z[f"{k}__safe"]
+            return {"false_safe": int((safe & ~truth & conv).sum()), "cleared_indeterminate": int((safe & ~conv).sum()),
+                    "false_unsafe": int((~safe & truth).sum()),
+                    "by_direction": {d: {"false_safe": int((safe & ~truth & conv)[:, j].sum()),
+                                         "cleared_indeterminate": int((safe & ~conv)[:, j].sum()),
+                                         "false_unsafe": int((~safe & truth)[:, j].sum())}
+                                     for j, d in enumerate(ev.DIRECTIONS)}}
+
+        row["delivered_decisions_vs_opendss"] = {k[:-6]: delivered(k[:-6]) for k in z.files if k.endswith("__safe")}
+
+        def verdict(sp):
+            """§7 with Amendment 9, item 6: the speed-up, its interval, the screen's errors (evaluation record)
+            and the errors in what the faster timed PG-net variant delivered."""
+            d = row["delivered_decisions_vs_opendss"][sp["pipeline"]]
+            screen_ok = screen["false_safe"] == 0 and screen["cleared_indeterminate"] == 0
+            delivered_ok = d["false_safe"] == 0 and d["cleared_indeterminate"] == 0
+            return {"speedup_ge_1.10": bool(sp["speedup"] >= 1.10),
+                    "ci_excludes_1": bool(sp["ci95"][0] > 1.0 or sp["ci95"][1] < 1.0),
+                    "screen_no_false_safe_no_cleared_indeterminate": bool(screen_ok),
+                    "delivered_no_false_safe_no_cleared_indeterminate": bool(delivered_ok),
+                    "genco_faster": bool(sp["speedup"] >= 1.10 and sp["ci95"][0] > 1.0 and screen_ok and delivered_ok)}
+
+        last = row["batches"][str(BATCHES[-1])]["speedup"]
+        row["criterion"] = verdict(last["pgnet"])
+        row["sensitivity_without_opendss_solves"] = verdict(last["pgnet_without_opendss_solves"])
         fb = (e["PG-net__codes"] == ev.UNCERTAIN).any(1)                 # one solve serves both directions
         want = np.where(fb[:, None], e["exact_safe"], e["PG-net__codes"] == ev.SAFE)
         row["timed_decisions_vs_evaluation_record"] = {
