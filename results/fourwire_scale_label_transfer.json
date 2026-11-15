@@ -1,0 +1,32 @@
+{
+ "artifact": "four-wire scale labels",
+ "source_label_commit": "6ad2af67233ebb162ece7640cd047e1a4f1dd631",
+ "source": "data_out/fourwire_scale/labels/",
+ "destination": "$VSC_SCRATCH_VO/genco-dynamic-envelopes/fourwire-scale/labels-6ad2af6/",
+ "transfer_date": "2026-11-15",
+ "files": 1032,
+ "bytes": 35563791754,
+ "transfer": {
+  "tool": "rsync",
+  "options": "-a --partial",
+  "files_transferred": 1032,
+  "bytes_transferred": 35563791754,
+  "post_transfer_checksum_dry_run": {
+   "options": "-a --checksum --dry-run --itemize-changes",
+   "changes_listed": 0
+  }
+ },
+ "independent_remote_verification": {
+  "algorithm": "SHA-256",
+  "checksum_list_entries": 1032,
+  "checksum_list_sha256": "2d7300d21f3da39abe24c351a525e960b6f2099cccc4e9c87d5a052465e9da88",
+  "files_verified_ok": 1032,
+  "failures": 0
+ },
+ "scientific_manifests": {
+  "labels": "results/fourwire_scale_labels_manifest.json",
+  "integrity": "results/fourwire_scale_label_integrity.json",
+  "integrity_all_ok": true,
+  "network_splits_passing": "96/96"
+ }
+}
