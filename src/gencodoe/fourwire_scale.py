@@ -387,8 +387,9 @@ def validate_sweeps(networks: list[int], processes: int, device: str) -> Path:
             nb.solve(s[:2])                                        # compile outside the informational timing
             t0 = time.perf_counter()
             out = nb.solve(s)
+            t_numba = time.perf_counter() - t0                     # the solve only, not the comparison below
             rec["numba"] = {**compare_to_reference(out, ref, rating_ka),
-                            "informational_ms_per_state": 1e3 * (time.perf_counter() - t0) / N_VAL}
+                            "informational_ms_per_state": 1e3 * t_numba / N_VAL}
             ts = TorchSweep(net, th, device)
             ts.solve(s[:2])
             t0 = time.perf_counter()
@@ -543,7 +544,7 @@ def integrity_split(task: tuple[int, str]) -> dict:
     """§9 gate 4 for one (network, split). No model metric and no violation share is computed.
 
     - shards complete and contiguous; every shard's content hash equals the manifest's;
-    - one code commit, clean source;
+    - one code commit, clean source, read from every shard file and equal to the unit manifest's;
     - stored inputs equal the states regenerated from the seed, and their calendar days are the split's;
     - the ENWL1 semantic checker (fourwire_labels.semantic_check, its thresholds) on every shard;
     - where the identification (train) or E1 (val) labels are on disk: the same states are bit-identical.
@@ -564,9 +565,11 @@ def integrity_split(task: tuple[int, str]) -> dict:
     rep = {"network": network, "split": split, "states_expected": n, "content_hashes_match": True,
            "shards_contiguous": True, "inputs_reproduced": True, "reproduces_earlier_labels": None,
            "converged_states_outside_constant_power_range": 0}
-    sem, pos = [], 0
+    sem, pos, commits, dirty = [], 0, set(), False
     for sh in man["shards"]:
-        arrays, _ = _read_shard(folder / sh["file"])
+        arrays, prov = _read_shard(folder / sh["file"])
+        commits.add(prov["code_commit"])
+        dirty |= bool(prov["src_dirty"])
         a, b = pos, pos + len(arrays["converged"])
         rep["content_hashes_match"] &= content_sha(arrays) == sh["content_sha256"]
         rep["shards_contiguous"] &= bool(np.array_equal(arrays["state"], np.arange(a, b)))
@@ -583,7 +586,10 @@ def integrity_split(task: tuple[int, str]) -> dict:
         pos = b
     rep["states"] = pos
     rep["split_days_ok"] = bool(set(day_split(st["step"])) == {split})
-    rep["single_clean_commit"] = len(man["provenance"]) == 1 and not man["provenance"][0]["src_dirty"]
+    rep["label_code_commits"] = sorted(commits)
+    rep["single_clean_commit"] = (len(commits) == 1 and not dirty and len(man["provenance"]) == 1
+                                  and man["provenance"][0]["code_commit"] in commits
+                                  and not man["provenance"][0]["src_dirty"])
     rep["semantic"] = {k: all(r[k] for r in sem) if isinstance(sem[0][k], bool)
                        else sum(r[k] for r in sem) if k in ("states", "converged") else max(r[k] for r in sem)
                        for k in sem[0]} if sem else {"ok": False}
@@ -603,7 +609,10 @@ def label_integrity(networks: list[int], splits: list[str], processes: int) -> P
             "label_code_commits": sorted({pr["code_commit"] for m in mans for pr in m["provenance"]})}
     _write_json(RESULTS / "fourwire_scale_labels_manifest.json", {**head, "splits": mans})
     out = RESULTS / "fourwire_scale_label_integrity.json"
-    _write_json(out, {**head, "checker": _provenance(), "all_ok": all(r["ok"] for r in reps), "splits": reps})
+    shard_commits = sorted({c for r in reps for c in r["label_code_commits"]})     # from the shard files
+    one_commit = len(shard_commits) == 1 and shard_commits == head["label_code_commits"]
+    _write_json(out, {**head, "checker": _provenance(), "one_label_commit_across_units": one_commit,
+                      "all_ok": all(r["ok"] for r in reps) and one_commit, "splits": reps})
     return out
 
 

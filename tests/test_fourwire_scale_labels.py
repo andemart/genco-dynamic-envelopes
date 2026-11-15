@@ -72,6 +72,12 @@ def test_integrity_passes_and_fails_closed(small):
     bad = fs.integrity_split(TASK)
     assert not bad["content_hashes_match"] and not bad["inputs_reproduced"] and not bad["ok"]
 
+    arrays0, prov0 = fs._read_shard(folder / "shard_000.npz")       # a shard whose own provenance names another commit
+    np.savez(folder / "shard_000.npz", provenance=json.dumps({**prov0, "code_commit": "f" * 40}), **arrays0)
+    other = fs.integrity_split(TASK)
+    assert len(other["label_code_commits"]) == 2 and not other["single_clean_commit"] and not other["ok"]
+    np.savez(folder / "shard_000.npz", provenance=json.dumps(prov0), **arrays0)
+
     man = {**small, "shards": small["shards"][:2]}                 # a missing shard
     (folder / "manifest.json").write_text(json.dumps(man))
     short = fs.integrity_split(TASK)
