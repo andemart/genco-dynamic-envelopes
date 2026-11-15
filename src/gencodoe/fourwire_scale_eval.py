@@ -178,22 +178,21 @@ def clopper_pearson_upper(k: int, n: int, level: float = 0.95) -> float | None:
 
 
 def decision_metrics(codes: np.ndarray, flags: np.ndarray, conv: np.ndarray) -> dict:
-    """Amendment 8, item 9. Truth: OpenDSS flags and convergence."""
+    """Amendment 8, item 9. Truth: OpenDSS flags and convergence. Rates and their bounds are per direction:
+    the two directions share the state, so their pairs are not independent trials. The totals over the two
+    directions are counts only."""
     safe, out = safe_by_direction(flags, conv), {}
     for j, d in enumerate(DIRECTIONS):
         c = codes[:, j]
+        fs_, n = int(((c == SAFE) & conv & ~safe[:, j]).sum()), int((conv & ~safe[:, j]).sum())
         out[d] = {"cleared": int((c == SAFE).sum()), "rejected": int((c == VIOLATED).sum()),
-                  "fallback": int((c == UNCERTAIN).sum()),
-                  "false_safe": int(((c == SAFE) & conv & ~safe[:, j]).sum()),
+                  "fallback": int((c == UNCERTAIN).sum()), "false_safe": fs_,
                   "cleared_indeterminate": int(((c == SAFE) & ~conv).sum()),
-                  "false_unsafe": int(((c == VIOLATED) & safe[:, j]).sum()),
-                  "converged_not_safe": int((conv & ~safe[:, j]).sum())}
-    tot = {k: sum(out[d][k] for d in DIRECTIONS) for k in ("false_safe", "cleared_indeterminate", "false_unsafe",
-                                                           "converged_not_safe")}
+                  "false_unsafe": int(((c == VIOLATED) & safe[:, j]).sum()), "converged_not_safe": n,
+                  "false_safe_rate": fs_ / n if n else None, "false_safe_rate_upper95": clopper_pearson_upper(fs_, n)}
+    tot = {k: sum(out[d][k] for d in DIRECTIONS) for k in ("false_safe", "cleared_indeterminate", "false_unsafe")}
     return {**out, **tot, "states": int(len(codes)),
-            "fallback_share": float(np.mean([out[d]["fallback"] / len(codes) for d in DIRECTIONS])),
-            "false_safe_rate": tot["false_safe"] / tot["converged_not_safe"] if tot["converged_not_safe"] else None,
-            "false_safe_rate_upper95": clopper_pearson_upper(tot["false_safe"], tot["converged_not_safe"])}
+            "fallback_share": float(np.mean([out[d]["fallback"] / len(codes) for d in DIRECTIONS]))}
 
 
 def _stats(e: np.ndarray, quantiles: bool = False) -> dict:
@@ -304,7 +303,7 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
     if dry:
         out = fs.OUT / "eval_dry" / f"network_{network}_{time.strftime('%Y%m%dT%H%M%S')}.json"
     else:
-        tt.check_freeze(prov)
+        tt.check_freeze(prov, variants=True)
         out = eval_dir() / f"network_{network}.json"
     if out.exists():
         raise FileExistsError(f"{out.name}: a network is evaluated once")
@@ -342,7 +341,8 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
         f[:, 2] = (np.abs(te["I"][:, 1:, :3]) / rat).max((1, 2)) > 1.0
         flags[v] = f
     agree, exact_safe = sweep_agreement(st, s_te, te["flags"], te["converged"])
-    arrays = {"exact_safe": exact_safe, "converged": te["converged"]}
+    arrays = {"exact_safe": exact_safe, "converged": te["converged"],
+              "truth_safe": safe_by_direction(te["flags"], te["converged"])}
     methods, cache = {}, {}
 
     def pool_margins(rec, sd):                                        # PG-zs: the pool's calibration states
@@ -392,8 +392,11 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
             res[f"screen_{v}"] = decision_metrics(codes[v], flags[v], te["converged"])
         arrays[f"{key}__codes"] = codes["primary"]
         methods[key] = res
-        print(key, json.dumps({k: res["screen"][k] for k in ("fallback_share", "false_safe", "cleared_indeterminate")}),
-              flush=True)
+        if dry:                                                       # a final run prints no result (Amendment 8, item 14)
+            print(key, json.dumps({k: res["screen"][k] for k in ("fallback_share", "false_safe",
+                                                                 "cleared_indeterminate")}), flush=True)
+        else:
+            print(key, "done", flush=True)
     unchanged = tt.checkout_unchanged(prov)
     if out.exists():
         raise FileExistsError(out)

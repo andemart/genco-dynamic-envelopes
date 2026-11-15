@@ -102,11 +102,14 @@ def test_decision_metrics_follow_amendment_8():
     codes = np.array([[S, S], [U, S], [V, S], [S, U], [S, V], [U, U]], np.uint8)
     m = ev.decision_metrics(codes, flags, conv)
     assert m["import"] == {"cleared": 3, "rejected": 1, "fallback": 2, "false_safe": 2, "cleared_indeterminate": 1,
-                           "false_unsafe": 1, "converged_not_safe": 2}
+                           "false_unsafe": 1, "converged_not_safe": 2, "false_safe_rate": 1.0,
+                           "false_safe_rate_upper95": 1.0}
     assert m["export"]["false_safe"] == 1 and m["export"]["cleared_indeterminate"] == 0
     assert m["export"]["false_unsafe"] == 0 and m["export"]["converged_not_safe"] == 2
+    assert m["export"]["false_safe_rate"] == 0.5                                  # rates and bounds: per direction
+    assert np.isclose(m["export"]["false_safe_rate_upper95"], ev.clopper_pearson_upper(1, 2))
     assert m["false_safe"] == 3 and m["cleared_indeterminate"] == 1 and m["false_unsafe"] == 1
-    assert np.isclose(m["fallback_share"], (2 / 6 + 2 / 6) / 2) and np.isclose(m["false_safe_rate"], 3 / 4)
+    assert np.isclose(m["fallback_share"], (2 / 6 + 2 / 6) / 2) and "false_safe_rate" not in m   # no pooled rate
     from scipy.stats import binom
     up = ev.clopper_pearson_upper(0, 50)
     assert np.isclose(binom.cdf(0, 50, up), 0.05) and np.isclose(up, 1 - 0.05 ** (1 / 50))
@@ -192,13 +195,17 @@ def test_final_fits_are_frozen_run_once_and_chained(study, monkeypatch):
     (stale / "best.pt").write_bytes(b"left by a killed job")
     fit_all(root)
     rec = json.loads((tt.runs() / "pgnet_net25/record.json").read_text())
-    assert rec["incomplete_attempts"] == ["pgnet_net25.incomplete1"] and (tt.runs() / "pgnet_net25.incomplete1/best.pt").exists()
+    assert [a["folder"] for a in rec["earlier_attempts"]] == ["pgnet_net25.incomplete1"]
+    assert (tt.runs() / "pgnet_net25.incomplete1/best.pt").exists()                  # the killed attempt is kept
     assert rec["valid"] and rec["deterministic_algorithms"] and rec["dry_run"] is None and rec["fold"] == 0
+    assert rec["software"] == tt.software() and rec["checkout_and_mode_unchanged_during_run"] and not rec["tf32"]
     assert rec["source_sha256"] == "s" * 64 and rec["label_manifest_sha256"] == fd.MANIFEST_SHA256
     assert rec["checkpoint_sha256"] == hashlib.sha256((tt.runs() / "pgnet_net25/best.pt").read_bytes()).hexdigest()
     assert rec["states"]["train"] == 24 and rec["config"]["max_epochs"] == 2
     with pytest.raises(FileExistsError, match="never rerun"):
         tt.final_fit(root, "pgnet", "cpu", network=25)
+    lines = (tt.runs() / "pgnet_net25/curve.jsonl").read_text().splitlines()
+    assert [json.loads(x)["epoch"] for x in lines] == [0, 1, 2] == [c["epoch"] for c in rec["curve"]]
     ft = json.loads((tt.runs() / "ft_net25_b12_seed1/record.json").read_text())
     pre = json.loads((tt.runs() / "pgpre_fold0_seed1/record.json").read_text())
     assert pre["pool"] == [10] and ft["pool"] == [25] and ft["budget"] == 12 and ft["states"]["train"] == 12
@@ -209,7 +216,72 @@ def test_final_fits_are_frozen_run_once_and_chained(study, monkeypatch):
     assert sc["config"]["lr"] == 1e-3 and sc["scalers"] != pre["scalers"] and not sc["started_from_given_weights"]
     index = json.loads(tt.collect().read_text())
     assert index["fits_expected"] == 22 and index["fits"] == index["valid"] == 8 and len(index["missing"]) == 14
+    torch.use_deterministic_algorithms(False)
 
+
+def test_reruns_are_registered_and_must_retrace_the_killed_attempt(study, monkeypatch):
+    """Amendment 7, items 2 and 3: every attempt keeps its folder; a rerun is compared with the epochs the
+    earlier attempt recorded; a running attempt, a valid fit and a third rerun are refused."""
+    import os
+    root, name = study["root"], "pgnet_net25"
+    run = tt.runs() / name
+    tt.final_fit(root, "pgnet", "cpu", network=25)
+    first = json.loads((run / "record.json").read_text())
+    assert first["earlier_attempts"] == [] and json.loads((run / "attempt.json").read_text())["pid"] == os.getpid()
+
+    (run / "record.json").unlink()                                   # as if the job was killed after epoch 1
+    (run / "curve.jsonl").write_text("\n".join((run / "curve.jsonl").read_text().splitlines()[:2]) + "\n")
+    attempt = json.loads((run / "attempt.json").read_text())
+    (run / "attempt.json").write_text(json.dumps({**attempt, "pid": os.getppid()}))   # a live process owns it
+    with pytest.raises(RuntimeError, match="another attempt of this fit is running"):
+        tt.final_fit(root, "pgnet", "cpu", network=25)
+    assert run.exists() and not (tt.runs() / f"{name}.incomplete1").exists()            # nothing was moved
+    (run / "attempt.json").write_text(json.dumps({**attempt, "pid": 2 ** 22 + 12345}))   # that process is gone
+    tt.final_fit(root, "pgnet", "cpu", network=25)
+    second = json.loads((run / "record.json").read_text())
+    assert second["earlier_attempts"] == [{"folder": f"{name}.incomplete1", "job_id": None, "started": attempt["started"],
+                                           "slurm_state": None, "epochs_recorded": 2, "reproduced_by_this_run": True}]
+    assert second["curve"][1]["val_loss"] == first["curve"][1]["val_loss"]             # the same fit, retraced
+    assert second["selected_weights_sha256"] == first["selected_weights_sha256"]
+
+    rec = {**second, "valid": False}                                  # an invalid record: set aside, rerun, compared
+    (run / "record.json").write_text(json.dumps(rec))
+    old = (run / "curve.jsonl").read_text().splitlines()
+    (run / "curve.jsonl").write_text("\n".join([old[0], old[1].replace('"val_loss": ', '"val_loss": 9')] + old[2:]) + "\n")
+    tt.final_fit(root, "pgnet", "cpu", network=25)
+    third = json.loads((run / "record.json").read_text())
+    by = {a["folder"]: a for a in third["earlier_attempts"]}
+    assert set(by) == {f"{name}.incomplete1", f"{name}.invalid1"} and by[f"{name}.incomplete1"]["reproduced_by_this_run"]
+    assert not by[f"{name}.invalid1"]["reproduced_by_this_run"] and by[f"{name}.invalid1"]["epochs_recorded"] == 3
+    (run / "record.json").unlink()
+    with pytest.raises(RuntimeError, match="needs an amendment"):     # two reruns at most
+        tt.final_fit(root, "pgnet", "cpu", network=25)
+    torch.use_deterministic_algorithms(False)
+
+
+def test_a_fit_without_a_model_is_a_terminal_record_and_the_method_defers(study):
+    """Amendment 7, item 4: PG-pre that ends without a model leaves PG-ft, PG-pre-tc and PG-zs without one;
+    the evaluation then sends every state of those methods to the fallback."""
+    root = study["root"]
+    fit_all(root)
+    for seed in (0, 1, 2):                                            # as if PG-pre had failed in its first epoch
+        f = tt.runs() / f"pgpre_fold0_seed{seed}/record.json"
+        rec = json.loads(f.read_text())
+        f.write_text(json.dumps({**rec, "checkpoint_sha256": None, "selected_weights_sha256": None, "best_epoch": -1}))
+    for seed in (0, 1):
+        f = tt.runs() / f"ft_net25_b12_seed{seed}"
+        (f / "record.json").unlink()
+    tt.final_fit(root, "ft", "cpu", network=25, budget=12, seed=0)
+    tt.final_fit(root, "ft", "cpu", network=25, budget=12, seed=1)
+    ft = json.loads((tt.runs() / "ft_net25_b12_seed1/record.json").read_text())
+    assert ft["valid"] and ft["checkpoint_sha256"] is None and ft["best_epoch"] == -1
+    assert ft["numerical_failure"] == {"what": "pgpre_fold0_seed1 has no model"}
+    assert ft["started_from"] == {"name": "pgpre_fold0_seed1", "checkpoint_sha256": None}
+    rep = json.loads(ev.evaluate(root, 25, "cpu").read_text())
+    for key in ("PG-pre-tc", "PG-zs", "PG-ft_b12_seed0", "PG-ft_b12_seed1"):
+        m = rep["methods"][key]
+        assert m["no_model"] and m["state"] is None and m["screen"]["fallback_share"] == 1.0 and m["screen"]["false_safe"] == 0
+    assert "no_model" not in rep["methods"]["PG-net"] and rep["methods"]["PG-net"]["state"] is not None
     torch.use_deterministic_algorithms(False)
 
 
@@ -257,6 +329,7 @@ def test_evaluation_reads_the_held_out_split_once_and_only_when_final(study, mon
     assert m["PG-net"]["state"]["vpn"]["mae"] != m["U1"]["state"]["vpn"]["mae"]
     z = np.load(fs.OUT / "eval" / rep["per_state_file"])
     assert z["PG-net__codes"].shape == (12, 2) and z["U1__summary"].shape == (12, 4) and z["exact_safe"].shape == (12, 2)
+    assert z["truth_safe"].shape == (12, 2) and z["truth_safe"].dtype == bool
     assert rep["exact_sweep_vs_opendss"]["states"] == 12
     with pytest.raises(FileExistsError, match="evaluated once"):
         ev.evaluate(root, 25, "cpu")
