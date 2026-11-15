@@ -1,0 +1,4063 @@
+{
+ "protocol": "docs/fourwire_scale_protocol.md, Amendments 1 and 2",
+ "cap_kva": 880.0,
+ "code_commit": "3667b4f5bcf4f55403821fe79458c62befc349d7",
+ "src_dirty": false,
+ "augment": 0.5,
+ "opendss": {
+  "tolerance": 1e-06,
+  "retry_algorithm": "newton"
+ },
+ "networks": [
+  {
+   "network": 1,
+   "conversion": {
+    "lines": 3141,
+    "customers": 200,
+    "three_phase": 0,
+    "phase_connections": 200
+   },
+   "seed": 1000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "60d260bed8a279daf51aa18f2ce7b6ec465752ad8f87f550ae00cb10171429e3",
+    "Lines.dss": "303194e476ad56c0f680786a5080a0bea77c00fd4ba808922995700788dbc81b",
+    "Loads.dss": "526dbe0df3b6fc46a02b758d4613cb0d90abdb181104b014dbcd072a2451178b",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 497,
+     "rank": 4,
+     "singular_values": [
+      27.285485928783864,
+      19.216246114631343,
+      1.3799668898900015,
+      1.0949612847031527
+     ],
+     "cond2": 24.919133041476478,
+     "cond2_column_normalized": 21.964332347303216
+    }
+   ],
+   "fit": {
+    "n_states": 497,
+    "rank": 4,
+    "singular_values": [
+     27.285485928783864,
+     19.216246114631343,
+     1.3799668898900015,
+     1.0949612847031527
+    ],
+    "cond2": 24.919133041476478,
+    "cond2_column_normalized": 21.964332347303216
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866703,
+      1.2206688631657025e-09
+     ],
+     [
+      -0.12008885296720237,
+      -0.20799999723026324
+     ],
+     [
+      -0.12008885508146469,
+      0.207999996009594
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003109869,
+       0.004121396883601421
+      ],
+      [
+       -0.00024477460448133127,
+       -0.0009790984463432981
+      ],
+      [
+       -0.00024477460448178604,
+       -0.0009790984463433831
+      ]
+     ],
+     [
+      [
+       -0.0002447746044823073,
+       -0.0009790984463433658
+      ],
+      [
+       0.0013548292003104016,
+       0.004121396883601287
+      ],
+      [
+       -0.00024477460448208056,
+       -0.0009790984463433868
+      ]
+     ],
+     [
+      [
+       -0.0002447746044814737,
+       -0.0009790984463434193
+      ],
+      [
+       -0.00024477460448181157,
+       -0.0009790984463433471
+      ],
+      [
+       0.0013548292003110795,
+       0.0041213968836013685
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 497,
+    "newton_rescued": 0,
+    "solver_indeterminate": 3,
+    "retried": 3
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 12464,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 12080,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 13270,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 12873,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 11577,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 11857,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 13150,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 12729,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 238,
+    "share_gamma_below_1": 0.21428571428571427,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_1.npz",
+   "labels_sha256": "e0f8758d85dd008f079792b91143eb0753b914717dd005f59eb5b027708b0073",
+   "labels_content_sha256": "cf126b4c78dec57d647b9f5daa9b036df99f7afc80c6fae6e681bfa379434efa",
+   "seconds": 30.10200137499487
+  },
+  {
+   "network": 2,
+   "conversion": {
+    "lines": 8126,
+    "customers": 567,
+    "three_phase": 0,
+    "phase_connections": 567
+   },
+   "seed": 2000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "2bea715b4b2b7686a837aeafc6eb434fafd682beabcbcfbc5e7cdae8a78923c5",
+    "Loads.dss": "d5d2690b861cf90e72d9753723789c741f94aab68d51e98c0b9df25bb5bc8ce9",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 482,
+     "rank": 4,
+     "singular_values": [
+      35.48020763344163,
+      20.061908498401475,
+      2.0515585401876195,
+      1.8375796360820769
+     ],
+     "cond2": 19.308119733569402,
+     "cond2_column_normalized": 19.27657809259318
+    }
+   ],
+   "fit": {
+    "n_states": 482,
+    "rank": 4,
+    "singular_values": [
+     35.48020763344163,
+     20.061908498401475,
+     2.0515585401876195,
+     1.8375796360820769
+    ],
+    "cond2": 19.308119733569402,
+    "cond2_column_normalized": 19.27657809259318
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804864932,
+      1.220662070247613e-09
+     ],
+     [
+      -0.1200888529672011,
+      -0.20799999723025425
+     ],
+     [
+      -0.1200888550814506,
+      0.20799999600958818
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003109919,
+       0.004121396883596731
+      ],
+      [
+       -0.0002447746044839782,
+       -0.0009790984463489603
+      ],
+      [
+       -0.0002447746044849529,
+       -0.0009790984463466446
+      ]
+     ],
+     [
+      [
+       -0.0002447746044859932,
+       -0.000979098446340356
+      ],
+      [
+       0.0013548292003118059,
+       0.004121396883606517
+      ],
+      [
+       -0.00024477460448052034,
+       -0.000979098446343536
+      ]
+     ],
+     [
+      [
+       -0.000244774604476044,
+       -0.0009790984463427168
+      ],
+      [
+       -0.00024477460448215087,
+       -0.0009790984463411319
+      ],
+      [
+       0.0013548292003149765,
+       0.004121396883608227
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 482,
+    "newton_rescued": 0,
+    "solver_indeterminate": 18,
+    "retried": 18
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 33598,
+     "repeated_share": 0.022441812012619744,
+     "unique_fraction": 0.9775581879873803
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 33013,
+     "repeated_share": 0.02898858025626272,
+     "unique_fraction": 0.9710114197437373
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 31963,
+     "repeated_share": 0.009542283265025153,
+     "unique_fraction": 0.9904577167349748
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 37189,
+     "repeated_share": 0.051601279948371825,
+     "unique_fraction": 0.9483987200516282
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 33689,
+     "repeated_share": 0.012170144557570706,
+     "unique_fraction": 0.9878298554424293
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 37036,
+     "repeated_share": 0.028323793066205805,
+     "unique_fraction": 0.9716762069337942
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 35664,
+     "repeated_share": 0.011944818304172267,
+     "unique_fraction": 0.9880551816958277
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 41348,
+     "repeated_share": 0.03930057076521232,
+     "unique_fraction": 0.9606994292347877
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 255,
+    "share_gamma_below_1": 0.6980392156862745,
+    "share_gamma_0": 0.023529411764705882
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_2.npz",
+   "labels_sha256": "e94bf876e1327340a37635045043bebc5cf9d8d6ba50e1be8749acc3e657852a",
+   "labels_content_sha256": "5ed94336a1ee5696fd713175eb968ed0566129687fdb472bd0a9bcedba4048d9",
+   "seconds": 92.25488004100043
+  },
+  {
+   "network": 3,
+   "conversion": {
+    "lines": 5154,
+    "customers": 370,
+    "three_phase": 0,
+    "phase_connections": 370
+   },
+   "seed": 3000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "a7eed7c58f1433273e6122a96ecfa410cd7395e7157128fe6891c7b982b08646",
+    "Lines.dss": "0f3e5c314fa990e65da541d4291e56b5babd3e616daf2c50cd0b1753cffe2623",
+    "Loads.dss": "4f1c0b4ed476151d0d87b119a8989cc2cd6936f4706b55360317ec3cda68d553",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      32.939583163941215,
+      20.571696336081185,
+      1.6037021401866418,
+      1.5030441699455632
+     ],
+     "cond2": 21.915246286564027,
+     "cond2_column_normalized": 21.859217218320538
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     32.939583163941215,
+     20.571696336081185,
+     1.6037021401866418,
+     1.5030441699455632
+    ],
+    "cond2": 21.915246286564027,
+    "cond2_column_normalized": 21.859217218320538
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866423,
+      1.220670753372149e-09
+     ],
+     [
+      -0.12008885296719997,
+      -0.20799999723026405
+     ],
+     [
+      -0.12008885508146613,
+      0.20799999600959349
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003119806,
+       0.004121396883602283
+      ],
+      [
+       -0.0002447746044784106,
+       -0.0009790984463438207
+      ],
+      [
+       -0.00024477460448114305,
+       -0.0009790984463441982
+      ]
+     ],
+     [
+      [
+       -0.0002447746044841343,
+       -0.0009790984463481224
+      ],
+      [
+       0.001354829200306598,
+       0.004121396883601727
+      ],
+      [
+       -0.0002447746044797426,
+       -0.0009790984463446876
+      ]
+     ],
+     [
+      [
+       -0.0002447746044829304,
+       -0.0009790984463412579
+      ],
+      [
+       -0.00024477460448326505,
+       -0.000979098446340473
+      ],
+      [
+       0.0013548292003094408,
+       0.004121396883603265
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 23914,
+     "repeated_share": 0.0005436146190516133,
+     "unique_fraction": 0.9994563853809484
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 22143,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 23283,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 24317,
+     "repeated_share": 0.0019739277048977932,
+     "unique_fraction": 0.9980260722951022
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 21079,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 22490,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 23834,
+     "repeated_share": 0.0005454392884115533,
+     "unique_fraction": 0.9994545607115884
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 23940,
+     "repeated_share": 0.0005430242272347341,
+     "unique_fraction": 0.9994569757727653
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 265,
+    "share_gamma_below_1": 0.5773584905660377,
+    "share_gamma_0": 0.0037735849056603774
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_3.npz",
+   "labels_sha256": "b5f86a816c4e34009fcddcef3306ede3e591260aaa45ffaa020be734a3b076f4",
+   "labels_content_sha256": "2f2176bf9c76c6fee1c5c6cc5c5be09be9c28a9fc869392a33a9eca44a0721b1",
+   "seconds": 43.24345891701523
+  },
+  {
+   "network": 4,
+   "conversion": {
+    "lines": 3117,
+    "customers": 186,
+    "three_phase": 0,
+    "phase_connections": 186
+   },
+   "seed": 4000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "92b094ae839baf2f1374a4cb42f65b48d3ec2c377ff1f56127f3eefebc435e0c",
+    "Lines.dss": "4401ece67acf4a27bc716bafd299885877520be816f41601f417d1788e6aeba6",
+    "Loads.dss": "e893bf53a1f160148fd13c123a3fae7890379482ef4c78354d5b3c54cfa97dea",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      25.99400230956806,
+      19.584659296495058,
+      1.1010812767339833,
+      1.0199142918826873
+     ],
+     "cond2": 25.486457554766712,
+     "cond2_column_normalized": 23.124945807902947
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     25.99400230956806,
+     19.584659296495058,
+     1.1010812767339833,
+     1.0199142918826873
+    ],
+    "cond2": 25.486457554766712,
+    "cond2_column_normalized": 23.124945807902947
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.2401777080502396,
+      1.2201983712465698e-09
+     ],
+     [
+      -0.12008885296846634,
+      -0.20799999723134982
+     ],
+     [
+      -0.12008885508177075,
+      0.20799999601118574
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003201868,
+       0.0041213968836280035
+      ],
+      [
+       -0.000244774604483883,
+       -0.00097909844635435
+      ],
+      [
+       -0.00024477460449626187,
+       -0.0009790984463579834
+      ]
+     ],
+     [
+      [
+       -0.0002447746045111844,
+       -0.0009790984463624586
+      ],
+      [
+       0.0013548292002987568,
+       0.004121396883650966
+      ],
+      [
+       -0.0002447746044816704,
+       -0.0009790984463407045
+      ]
+     ],
+     [
+      [
+       -0.00024477460446446385,
+       -0.0009790984463532864
+      ],
+      [
+       -0.00024477460447768233,
+       -0.000979098446361984
+      ],
+      [
+       0.0013548292003388697,
+       0.0041213968836300305
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 12466,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 11680,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 10870,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 10753,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 13103,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 12160,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 11145,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 10823,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 249,
+    "share_gamma_below_1": 0.21686746987951808,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_4.npz",
+   "labels_sha256": "3fdd73ac3ca778e33468ff940d53a498d66d46f25a9f51141ab5a5dbcbd4db9d",
+   "labels_content_sha256": "43c53b6045da8b2c45c18bed4f53a7dad10c36a7ea9c0c2ba5f0884f7d42e27d",
+   "seconds": 27.57093570899451
+  },
+  {
+   "network": 5,
+   "conversion": {
+    "lines": 5981,
+    "customers": 335,
+    "three_phase": 0,
+    "phase_connections": 335
+   },
+   "seed": 5000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "8aa5a27a126eff106c9671e07f256a0ccedffd8966ce5bcd98f6af2366efc513",
+    "Lines.dss": "d41d14236274b7fa01069b222e8b795119b21ac9ae79283bb61b3c9b7ac6157a",
+    "Loads.dss": "827e33ef8c9b616b4cb95004b1cc66fe4d6a53ae65ff18911ba7bbca2d88d916",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 437,
+     "rank": 4,
+     "singular_values": [
+      28.040749541013643,
+      19.36802947050978,
+      1.6500264362297323,
+      1.286197141181832
+     ],
+     "cond2": 21.801284300203147,
+     "cond2_column_normalized": 20.030759041266055
+    }
+   ],
+   "fit": {
+    "n_states": 437,
+    "rank": 4,
+    "singular_values": [
+     28.040749541013643,
+     19.36802947050978,
+     1.6500264362297323,
+     1.286197141181832
+    ],
+    "cond2": 21.801284300203147,
+    "cond2_column_normalized": 20.030759041266055
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804865327,
+      1.2206455160582637e-09
+     ],
+     [
+      -0.1200888529672016,
+      -0.20799999723026272
+     ],
+     [
+      -0.12008885508145237,
+      0.2079999960096079
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003115188,
+       0.004121396883601548
+      ],
+      [
+       -0.0002447746044800633,
+       -0.000979098446342712
+      ],
+      [
+       -0.0002447746044813767,
+       -0.0009790984463437843
+      ]
+     ],
+     [
+      [
+       -0.0002447746044809857,
+       -0.0009790984463455715
+      ],
+      [
+       0.001354829200307932,
+       0.0041213968835976415
+      ],
+      [
+       -0.00024477460448263947,
+       -0.000979098446342832
+      ]
+     ],
+     [
+      [
+       -0.00024477460448276474,
+       -0.0009790984463414862
+      ],
+      [
+       -0.0002447746044817938,
+       -0.0009790984463409068
+      ],
+      [
+       0.001354829200310909,
+       0.0041213968836021795
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 437,
+    "newton_rescued": 0,
+    "solver_indeterminate": 63,
+    "retried": 63
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 20978,
+     "repeated_share": 0.00028601391934413023,
+     "unique_fraction": 0.9997139860806559
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 21307,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 20515,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 20814,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 19931,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 19985,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 21954,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 22016,
+     "repeated_share": 0.00031795058139538757,
+     "unique_fraction": 0.9996820494186046
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 256,
+    "share_gamma_below_1": 0.55859375,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_5.npz",
+   "labels_sha256": "ffd2b0374c7d7240dd91c9c07f72a65a68a87e6c4dc7217d188006f0e87447ce",
+   "labels_content_sha256": "874e44978f9704e16a27fd3c1d03209bb6dc4029aab67f9013f9b6cd66d4101c",
+   "seconds": 110.75125991599634
+  },
+  {
+   "network": 6,
+   "conversion": {
+    "lines": 4342,
+    "customers": 171,
+    "three_phase": 0,
+    "phase_connections": 171
+   },
+   "seed": 6000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "7a48396a2a58c523911e8e0de7f995abe455575c99a6a4dd6e67d4499e1331bf",
+    "Lines.dss": "5168ad7f619852df26eb3f9ae7a11b5b5b501329d63a343b7f15f9466a001441",
+    "Loads.dss": "37b0e2d42f0c7ac5521832059d2c12cf153f742e82e92c6fad6ec5eefffc8f1e",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      26.47879240008858,
+      18.863731117969653,
+      1.056634328252102,
+      0.9016416353339056
+     ],
+     "cond2": 29.36731331210395,
+     "cond2_column_normalized": 24.853415743903792
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     26.47879240008858,
+     18.863731117969653,
+     1.056634328252102,
+     0.9016416353339056
+    ],
+    "cond2": 29.36731331210395,
+    "cond2_column_normalized": 24.853415743903792
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866373,
+      1.2206652789797947e-09
+     ],
+     [
+      -0.12008885296720542,
+      -0.2079999972302618
+     ],
+     [
+      -0.12008885508145593,
+      0.20799999600959407
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003110751,
+       0.0041213968836024744
+      ],
+      [
+       -0.0002447746044771805,
+       -0.000979098446346618
+      ],
+      [
+       -0.00024477460448403337,
+       -0.000979098446350133
+      ]
+     ],
+     [
+      [
+       -0.0002447746044736401,
+       -0.0009790984463431325
+      ],
+      [
+       0.0013548292003090583,
+       0.0041213968836035265
+      ],
+      [
+       -0.0002447746044759123,
+       -0.0009790984463318205
+      ]
+     ],
+     [
+      [
+       -0.0002447746044929029,
+       -0.0009790984463441748
+      ],
+      [
+       -0.00024477460448591587,
+       -0.0009790984463430715
+      ],
+      [
+       0.0013548292003035321,
+       0.004121396883595356
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 11021,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 10499,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 11357,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 10344,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 11602,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 10650,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 11193,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 8834,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 245,
+    "share_gamma_below_1": 0.2163265306122449,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_6.npz",
+   "labels_sha256": "3bc1dcdde5996b53a5fb1fb052144c0ec64e07d9510aaa0999055576de5dddfc",
+   "labels_content_sha256": "989b56fad79028d18d25cafe8db4d3c6ece7b8d0d1dfb7671677367933462616",
+   "seconds": 32.781590792001225
+  },
+  {
+   "network": 7,
+   "conversion": {
+    "lines": 4612,
+    "customers": 471,
+    "three_phase": 0,
+    "phase_connections": 471
+   },
+   "seed": 7000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "8701c57c1066329579ff0132604e9598f1f34132727c11dbc63b96ba84c04966",
+    "Loads.dss": "9d7af74dc481fea3fcf2d769ed2348eb09bf859cdaffe15292b37536b189ad1d",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 443,
+     "rank": 4,
+     "singular_values": [
+      30.897419730448153,
+      19.882795740021784,
+      2.037784686539387,
+      1.5161026302738059
+     ],
+     "cond2": 20.379504074119392,
+     "cond2_column_normalized": 19.37367424365677
+    }
+   ],
+   "fit": {
+    "n_states": 443,
+    "rank": 4,
+    "singular_values": [
+     30.897419730448153,
+     19.882795740021784,
+     2.037784686539387,
+     1.5161026302738059
+    ],
+    "cond2": 20.379504074119392,
+    "cond2_column_normalized": 19.37367424365677
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.2401777080486609,
+      1.2206610784479762e-09
+     ],
+     [
+      -0.12008885296720809,
+      -0.20799999723026863
+     ],
+     [
+      -0.12008885508146494,
+      0.20799999600959648
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003100482,
+       0.0041213968836002635
+      ],
+      [
+       -0.00024477460448120626,
+       -0.0009790984463417232
+      ],
+      [
+       -0.00024477460447994007,
+       -0.0009790984463443676
+      ]
+     ],
+     [
+      [
+       -0.00024477460448075745,
+       -0.0009790984463442362
+      ],
+      [
+       0.0013548292003091546,
+       0.004121396883598933
+      ],
+      [
+       -0.00024477460448335905,
+       -0.0009790984463424347
+      ]
+     ],
+     [
+      [
+       -0.0002447746044822274,
+       -0.0009790984463419316
+      ],
+      [
+       -0.0002447746044807642,
+       -0.000979098446344182
+      ],
+      [
+       0.0013548292003091522,
+       0.0041213968835999365
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 443,
+    "newton_rescued": 0,
+    "solver_indeterminate": 57,
+    "retried": 57
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 32134,
+     "repeated_share": 0.011203087072882312,
+     "unique_fraction": 0.9887969129271177
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 32809,
+     "repeated_share": 0.011094516748453187,
+     "unique_fraction": 0.9889054832515468
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 28608,
+     "repeated_share": 0.0015380313199104823,
+     "unique_fraction": 0.9984619686800895
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 29340,
+     "repeated_share": 0.009781867757327922,
+     "unique_fraction": 0.9902181322426721
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 27884,
+     "repeated_share": 0.002223497346148351,
+     "unique_fraction": 0.9977765026538516
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 28723,
+     "repeated_share": 0.0036556070048393563,
+     "unique_fraction": 0.9963443929951606
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 27134,
+     "repeated_share": 0.002395518537628094,
+     "unique_fraction": 0.9976044814623719
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 28868,
+     "repeated_share": 0.012609117361784716,
+     "unique_fraction": 0.9873908826382153
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 252,
+    "share_gamma_below_1": 0.7222222222222222,
+    "share_gamma_0": 0.007936507936507936
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_7.npz",
+   "labels_sha256": "d6cd121315d8a2f112b34446c0392d471f7e8128e1fa9e2a4971cb658d56d1ef",
+   "labels_content_sha256": "e0786dabe53d43edf37f547efad8b7ef095b86c6bb3d174bf1206a70c772a561",
+   "seconds": 84.68269099999452
+  },
+  {
+   "network": 8,
+   "conversion": {
+    "lines": 9087,
+    "customers": 354,
+    "three_phase": 1,
+    "phase_connections": 356
+   },
+   "seed": 8000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "fdb705a04075c1d2e5199a06b666b055fda7026780214439915fb904ac834293",
+    "Loads.dss": "fd941cc013c749d2ab22132274325d332d0aedf462fc90efd512f1299a59a2f8",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 385,
+     "rank": 4,
+     "singular_values": [
+      21.731585705990202,
+      17.375389582712028,
+      1.5856222287027324,
+      1.0868128684926854
+     ],
+     "cond2": 19.995701501151725,
+     "cond2_column_normalized": 15.744553218656378
+    }
+   ],
+   "fit": {
+    "n_states": 385,
+    "rank": 4,
+    "singular_values": [
+     21.731585705990202,
+     17.375389582712028,
+     1.5856222287027324,
+     1.0868128684926854
+    ],
+    "cond2": 19.995701501151725,
+    "cond2_column_normalized": 15.744553218656378
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866298,
+      1.2206672310150436e-09
+     ],
+     [
+      -0.12008885296720156,
+      -0.20799999723026583
+     ],
+     [
+      -0.12008885508145932,
+      0.20799999600959687
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003188532,
+       0.004121396883606085
+      ],
+      [
+       -0.00024477460447576676,
+       -0.0009790984463418357
+      ],
+      [
+       -0.00024477460447655563,
+       -0.0009790984463422415
+      ]
+     ],
+     [
+      [
+       -0.00024477460448382986,
+       -0.0009790984463447887
+      ],
+      [
+       0.0013548292003069734,
+       0.004121396883599451
+      ],
+      [
+       -0.0002447746044865045,
+       -0.0009790984463422894
+      ]
+     ],
+     [
+      [
+       -0.0002447746044854964,
+       -0.0009790984463461266
+      ],
+      [
+       -0.0002447746044824086,
+       -0.0009790984463430295
+      ],
+      [
+       0.0013548292003116352,
+       0.004121396883598931
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 385,
+    "newton_rescued": 0,
+    "solver_indeterminate": 115,
+    "retried": 115
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 20850,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 20290,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 22680,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 23147,
+     "repeated_share": 0.0003456171426102772,
+     "unique_fraction": 0.9996543828573897
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 20913,
+     "repeated_share": 0.0011954286807248637,
+     "unique_fraction": 0.9988045713192751
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 23378,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 22672,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 23070,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 242,
+    "share_gamma_below_1": 0.5537190082644629,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_8.npz",
+   "labels_sha256": "5546197ed1b5a7f533dd6047ca2878fcafbf3c832f19d60667dadb6a0dc81f2c",
+   "labels_content_sha256": "5e375d5abd05bca96e99b115bc82b51ff5c7ec4388b9d89bd297b46fac01d343",
+   "seconds": 200.2248922920553
+  },
+  {
+   "network": 9,
+   "conversion": {
+    "lines": 6639,
+    "customers": 293,
+    "three_phase": 0,
+    "phase_connections": 293
+   },
+   "seed": 9000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "8aa5a27a126eff106c9671e07f256a0ccedffd8966ce5bcd98f6af2366efc513",
+    "Lines.dss": "c20fbc5297f0d291563454082301705c85cd8da60089ea466f59679c2006ce22",
+    "Loads.dss": "ba714c2a57bf94795c65f170926e169103cd995ef843f7040ec3c499fe115c07",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      30.95860116187197,
+      20.088324215513964,
+      1.4220798783166595,
+      1.2485569060920512
+     ],
+     "cond2": 24.795506725257354,
+     "cond2_column_normalized": 24.06237427378415
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     30.95860116187197,
+     20.088324215513964,
+     1.4220798783166595,
+     1.2485569060920512
+    ],
+    "cond2": 24.795506725257354,
+    "cond2_column_normalized": 24.06237427378415
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.2401777080486569,
+      1.2206626079551608e-09
+     ],
+     [
+      -0.12008885296720195,
+      -0.20799999723026247
+     ],
+     [
+      -0.12008885508145288,
+      0.20799999600960672
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003128285,
+       0.004121396883601851
+      ],
+      [
+       -0.0002447746044791286,
+       -0.0009790984463448767
+      ],
+      [
+       -0.0002447746044814983,
+       -0.0009790984463446453
+      ]
+     ],
+     [
+      [
+       -0.00024477460448512484,
+       -0.0009790984463430396
+      ],
+      [
+       0.0013548292003090123,
+       0.004121396883603241
+      ],
+      [
+       -0.000244774604482425,
+       -0.0009790984463427389
+      ]
+     ],
+     [
+      [
+       -0.0002447746044828888,
+       -0.0009790984463429661
+      ],
+      [
+       -0.0002447746044843583,
+       -0.000979098446341972
+      ],
+      [
+       0.0013548292003098192,
+       0.004121396883602949
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 19557,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 17753,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 18330,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 17008,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 19904,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 18281,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 18907,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 16760,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 258,
+    "share_gamma_below_1": 0.45348837209302323,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_9.npz",
+   "labels_sha256": "2ad2d3c67e5dd67a061c0029810d6b030b1bcc378bf6b577c56801cd9ead7eaf",
+   "labels_content_sha256": "756804b38093d61090b3061a2adeabc78a57279ef754d7927016e1c2ff0f705e",
+   "seconds": 49.2194317500107
+  },
+  {
+   "network": 10,
+   "conversion": {
+    "lines": 2729,
+    "customers": 64,
+    "three_phase": 0,
+    "phase_connections": 64
+   },
+   "seed": 10000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "fc3f47f463390567dfd1e0707b438fa93ae511205472f83c913d1bee9757a653",
+    "Loads.dss": "4b6e041b5a37f6f24c75e101b4fc458b284551bc91ca2a3449f1f4007418b81a",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      22.614234830262472,
+      9.294940034593132,
+      0.5990487566572539,
+      0.5849608386123063
+     ],
+     "cond2": 38.65939963418727,
+     "cond2_column_normalized": 18.164337570099523
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     22.614234830262472,
+     9.294940034593132,
+     0.5990487566572539,
+     0.5849608386123063
+    ],
+    "cond2": 38.65939963418727,
+    "cond2_column_normalized": 18.164337570099523
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.2401777080486631,
+      1.2206703760878864e-09
+     ],
+     [
+      -0.12008885296720045,
+      -0.2079999972302671
+     ],
+     [
+      -0.12008885508145395,
+      0.20799999600960423
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003160746,
+       0.004121396883587619
+      ],
+      [
+       -0.00024477460449686935,
+       -0.00097909844635023
+      ],
+      [
+       -0.00024477460448197046,
+       -0.0009790984463351707
+      ]
+     ],
+     [
+      [
+       -0.0002447746044876252,
+       -0.0009790984463352278
+      ],
+      [
+       0.0013548292003351592,
+       0.004121396883614555
+      ],
+      [
+       -0.000244774604465497,
+       -0.0009790984463626366
+      ]
+     ],
+     [
+      [
+       -0.00024477460448526145,
+       -0.0009790984463357174
+      ],
+      [
+       -0.0002447746044818941,
+       -0.0009790984463480834
+      ],
+      [
+       0.0013548292002978637,
+       0.004121396883601324
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 3826,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 3801,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 4039,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 3994,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 3931,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 3780,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 4403,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 4226,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 258,
+    "share_gamma_below_1": 0.0,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_10.npz",
+   "labels_sha256": "b3fdf252fd953ca29eabcf6e8f77e1cbbfaa3d8da3653644940928edfd3deec9",
+   "labels_content_sha256": "bd1a5d37676b63b04e33ab56762f038ce5efbb1c1fa3f361c6e67b792255c9fb",
+   "seconds": 17.60263095801929
+  },
+  {
+   "network": 11,
+   "conversion": {
+    "lines": 3371,
+    "customers": 214,
+    "three_phase": 0,
+    "phase_connections": 214
+   },
+   "seed": 11000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "865de25238984dc7604dd31134ec71242eea5e474f30e9807cc1856d1346a91b",
+    "Loads.dss": "c2f0efc5bcca098644ba188c2ee5c73174708f92e6eafab371868f212bc4603e",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      27.535484379299103,
+      19.58294375476358,
+      1.2232240428405594,
+      1.133829546840139
+     ],
+     "cond2": 24.285382627430675,
+     "cond2_column_normalized": 22.347585764428537
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     27.535484379299103,
+     19.58294375476358,
+     1.2232240428405594,
+     1.133829546840139
+    ],
+    "cond2": 24.285382627430675,
+    "cond2_column_normalized": 22.347585764428537
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804865812,
+      1.2206680255481276e-09
+     ],
+     [
+      -0.12008885296720616,
+      -0.20799999723025472
+     ],
+     [
+      -0.12008885508145738,
+      0.2079999960096017
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200315265,
+       0.00412139688360055
+      ],
+      [
+       -0.0002447746044836226,
+       -0.0009790984463512898
+      ],
+      [
+       -0.0002447746044865347,
+       -0.000979098446342924
+      ]
+     ],
+     [
+      [
+       -0.0002447746044877087,
+       -0.0009790984463350656
+      ],
+      [
+       0.0013548292003146786,
+       0.0041213968836065285
+      ],
+      [
+       -0.0002447746044857253,
+       -0.000979098446344005
+      ]
+     ],
+     [
+      [
+       -0.0002447746044889347,
+       -0.0009790984463543396
+      ],
+      [
+       -0.00024477460449037655,
+       -0.0009790984463341477
+      ],
+      [
+       0.001354829200320936,
+       0.0041213968836027485
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 12079,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 13491,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 13181,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 12131,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 13332,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 15435,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 13833,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 13518,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 237,
+    "share_gamma_below_1": 0.2869198312236287,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_11.npz",
+   "labels_sha256": "cd772f3b1469c730fab442432cfe313c1d3b9f341ae90f4e4c74b82557068b9d",
+   "labels_content_sha256": "c6b16d8cb843f28ce40da982eeb1e83eebe476b9fa1388a3635b15b7faaee6af",
+   "seconds": 24.129193375003524
+  },
+  {
+   "network": 12,
+   "conversion": {
+    "lines": 6347,
+    "customers": 330,
+    "three_phase": 7,
+    "phase_connections": 344
+   },
+   "seed": 12000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "8aa5a27a126eff106c9671e07f256a0ccedffd8966ce5bcd98f6af2366efc513",
+    "Lines.dss": "e8eaf8157316ad75bfc292fd57ea80d50dac1362f28a40cc6c81aaaa70f35e80",
+    "Loads.dss": "b3fc27467a6f078f6dc4a3bb0464f175968a255b8554894b7fa8ac24fc9f668a",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 492,
+     "rank": 4,
+     "singular_values": [
+      30.988562236560515,
+      20.13037377087989,
+      1.5803780264665257,
+      1.2992375271328196
+     ],
+     "cond2": 23.851344799858595,
+     "cond2_column_normalized": 22.86283301151495
+    }
+   ],
+   "fit": {
+    "n_states": 492,
+    "rank": 4,
+    "singular_values": [
+     30.988562236560515,
+     20.13037377087989,
+     1.5803780264665257,
+     1.2992375271328196
+    ],
+    "cond2": 23.851344799858595,
+    "cond2_column_normalized": 22.86283301151495
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866914,
+      1.2206709231069721e-09
+     ],
+     [
+      -0.12008885296720508,
+      -0.2079999972302623
+     ],
+     [
+      -0.12008885508146566,
+      0.2079999960095906
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200311291,
+       0.004121396883600333
+      ],
+      [
+       -0.00024477460448359004,
+       -0.0009790984463441072
+      ],
+      [
+       -0.0002447746044824283,
+       -0.0009790984463421053
+      ]
+     ],
+     [
+      [
+       -0.00024477460448387036,
+       -0.0009790984463435588
+      ],
+      [
+       0.001354829200310012,
+       0.004121396883600715
+      ],
+      [
+       -0.0002447746044835645,
+       -0.0009790984463447206
+      ]
+     ],
+     [
+      [
+       -0.00024477460448029797,
+       -0.0009790984463424442
+      ],
+      [
+       -0.0002447746044800599,
+       -0.0009790984463426114
+      ],
+      [
+       0.0013548292003123838,
+       0.004121396883601679
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 492,
+    "newton_rescued": 0,
+    "solver_indeterminate": 8,
+    "retried": 8
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 22704,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 20785,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 21540,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 20927,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 20789,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 18649,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 19386,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 20220,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 260,
+    "share_gamma_below_1": 0.4807692307692308,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_12.npz",
+   "labels_sha256": "050ba05f21f8ca6eaa6dd217cdc42b0997f7c632a60e3542d5b7dea368293b48",
+   "labels_content_sha256": "14e451b58359973a60172963e5628feba56809981f029acbc5d559b915b92ac4",
+   "seconds": 54.971297541982494
+  },
+  {
+   "network": 13,
+   "conversion": {
+    "lines": 3507,
+    "customers": 258,
+    "three_phase": 0,
+    "phase_connections": 258
+   },
+   "seed": 13000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "f0e0f87e1060ba124cbd8d8c4b12924474ec2c93bf02874a187d43e81f9d9a4c",
+    "Loads.dss": "b8ee0450e889c3297989ab9bd802a24ad92ebcbfca93b6eb14ab4e9bfe7a2eb0",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 149,
+     "rank": 4,
+     "singular_values": [
+      13.881358667434526,
+      7.123794277751991,
+      0.911505304429538,
+      0.3973323024758537
+     ],
+     "cond2": 34.93639601144211,
+     "cond2_column_normalized": 7.983148428721599
+    }
+   ],
+   "fit": {
+    "n_states": 149,
+    "rank": 4,
+    "singular_values": [
+     13.881358667434526,
+     7.123794277751991,
+     0.911505304429538,
+     0.3973323024758537
+    ],
+    "cond2": 34.93639601144211,
+    "cond2_column_normalized": 7.983148428721599
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866645,
+      1.2206745358897396e-09
+     ],
+     [
+      -0.12008885296722233,
+      -0.20799999723025547
+     ],
+     [
+      -0.12008885508143197,
+      0.20799999600958832
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200314689,
+       0.004121396883595569
+      ],
+      [
+       -0.0002447746044826189,
+       -0.0009790984463448136
+      ],
+      [
+       -0.0002447746044839335,
+       -0.0009790984463489722
+      ]
+     ],
+     [
+      [
+       -0.0002447746044506342,
+       -0.0009790984463262935
+      ],
+      [
+       0.0013548292003150652,
+       0.004121396883599721
+      ],
+      [
+       -0.0002447746044778453,
+       -0.0009790984463238493
+      ]
+     ],
+     [
+      [
+       -0.0002447746045277882,
+       -0.0009790984463571334
+      ],
+      [
+       -0.00024477460448558004,
+       -0.0009790984463422811
+      ],
+      [
+       0.0013548292002996155,
+       0.004121396883580093
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 149,
+    "newton_rescued": 3,
+    "solver_indeterminate": 351,
+    "retried": 354
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 15161,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 16256,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 14700,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 16484,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 16433,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 18349,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 14590,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 17027,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 245,
+    "share_gamma_below_1": 0.4897959183673469,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_13.npz",
+   "labels_sha256": "26716abbc06c13e30155992fe4fd60925352cd992ef5184d62783b24d595600a",
+   "labels_content_sha256": "7615eddc8dab62bd66871a88c86deebbb9071c77e4938a5acfd9d03cfc2c94f6",
+   "seconds": 167.46066604199586
+  },
+  {
+   "network": 14,
+   "conversion": {
+    "lines": 4717,
+    "customers": 317,
+    "three_phase": 0,
+    "phase_connections": 317
+   },
+   "seed": 14000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "30febdd4417e3906127189dce0d307d1c71cafc9c420a82a29a9ed54d4261f38",
+    "Loads.dss": "574cb9f3b92b76d2553e97021ef88cd53edcb78720f60d34ba964418d40125f1",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      29.985524909324084,
+      20.70676986617498,
+      1.4604387693694003,
+      1.1774362847553939
+     ],
+     "cond2": 25.466791959408162,
+     "cond2_column_normalized": 21.5631108997896
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     29.985524909324084,
+     20.70676986617498,
+     1.4604387693694003,
+     1.1774362847553939
+    ],
+    "cond2": 25.466791959408162,
+    "cond2_column_normalized": 21.5631108997896
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770805387234,
+      1.2190441881718029e-09
+     ],
+     [
+      -0.12008885297120185,
+      -0.20799999723395082
+     ],
+     [
+      -0.12008885508264933,
+      0.20799999601491628
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003593347,
+       0.004121396883670201
+      ],
+      [
+       -0.0002447746045079892,
+       -0.0009790984463743145
+      ],
+      [
+       -0.0002447746045057623,
+       -0.0009790984463701076
+      ]
+     ],
+     [
+      [
+       -0.0002447746045027659,
+       -0.0009790984463739446
+      ],
+      [
+       0.001354829200365395,
+       0.004121396883665812
+      ],
+      [
+       -0.0002447746045034561,
+       -0.0009790984463818304
+      ]
+     ],
+     [
+      [
+       -0.0002447746045016238,
+       -0.000979098446373662
+      ],
+      [
+       -0.0002447746045010963,
+       -0.0009790984463699782
+      ],
+      [
+       0.0013548292003649845,
+       0.004121396883673122
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 18918,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 18151,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 19902,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 18488,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 19746,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 22241,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 20434,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 20620,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 240,
+    "share_gamma_below_1": 0.45,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_14.npz",
+   "labels_sha256": "04645465022288c0545ea18f5622ac53776785a589055dfc3a3337564b839975",
+   "labels_content_sha256": "7bab5e789004e20cec9c0bd6aa4bd6d7648d620c76767101cd3af6fbd584ffac",
+   "seconds": 39.02878770802636
+  },
+  {
+   "network": 15,
+   "conversion": {
+    "lines": 18502,
+    "customers": 636,
+    "three_phase": 0,
+    "phase_connections": 636
+   },
+   "seed": 15000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "4487180c25a4aa6df60a68bd347e41379aec0532da8f4b45789b3a932fe5821c",
+    "Loads.dss": "86a05f1989a8ad866e951988beb4c7cfdd9016e6b6ea899691161d47528aa906",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      39.68632637185388,
+      19.761065000116343,
+      1.983100676384285,
+      1.8522990257628928
+     ],
+     "cond2": 21.42544255537173,
+     "cond2_column_normalized": 21.132098569160224
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     39.68632637185388,
+     19.761065000116343,
+     1.983100676384285,
+     1.8522990257628928
+    ],
+    "cond2": 21.42544255537173,
+    "cond2_column_normalized": 21.132098569160224
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804867733,
+      1.2206834666055003e-09
+     ],
+     [
+      -0.12008885296722155,
+      -0.20799999723025192
+     ],
+     [
+      -0.12008885508145761,
+      0.20799999600957852
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003115916,
+       0.004121396883600155
+      ],
+      [
+       -0.00024477460448097126,
+       -0.000979098446342951
+      ],
+      [
+       -0.00024477460447926825,
+       -0.0009790984463438639
+      ]
+     ],
+     [
+      [
+       -0.0002447746044804798,
+       -0.000979098446337927
+      ],
+      [
+       0.001354829200312566,
+       0.004121396883602097
+      ],
+      [
+       -0.00024477460448446716,
+       -0.000979098446339859
+      ]
+     ],
+     [
+      [
+       -0.0002447746044832947,
+       -0.000979098446346763
+      ],
+      [
+       -0.000244774604484474,
+       -0.0009790984463436618
+      ],
+      [
+       0.001354829200311515,
+       0.0041213968835998056
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 38477,
+     "repeated_share": 0.026171479065415726,
+     "unique_fraction": 0.9738285209345843
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 38380,
+     "repeated_share": 0.03642522146951532,
+     "unique_fraction": 0.9635747785304847
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 39576,
+     "repeated_share": 0.02304426925409342,
+     "unique_fraction": 0.9769557307459066
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 40796,
+     "repeated_share": 0.05326502598293947,
+     "unique_fraction": 0.9467349740170605
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 41921,
+     "repeated_share": 0.044941676009637166,
+     "unique_fraction": 0.9550583239903628
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 39177,
+     "repeated_share": 0.03241697935012888,
+     "unique_fraction": 0.9675830206498711
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 41595,
+     "repeated_share": 0.03178266618583969,
+     "unique_fraction": 0.9682173338141603
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 38078,
+     "repeated_share": 0.03014864226062297,
+     "unique_fraction": 0.969851357739377
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 251,
+    "share_gamma_below_1": 0.7808764940239044,
+    "share_gamma_0": 0.05976095617529881
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_15.npz",
+   "labels_sha256": "53084e4c24a017479c22cb4287b95aed1053cba63e4dca60683253acb4014219",
+   "labels_content_sha256": "6a68d597edd94625618563bb1ddae086dcf0fb4a3aa6d45828528c4a2e925a2e",
+   "seconds": 120.53456433402607
+  },
+  {
+   "network": 16,
+   "conversion": {
+    "lines": 4456,
+    "customers": 238,
+    "three_phase": 1,
+    "phase_connections": 240
+   },
+   "seed": 16000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "8aa5a27a126eff106c9671e07f256a0ccedffd8966ce5bcd98f6af2366efc513",
+    "Lines.dss": "c43a2399ffb6891c842635ba81ddae5a19b12b9c2fe9d79d74c788a38add4393",
+    "Loads.dss": "ac5db6e60675dc3a6fd81cb70bd70156994fd2f2ac68c77ecd6edcd7a62a9721",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      27.846281696108118,
+      19.965957418007225,
+      1.2990414813458193,
+      1.1125984817924055
+     ],
+     "cond2": 25.02815000362712,
+     "cond2_column_normalized": 22.346265918592625
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     27.846281696108118,
+     19.965957418007225,
+     1.2990414813458193,
+     1.1125984817924055
+    ],
+    "cond2": 25.02815000362712,
+    "cond2_column_normalized": 22.346265918592625
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804867597,
+      1.2206921142080456e-09
+     ],
+     [
+      -0.12008885296720374,
+      -0.20799999723026974
+     ],
+     [
+      -0.1200888550814726,
+      0.2079999960095862
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003260542,
+       0.004121396883597696
+      ],
+      [
+       -0.00024477460448039696,
+       -0.0009790984463506067
+      ],
+      [
+       -0.0002447746044784379,
+       -0.000979098446338564
+      ]
+     ],
+     [
+      [
+       -0.0002447746044960817,
+       -0.0009790984463277754
+      ],
+      [
+       0.0013548292003075432,
+       0.004121396883610316
+      ],
+      [
+       -0.00024477460449399854,
+       -0.000979098446338373
+      ]
+     ],
+     [
+      [
+       -0.00024477460448692114,
+       -0.0009790984463514689
+      ],
+      [
+       -0.00024477460447971385,
+       -0.000979098446342755
+      ],
+      [
+       0.0013548292003177677,
+       0.004121396883591893
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 14782,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 14802,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 14574,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 15532,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 14465,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 14775,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 14490,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 15580,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 246,
+    "share_gamma_below_1": 0.3089430894308943,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_16.npz",
+   "labels_sha256": "a95da23eb574fc15c2ee1cd1718a574b03bc664beae15f41ff5805d73f656737",
+   "labels_content_sha256": "b93fa22a60f66dac7bb566c7260ad2c6395430b6eee28b1e31c17b43ae658ea3",
+   "seconds": 37.72045495797647
+  },
+  {
+   "network": 17,
+   "conversion": {
+    "lines": 15085,
+    "customers": 883,
+    "three_phase": 0,
+    "phase_connections": 883
+   },
+   "seed": 17000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "8aa5a27a126eff106c9671e07f256a0ccedffd8966ce5bcd98f6af2366efc513",
+    "Lines.dss": "4c9ff44bea603db12117b2ced5993bc4bbce162dace6e3c87d0b82dbd71df5e1",
+    "Loads.dss": "b4d032dd90f254d931b63b03426e583605d0cc465ec88ec29c88b91f6d833fc8",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 492,
+     "rank": 4,
+     "singular_values": [
+      44.94681074671117,
+      19.091008357558675,
+      2.4842648556082834,
+      2.201615008857341
+     ],
+     "cond2": 20.415381692932314,
+     "cond2_column_normalized": 20.86531813565136
+    }
+   ],
+   "fit": {
+    "n_states": 492,
+    "rank": 4,
+    "singular_values": [
+     44.94681074671117,
+     19.091008357558675,
+     2.4842648556082834,
+     2.201615008857341
+    ],
+    "cond2": 20.415381692932314,
+    "cond2_column_normalized": 20.86531813565136
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804865363,
+      1.2206656995951033e-09
+     ],
+     [
+      -0.12008885296719904,
+      -0.2079999972302544
+     ],
+     [
+      -0.12008885508145607,
+      0.20799999600958746
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200311544,
+       0.004121396883600873
+      ],
+      [
+       -0.0002447746044824431,
+       -0.0009790984463435028
+      ],
+      [
+       -0.00024477460448212257,
+       -0.0009790984463421367
+      ]
+     ],
+     [
+      [
+       -0.00024477460448475436,
+       -0.0009790984463424854
+      ],
+      [
+       0.0013548292003121578,
+       0.004121396883602159
+      ],
+      [
+       -0.000244774604481896,
+       -0.000979098446346074
+      ]
+     ],
+     [
+      [
+       -0.00024477460448075637,
+       -0.0009790984463437292
+      ],
+      [
+       -0.00024477460448239487,
+       -0.0009790984463429052
+      ],
+      [
+       0.001354829200311503,
+       0.004121396883602095
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 492,
+    "newton_rescued": 0,
+    "solver_indeterminate": 8,
+    "retried": 8
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 48869,
+     "repeated_share": 0.0824244408520739,
+     "unique_fraction": 0.9175755591479261
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 51906,
+     "repeated_share": 0.08135860979462872,
+     "unique_fraction": 0.9186413902053713
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 50471,
+     "repeated_share": 0.1204652176497395,
+     "unique_fraction": 0.8795347823502605
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 53904,
+     "repeated_share": 0.11008459483526267,
+     "unique_fraction": 0.8899154051647373
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 59671,
+     "repeated_share": 0.11268455363576946,
+     "unique_fraction": 0.8873154463642305
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 63047,
+     "repeated_share": 0.1202277665868321,
+     "unique_fraction": 0.8797722334131679
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 54765,
+     "repeated_share": 0.10665571076417424,
+     "unique_fraction": 0.8933442892358258
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 58867,
+     "repeated_share": 0.10877061851291892,
+     "unique_fraction": 0.8912293814870811
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 261,
+    "share_gamma_below_1": 0.8582375478927203,
+    "share_gamma_0": 0.15708812260536398
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_17.npz",
+   "labels_sha256": "d01438bd98ecf3b3e916f0a473a7c599279b275304d9d68a9ecb186a80cf4452",
+   "labels_content_sha256": "e946f17b3dbe6b456157105feb972f5eb2882d2f695db68fda05b57498a4fff2",
+   "seconds": 115.15358170797117
+  },
+  {
+   "network": 18,
+   "conversion": {
+    "lines": 8742,
+    "customers": 328,
+    "three_phase": 0,
+    "phase_connections": 328
+   },
+   "seed": 18000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "6a793df52d88af12530f57daa49412ca7c48c0f633ba346abef91ae97cb0bff8",
+    "Loads.dss": "72e30a82229373eec080ce0b70ea927dc5773dee261cfde47cf1ceb7da91af26",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      31.656549001733346,
+      20.78636538962822,
+      1.3978172523642605,
+      1.2977084001015418
+     ],
+     "cond2": 24.394192870491025,
+     "cond2_column_normalized": 23.930206248178997
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     31.656549001733346,
+     20.78636538962822,
+     1.3978172523642605,
+     1.2977084001015418
+    ],
+    "cond2": 24.394192870491025,
+    "cond2_column_normalized": 23.930206248178997
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804865493,
+      1.2206649781110318e-09
+     ],
+     [
+      -0.12008885296720775,
+      -0.20799999723024287
+     ],
+     [
+      -0.12008885508147524,
+      0.20799999600958613
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003041054,
+       0.004121396883597297
+      ],
+      [
+       -0.00024477460449302325,
+       -0.0009790984463626177
+      ],
+      [
+       -0.0002447746044999092,
+       -0.0009790984463491372
+      ]
+     ],
+     [
+      [
+       -0.00024477460448215943,
+       -0.0009790984463321924
+      ],
+      [
+       0.0013548292003119967,
+       0.004121396883619987
+      ],
+      [
+       -0.0002447746044737194,
+       -0.0009790984463315955
+      ]
+     ],
+     [
+      [
+       -0.0002447746044782562,
+       -0.0009790984463495678
+      ],
+      [
+       -0.00024477460447265564,
+       -0.0009790984463467342
+      ],
+      [
+       0.0013548292003155687,
+       0.004121396883592504
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 18907,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 19829,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 20473,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 20567,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 19969,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 20271,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 22175,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 21809,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 262,
+    "share_gamma_below_1": 0.5419847328244275,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_18.npz",
+   "labels_sha256": "106209731dffd0fc2c6c69e50a6e337be7d979750b7cc24844486c9e48d3ed52",
+   "labels_content_sha256": "b2b0c2564fd5764d503349b2005f5fb8bd3a1a1d74e2fafe72fd8615b496cbf0",
+   "seconds": 57.0878942499985
+  },
+  {
+   "network": 19,
+   "conversion": {
+    "lines": 6441,
+    "customers": 353,
+    "three_phase": 0,
+    "phase_connections": 353
+   },
+   "seed": 19000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "63274aa443669ca4d5e288fe58b978089e4b25e6090d93e43b4a13fa7d3ea66c",
+    "Loads.dss": "1535f2dd63a934c51863946a4ce3c6790196a6240319a5bc68c6fed79f17625d",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      31.992907246134543,
+      20.23287784773875,
+      1.5108459882037648,
+      1.3752396062993126
+     ],
+     "cond2": 23.263515026465488,
+     "cond2_column_normalized": 23.626371326793972
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     31.992907246134543,
+     20.23287784773875,
+     1.5108459882037648,
+     1.3752396062993126
+    ],
+    "cond2": 23.263515026465488,
+    "cond2_column_normalized": 23.626371326793972
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866662,
+      1.2206727154341773e-09
+     ],
+     [
+      -0.12008885296720308,
+      -0.2079999972302631
+     ],
+     [
+      -0.12008885508146414,
+      0.20799999600959096
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003104138,
+       0.004121396883601285
+      ],
+      [
+       -0.0002447746044820455,
+       -0.0009790984463431442
+      ],
+      [
+       -0.0002447746044821066,
+       -0.000979098446343207
+      ]
+     ],
+     [
+      [
+       -0.00024477460448167154,
+       -0.0009790984463434122
+      ],
+      [
+       0.0013548292003109617,
+       0.004121396883600873
+      ],
+      [
+       -0.00024477460448172315,
+       -0.0009790984463435347
+      ]
+     ],
+     [
+      [
+       -0.0002447746044810001,
+       -0.0009790984463434143
+      ],
+      [
+       -0.0002447746044816615,
+       -0.000979098446343634
+      ],
+      [
+       0.0013548292003110192,
+       0.004121396883601382
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 22606,
+     "repeated_share": 0.0010174290011500942,
+     "unique_fraction": 0.9989825709988499
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 22118,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 21107,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 20749,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 21868,
+     "repeated_share": 0.0025150905432596016,
+     "unique_fraction": 0.9974849094567404
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 21923,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 22914,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 23215,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 239,
+    "share_gamma_below_1": 0.5941422594142259,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_19.npz",
+   "labels_sha256": "6e4ed17be0fafaa6ba2a78b860b4df6b3b4b71ee94b1113fad901a43d726edac",
+   "labels_content_sha256": "f7b352d59a513efdd44450b1ee00be71c8d513fff5d045c00c02d205ca66e4ca",
+   "seconds": 47.81813912501093
+  },
+  {
+   "network": 20,
+   "conversion": {
+    "lines": 1650,
+    "customers": 162,
+    "three_phase": 0,
+    "phase_connections": 162
+   },
+   "seed": 20000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "1bf0a097b43b5962659abe0e9b3f2c1d3924e19627982822138d48411df173c2",
+    "Lines.dss": "c03e10c1e6bb84a5857af5bc27ef5ec65fb8d65a2f643581739d5781b7843a13",
+    "Loads.dss": "7efd12fef951da96ace9cf870eea93a3551063daf5cb036a31cb455b675d4f33",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      27.074818494285946,
+      18.446741316727636,
+      1.088899611599606,
+      0.854812700050426
+     ],
+     "cond2": 31.673392887925957,
+     "cond2_column_normalized": 24.83688326129249
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     27.074818494285946,
+     18.446741316727636,
+     1.088899611599606,
+     0.854812700050426
+    ],
+    "cond2": 31.673392887925957,
+    "cond2_column_normalized": 24.83688326129249
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.2401777080486552,
+      1.2206729852312816e-09
+     ],
+     [
+      -0.12008885296722187,
+      -0.20799999723025364
+     ],
+     [
+      -0.12008885508143008,
+      0.20799999600958685
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003120674,
+       0.004121396883595173
+      ],
+      [
+       -0.00024477460447802846,
+       -0.0009790984463490854
+      ],
+      [
+       -0.00024477460447429436,
+       -0.0009790984463543095
+      ]
+     ],
+     [
+      [
+       -0.0002447746044813029,
+       -0.0009790984463335264
+      ],
+      [
+       0.0013548292003038246,
+       0.004121396883613639
+      ],
+      [
+       -0.00024477460448780135,
+       -0.0009790984463174685
+      ]
+     ],
+     [
+      [
+       -0.00024477460448444916,
+       -0.0009790984463478238
+      ],
+      [
+       -0.0002447746044838508,
+       -0.0009790984463337597
+      ],
+      [
+       0.0013548292003227331,
+       0.004121396883598788
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 9819,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 9525,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 10366,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 10937,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 9839,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 10236,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 9498,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 10780,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 259,
+    "share_gamma_below_1": 0.17374517374517376,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_20.npz",
+   "labels_sha256": "bd90a0a2dfe5a5105bdeba10e9b2c3aa6a7652bc59dd8364211161a95ad72190",
+   "labels_content_sha256": "5eaed42f0d42216dc078e49c47fe245c1b691a5a9a88717837e2662774128da8",
+   "seconds": 18.890939540986437
+  },
+  {
+   "network": 21,
+   "conversion": {
+    "lines": 3483,
+    "customers": 157,
+    "three_phase": 0,
+    "phase_connections": 157
+   },
+   "seed": 21000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "8aa5a27a126eff106c9671e07f256a0ccedffd8966ce5bcd98f6af2366efc513",
+    "Lines.dss": "92db63f301abe069fe2a9816669facfca928ab3f6c35b11a2a05917f8115fc22",
+    "Loads.dss": "9ad03969ad32ab25f5b98c394987b831e5e1d7c0a448a605d2dee231a2e211ca",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      25.16023968530594,
+      19.20490828268163,
+      0.985359306000832,
+      0.8764308657647367
+     ],
+     "cond2": 28.70761479098773,
+     "cond2_column_normalized": 24.505882541185365
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     25.16023968530594,
+     19.20490828268163,
+     0.985359306000832,
+     0.8764308657647367
+    ],
+    "cond2": 28.70761479098773,
+    "cond2_column_normalized": 24.505882541185365
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.2401777080486617,
+      1.22066959486542e-09
+     ],
+     [
+      -0.12008885296718376,
+      -0.20799999723028018
+     ],
+     [
+      -0.12008885508148018,
+      0.20799999600960145
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.0013548292003119008,
+       0.0041213968835992305
+      ],
+      [
+       -0.00024477460448174267,
+       -0.0009790984463471045
+      ],
+      [
+       -0.000244774604482341,
+       -0.0009790984463455869
+      ]
+     ],
+     [
+      [
+       -0.0002447746044807043,
+       -0.000979098446340612
+      ],
+      [
+       0.0013548292003124668,
+       0.00412139688359752
+      ],
+      [
+       -0.00024477460448573584,
+       -0.0009790984463433066
+      ]
+     ],
+     [
+      [
+       -0.0002447746044858161,
+       -0.0009790984463444658
+      ],
+      [
+       -0.0002447746044799232,
+       -0.0009790984463406316
+      ],
+      [
+       0.0013548292003124926,
+       0.0041213968835957454
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 9347,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 9281,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 10109,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 10059,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 10073,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 9556,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 10008,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 10067,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 257,
+    "share_gamma_below_1": 0.16342412451361868,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_21.npz",
+   "labels_sha256": "78deda7940c0e38aae2901124e47832f16d1400302c6b832bd0b0c7e9674355f",
+   "labels_content_sha256": "489bff6da9c806aef055f2c173b2e6701a167cddac9820d97158b5262f38dbfd",
+   "seconds": 30.186734749993775
+  },
+  {
+   "network": 22,
+   "conversion": {
+    "lines": 3882,
+    "customers": 184,
+    "three_phase": 0,
+    "phase_connections": 184
+   },
+   "seed": 22000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "a7eed7c58f1433273e6122a96ecfa410cd7395e7157128fe6891c7b982b08646",
+    "Lines.dss": "6cb1b9fea8711688313d3b5a5bcefdb5ddb98f00e35ca4004d2b166b95d7d2cb",
+    "Loads.dss": "6522f7a8de77ea0be58fd514c8c8d306173d68d207d4ca4bae4ad3fa985a422c",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      27.23726581389639,
+      19.426311868611368,
+      1.2537857085511224,
+      0.9712051563126759
+     ],
+     "cond2": 28.044811785500293,
+     "cond2_column_normalized": 24.213578426823023
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     27.23726581389639,
+     19.426311868611368,
+     1.2537857085511224,
+     0.9712051563126759
+    ],
+    "cond2": 28.044811785500293,
+    "cond2_column_normalized": 24.213578426823023
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804971503,
+      1.2203499400650958e-09
+     ],
+     [
+      -0.12008885296800426,
+      -0.2079999972310176
+     ],
+     [
+      -0.1200888550817019,
+      0.20799999601066918
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200319057,
+       0.004121396883617508
+      ],
+      [
+       -0.0002447746044861927,
+       -0.0009790984463484542
+      ],
+      [
+       -0.0002447746044886336,
+       -0.0009790984463489418
+      ]
+     ],
+     [
+      [
+       -0.00024477460448192676,
+       -0.0009790984463511837
+      ],
+      [
+       0.0013548292003244008,
+       0.0041213968836106875
+      ],
+      [
+       -0.00024477460448378975,
+       -0.0009790984463523215
+      ]
+     ],
+     [
+      [
+       -0.0002447746044882907,
+       -0.00097909844634846
+      ],
+      [
+       -0.00024477460448930395,
+       -0.0009790984463448251
+      ],
+      [
+       0.0013548292003208696,
+       0.00412139688361929
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 11090,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 11092,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 10891,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 11484,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 11362,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 11244,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 12097,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 12740,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 261,
+    "share_gamma_below_1": 0.19923371647509577,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_22.npz",
+   "labels_sha256": "70563f1687d64b651d6f1d405a590efa5ebdea8ae2391a5b0771cc78f3fd0d21",
+   "labels_content_sha256": "3dc452012388be354b084929725650333ae764acec23464dd419378c8155c683",
+   "seconds": 31.91456779197324
+  },
+  {
+   "network": 23,
+   "conversion": {
+    "lines": 4243,
+    "customers": 291,
+    "three_phase": 0,
+    "phase_connections": 291
+   },
+   "seed": 23000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "ec7879a5c68f771c576d6d1d3e302a7a53ea42824e79d672347e399dfb4dbd86",
+    "Lines.dss": "49e52e22b41218be76ebc3e5bf1cf9c6ea427850742b50269eeda4ee68e5bc35",
+    "Loads.dss": "bf353193d3dde4a95a2bccdab017223deb2f28b2af9cd908791272540fe4e14f",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      32.20287606991139,
+      20.57259512004573,
+      1.3866290404853652,
+      1.1837976324030601
+     ],
+     "cond2": 27.20302456133561,
+     "cond2_column_normalized": 24.86700132972575
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     32.20287606991139,
+     20.57259512004573,
+     1.3866290404853652,
+     1.1837976324030601
+    ],
+    "cond2": 27.20302456133561,
+    "cond2_column_normalized": 24.86700132972575
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804865912,
+      1.2206687263324785e-09
+     ],
+     [
+      -0.12008885296720473,
+      -0.20799999723025825
+     ],
+     [
+      -0.12008885508145398,
+      0.20799999600959565
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200306721,
+       0.004121396883599441
+      ],
+      [
+       -0.000244774604482522,
+       -0.0009790984463396422
+      ],
+      [
+       -0.00024477460448046694,
+       -0.000979098446345546
+      ]
+     ],
+     [
+      [
+       -0.00024477460447980715,
+       -0.0009790984463413466
+      ],
+      [
+       0.0013548292003034128,
+       0.004121396883600488
+      ],
+      [
+       -0.0002447746044857781,
+       -0.0009790984463369026
+      ]
+     ],
+     [
+      [
+       -0.0002447746044788165,
+       -0.0009790984463438038
+      ],
+      [
+       -0.0002447746044750466,
+       -0.0009790984463496884
+      ],
+      [
+       0.0013548292003116144,
+       0.004121396883597182
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 17216,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 18219,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 17428,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 17553,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 18711,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 19416,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 17135,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 19822,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 273,
+    "share_gamma_below_1": 0.5018315018315018,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_23.npz",
+   "labels_sha256": "431d1209a5fad1b25cc006fad7b90d93c428aade552f018daad3a78bfe7e072b",
+   "labels_content_sha256": "21767ad5e7b75ce2256b861f04b7dcea3792563ed09d23fd980ce2257c34fcd0",
+   "seconds": 34.476848750025965
+  },
+  {
+   "network": 24,
+   "conversion": {
+    "lines": 2766,
+    "customers": 135,
+    "three_phase": 0,
+    "phase_connections": 135
+   },
+   "seed": 24000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "1bf0a097b43b5962659abe0e9b3f2c1d3924e19627982822138d48411df173c2",
+    "Lines.dss": "e414ec8afaa29cb3e1a7a9fecc485294b40a0a943388820c9e1b3edcef26d813",
+    "Loads.dss": "9bffbace95d674d48e900f3236da45e9830fb404bab971a68da364ee4b5f9e14",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      24.629100383297914,
+      17.451023945869313,
+      1.0786957025112365,
+      0.8895374581365231
+     ],
+     "cond2": 27.687535986278753,
+     "cond2_column_normalized": 22.12612065973668
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     24.629100383297914,
+     17.451023945869313,
+     1.0786957025112365,
+     0.8895374581365231
+    ],
+    "cond2": 27.687535986278753,
+    "cond2_column_normalized": 22.12612065973668
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804866734,
+      1.220672722703295e-09
+     ],
+     [
+      -0.1200888529672023,
+      -0.20799999723026402
+     ],
+     [
+      -0.12008885508146673,
+      0.20799999600959188
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200308256,
+       0.0041213968836018074
+      ],
+      [
+       -0.0002447746044822233,
+       -0.0009790984463416415
+      ],
+      [
+       -0.00024477460448174353,
+       -0.0009790984463437609
+      ]
+     ],
+     [
+      [
+       -0.00024477460448199214,
+       -0.0009790984463407368
+      ],
+      [
+       0.0013548292003104033,
+       0.004121396883602542
+      ],
+      [
+       -0.0002447746044832779,
+       -0.0009790984463402188
+      ]
+     ],
+     [
+      [
+       -0.0002447746044788408,
+       -0.000979098446344516
+      ],
+      [
+       -0.00024477460448042357,
+       -0.000979098446346428
+      ],
+      [
+       0.0013548292003106573,
+       0.004121396883599165
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 8117,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 7967,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 9772,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 8856,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 7849,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 7974,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 8643,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 8322,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 248,
+    "share_gamma_below_1": 0.0846774193548387,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_24.npz",
+   "labels_sha256": "e1179b2b15f7661e938278f9356da6504185883a4f001226358209a08cd2331f",
+   "labels_content_sha256": "f491b585709dad2dfe90f0f996a433fa1bc013e33e6a0b722005ea9f80a2ff2f",
+   "seconds": 20.87539816595381
+  },
+  {
+   "network": 25,
+   "conversion": {
+    "lines": 1789,
+    "customers": 42,
+    "three_phase": 0,
+    "phase_connections": 42
+   },
+   "seed": 25000,
+   "network_files_sha256": {
+    "LineCode_3f4w.dss": "deeda0453c83f93458ec98fc59c5529b6affbf0099b9adf473a33c3120d1f594",
+    "Lines.dss": "39fb5d909dff82a4420ed709567179e21adf0448c49d20009c26eb7a87475224",
+    "Loads.dss": "eaa2b3db9ddf7b881c730986d0ba1848f803783c0b1f6ceccc796cd4477d1635",
+    "Master.dss": "c176e4ff2f44de8dd286927ffe6aadc29cd64e07c2ce842db8f500d3222662f0"
+   },
+   "blocks": [
+    {
+     "n_states": 500,
+     "rank": 4,
+     "singular_values": [
+      22.54507597947642,
+      6.288938711320173,
+      0.4909873189331447,
+      0.4059955687635722
+     ],
+     "cond2": 55.53034987090053,
+     "cond2_column_normalized": 15.90184200698047
+    }
+   ],
+   "fit": {
+    "n_states": 500,
+    "rank": 4,
+    "singular_values": [
+     22.54507597947642,
+     6.288938711320173,
+     0.4909873189331447,
+     0.4059955687635722
+    ],
+    "cond2": 55.53034987090053,
+    "cond2_column_normalized": 15.90184200698047
+   },
+   "frozen": true,
+   "thevenin": {
+    "e_kv": [
+     [
+      0.24017770804906088,
+      1.2205324629371208e-09
+     ],
+     [
+      -0.12008885296750664,
+      -0.20799999723052692
+     ],
+     [
+      -0.12008885508155781,
+      0.20799999600999025
+     ]
+    ],
+    "zth_ohm": [
+     [
+      [
+       0.001354829200308685,
+       0.004121396883604793
+      ],
+      [
+       -0.00024477460448099435,
+       -0.0009790984463421142
+      ],
+      [
+       -0.0002447746044799587,
+       -0.0009790984463524943
+      ]
+     ],
+     [
+      [
+       -0.000244774604491287,
+       -0.000979098446345829
+      ],
+      [
+       0.0013548292003074578,
+       0.004121396883618147
+      ],
+      [
+       -0.00024477460448039994,
+       -0.0009790984463384177
+      ]
+     ],
+     [
+      [
+       -0.0002447746044507864,
+       -0.0009790984463459004
+      ],
+      [
+       -0.0002447746044789729,
+       -0.0009790984463626563
+      ],
+      [
+       0.0013548292003180778,
+       0.004121396883623063
+      ]
+     ]
+    ]
+   },
+   "opendss": {
+    "states": 500,
+    "converged": 500,
+    "newton_rescued": 0,
+    "solver_indeterminate": 0,
+    "retried": 0
+   },
+   "meter_reuse": {
+    "hp0_ev0_pv0": {
+     "assignments": 2636,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev0_pv1": {
+     "assignments": 2411,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv0": {
+     "assignments": 2945,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp0_ev1_pv1": {
+     "assignments": 2573,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv0": {
+     "assignments": 2562,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev0_pv1": {
+     "assignments": 2712,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv0": {
+     "assignments": 2542,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    },
+    "hp1_ev1_pv1": {
+     "assignments": 2619,
+     "repeated_share": 0.0,
+     "unique_fraction": 1.0
+    }
+   },
+   "augmentation_cap": {
+    "states": 500,
+    "augmented": 254,
+    "share_gamma_below_1": 0.0,
+    "share_gamma_0": 0.0
+   },
+   "labels_file": "data_out/fourwire_scale/identification/network_25.npz",
+   "labels_sha256": "1ebf97a3df47d020609555ad5b37d0ce51c577beca61869843b0356985cf7588",
+   "labels_content_sha256": "2eda279f2fb2c8a8fe0cb6577bdeaae901040d19939a0cd7986df1265610728a",
+   "seconds": 14.148704916995484
+  }
+ ]
+}
