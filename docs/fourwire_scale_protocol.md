@@ -368,3 +368,23 @@ Appended after the full label run and its first integrity report (commit f0fbbdd
 **Corrected rule.** A converged state is counted when a customer's phase-to-neutral voltage is below 0.5 × 230 V or above 1.5 × 230 V. A voltage exactly at a limit counts as inside. The declared rating is covered by a unit test, and the network files are pinned by hash to the identification run.
 
 **Scope.** Only this reported diagnostic changes. No label, no threshold and no gate check changes: the gate result of the first report (96 of 96 network-splits) does not depend on the diagnostic. `label-integrity` is rerun on the same labels (commit 6ad2af6). The corrected report replaces the first one, which stays in the git history.
+
+## Amendment 5 (2026-11-15): pooled PG-pre training and the gate-5 smoke (before the prescribed smoke run)
+Clarifies the multi-network details left implicit by §4 and fixes the §9 gate-5 run before it is submitted. It changes no data, model architecture, loss weight, optimiser or success criterion.
+
+**Prior engineering check, disclosed.** Before this amendment, the real PG-pre code path was run locally on CPU for two epochs using the train and val labels of networks 8 and 25 only. Validation loss fell from 2.38 for the untrained U1 residual to 0.38 after the first epoch (0.43 after the second). This was a code-path check, not the prescribed gate-5 smoke; it used no calib or test label and set no threshold. No 18-network or A100 smoke result had been seen.
+
+**Training-side isolation and provenance.**
+- The training loader has no default label root: the caller supplies the commit-qualified root explicitly.
+- It serves only `train`, `val` and `calib`; `test` raises before a test path is constructed, and there is no override. Shard names come from the committed manifest rather than a directory listing.
+- Before returning states, it checks label commit 6ad2af6, clean provenance, the frozen state count, contiguous shards and each shard's content hash. Tests fail on any open or directory listing inside a decoy test tree while exercising both the loader and smoke trainer.
+
+**PG-pre across networks.**
+1. For a fold, training uses the first 5,000 train states of each of its 18 pool networks; validation uses all 3,000 val states of each. Solver-indeterminate states have zero loss weight, as in ENWL1.
+2. The asinh/standardisation statistics for node inputs and target scales pool the pool's training data, with each state-bus row counting once. Edge statistics pool directed edge rows once per network. No val, calib or test value enters a scaler.
+3. A batch contains 32 states of one network, because graph sizes differ. Every epoch visits every training state once; the per-network batches are shuffled together. Since every pool network contributes 5,000 states, networks contribute equal state counts.
+4. Architecture, FP32 precision, TF32-off setting, loss, AdamW settings and cosine schedule remain the ENWL1/PG-net configuration of §4. PG-pre and PG-net allow at most 60 epochs with patience 8. `PG-scratch(B)` uses that PG-net stopping rule (60 epochs, patience 8); `PG-ft(B)` retains its distinct 30-epoch, patience-5 rule.
+
+**Gate-5 smoke.** One seed-0 PG-pre run on fold 0 for three epochs on the A100, using train and val only. Fold 0 holds out networks 4, 6, 7, 16, 18 and 25; its pool is the other 18 eligible networks. Epoch 1 is warm-up for timing; epochs 2–3 provide per-network step and validation timings. The report records the clean code and label commits, folds, state and convergence counts, peak host/GPU memory, preparation time, epoch time, the loss curve and the requested §8 projection. The smoke is a feasibility/compute gate and has no accuracy threshold.
+
+**Compute projection.** The primary projection is fit-only GPU time: measured training-step and validation-state time are fitted linearly against retained buses, never below the smallest measured time, then applied to every run allowed by §8 at its maximum epoch count and with no early stopping. It counts 12 PG-pre fits, 24 PG-net fits, 120 PG-scratch fits and 120 PG-ft fits. Data preparation, calibration and test evaluation are excluded from that number and disclosed separately; thus it is not presented as total allocation or end-to-end study time.
