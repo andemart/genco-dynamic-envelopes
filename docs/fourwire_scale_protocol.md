@@ -413,3 +413,31 @@ Records the findings of an independent read-only audit of the work through commi
 - **Validation loss, inherited from ENWL1 and kept.** Per batch of 128 consecutive states the loss is the near-limit-weighted mean; the split's loss is the mean of those batch values weighted by their converged-state counts. It is fixed for given weights, but it is not the global weighted mean. Checkpoint selection and early stopping use it for every method.
 - **Cosine schedule.** T_max is the fit's maximum epoch count (60, or 30 for PG-ft), as in ENWL1.
 - **Target scales.** For a pool of one network they equal the ENWL1 formulas, except that the V_pn scale uses the population standard deviation in FP64 where ENWL1 used the sample standard deviation in FP32 (relative difference about 6e-6 on network_25).
+
+## Amendment 6, corrections (2026-11-15): wording, evidence and limits found by the second audit round
+Appended after a second read-only audit, of commits 42f61bc to cbb0a02 and of the Amendment 6 text. That text is left as written. No label, threshold or criterion changes.
+
+**1. The opening statement of Amendment 6.**
+- "No val, calib or test value entering training or a scaler" is too broad. Validation labels select the checkpoint and stop training, as §4 prescribes. Corrected: no validation, calibration or test label enters a gradient loss or a scaler.
+- "The label generator and the integrity checker are the only code that has read them" is wrong. Test shards were also read by the transfer verification (file hashes) and by the independent auditor, who recomputed the constant-power diagnostic from test-label voltages and read every shard's provenance. None of these computes a model metric or a violation share. No training, calibration or evaluation code has read a test label.
+
+**2. Gate-5 timeline: evidence now archived.** `results/fourwire_scale_hydra_job_evidence.txt` holds the Slurm accounting lines, the reflog of the Hydra worktree and the job logs, with account identifiers redacted.
+- Job 13586491 was submitted with commit b377e92 and started at 18:32:27 on node401, 7 min 53 s after the Amendment 5 commit (18:24:34).
+- The worktree moved to a0b5e19 at 18:35:53. That is 3 min 26 s into the run, not four minutes.
+- Job 13586516 was submitted with commit a0b5e19 and ran from 18:41:53 to 18:50:27 on node401.
+- Not established: that both jobs loaded the same library versions. The two smoke reports do not record them. Both jobs used the same environment folder.
+
+**3. What the protections guarantee.** Amendment 6 states them too strongly.
+- **"The run fails if the checkout moved."** A run compares HEAD, the modified flag and a hash of `src/gencodoe/*.py` at its start and at its end, and marks its record invalid if they differ (from commit ee2479f). A checkout that is changed and restored during a run is not detected. That a final fit runs from a checkout that is never moved is an operating rule, not something the code enforces.
+- **"Never overwritten."** A run refuses an existing run folder or report file. This guards against reuse by our own code. It does not stop another process from writing there.
+- **Loader.** A symbolic link, a hard link or `..` below the label root is refused, and the manifest is pinned by its SHA-256 (ee2479f). The label root itself is trusted as given, and the check and the read are two steps.
+- **Integrity report.** The report of commit b23b286 was stamped with the checker's commit at the end of its run. From ee2479f the checker reads its commit at the start and compares at the end.
+
+**4. Two quantities.**
+- **Thevenin fitting sets (Amendment 1).** 500 candidate states are solved per network and the fit uses the converged ones: 385 to 500 states, fewer than 500 in 7 of the 24 eligible networks (network_8 385, network_5 437, network_7 443, network_2 482, network_12 and network_17 492, network_1 497).
+- **Sweep timing erratum.** The solve-only values quoted in Amendment 6 (0.144 and 0.004 ms per state) are a laptop re-measurement that was not archived. "A factor of about 3" is therefore not an established correction, on the laptop or on the A100 node. What stands: the field includes the comparison with the reference and is not a solve time. Solve times come from E2 only.
+
+**5. Determinism probe, first run (job 13587453, commit cbb0a02, node402).** The file is kept as produced: `results/fourwire_scale_determinism_job13587453.json` (SHA-256 b5a878611c6cb380447e6da3213ddba4f3de4521793ce56437d4080fcad2b305).
+- Two processes with default settings start from identical weights and differ from the third training step (largest step-loss difference 6.7e-5).
+- Two processes with PyTorch's deterministic algorithms are bit-identical over 32 steps.
+- **Limits of this run:** it recorded the requested setting, not the setting in effect, and its summary would also have given a verdict on an invalid run. It is kept as a record. The probe is repeated with corrected code (ee2479f), and the rule for the final fits is fixed in Amendment 7.
