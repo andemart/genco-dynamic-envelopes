@@ -97,8 +97,23 @@ def _pick_meters(rng: np.random.Generator, n_meters: int, n_need: int) -> np.nda
     return np.concatenate([first, rng.choice(n_meters, size=n_need - n_meters, replace=True)])
 
 
-def draw_state(rng, rng_flex, by_flags, n_cust, steps, augment):
-    """One state for n_cust customers: (step, mix, group flags, p_kw, q_kvar, meter EANs, flex_kw)."""
+def augmentation_gamma(p_kw: np.ndarray, q_kvar: np.ndarray, flex_kw: float, cap_kva: float) -> float:
+    """Largest gamma in [0, 1] with |sum(p - gamma * flex) + j sum(q)| <= cap_kva (fourwire_scale_protocol.md
+    Amendment 2); 0 if the unaugmented state already exceeds the cap. Input-only, no randomness."""
+    p0, q0 = float(p_kw.sum()), float(q_kvar.sum())
+    if np.hypot(p0, q0) > cap_kva:
+        return 0.0
+    d = flex_kw * len(p_kw)                                   # aggregate drop in P at gamma = 1
+    if d == 0 or np.hypot(p0 - d, q0) <= cap_kva:
+        return 1.0
+    r = np.sqrt(cap_kva**2 - q0**2)                           # |P| bound on the cap circle
+    return float(min(1.0, max(0.0, (p0 + np.sign(d) * r) / d)))
+
+
+def draw_state(rng, rng_flex, by_flags, n_cust, steps, augment, cap_kva=None):
+    """One state for n_cust customers: (step, mix, group flags, p_kw, q_kvar, meter EANs, flex_kw).
+    cap_kva (None = uncapped, the ENWL1 behaviour): scale the drawn augmentation by augmentation_gamma;
+    the returned flex_kw is then the applied one, and the drawn one and gamma are returned as well."""
     t = int(rng.choice(steps))
     mix = rng.uniform(0, 1, 3)
     flags = rng.uniform(size=(n_cust, 3)) < mix
@@ -117,13 +132,24 @@ def draw_state(rng, rng_flex, by_flags, n_cust, steps, augment):
             flex_kw = rng_flex.uniform(0, FLEX_EXPORT_KW)
         else:
             flex_kw = -rng_flex.uniform(0, FLEX_IMPORT_KW)
-        p_kw = p_kw - flex_kw
+        if cap_kva is None:
+            p_kw = p_kw - flex_kw
+        else:
+            drawn = flex_kw
+            gamma = augmentation_gamma(p_kw, q_kvar, drawn, cap_kva)
+            flex_kw = drawn if gamma == 1.0 else gamma * drawn
+            p_kw = p_kw - flex_kw
+            return t, mix, flags, p_kw, q_kvar, meters, flex_kw, drawn, gamma
+    if cap_kva is not None:
+        return t, mix, flags, p_kw, q_kvar, meters, flex_kw, flex_kw, 1.0
     return t, mix, flags, p_kw, q_kvar, meters, flex_kw
 
 
-def customer_states(n_cust: int, split: str, n_states: int, seed: int, augment: float) -> dict:
+def customer_states(n_cust: int, split: str, n_states: int, seed: int, augment: float,
+                    cap_kva: float | None = None) -> dict:
     """Per-customer states (docs/fourwire_scale_protocol.md §2.5), the same draw as FluviusScenarios.
-    States are drawn one after another, so the first k states do not depend on n_states."""
+    States are drawn one after another, so the first k states do not depend on n_states.
+    cap_kva: Amendment 2 augmentation cap (adds flex_kw_drawn and gamma; flex_kw is the applied value)."""
     rng = np.random.default_rng(seed)
     rng_flex = np.random.default_rng(seed + 7)
     groups = {name: load_group(name) for name in GROUPS}
@@ -132,9 +158,14 @@ def customer_states(n_cust: int, split: str, n_states: int, seed: int, augment: 
     out = {"step": np.zeros(n_states, np.int64), "mix": np.zeros((n_states, 3)), "flex_kw": np.zeros(n_states),
            "groups": np.zeros((n_states, n_cust, 3), np.int8), "p_kw": np.zeros((n_states, n_cust)),
            "q_kvar": np.zeros((n_states, n_cust)), "meters": np.zeros((n_states, n_cust), np.int64)}
+    if cap_kva is not None:
+        out["flex_kw_drawn"], out["gamma"] = np.zeros(n_states), np.ones(n_states)
     for s in range(n_states):
+        r = draw_state(rng, rng_flex, by_flags, n_cust, steps, augment, cap_kva)
         (out["step"][s], out["mix"][s], out["groups"][s], out["p_kw"][s], out["q_kvar"][s], out["meters"][s],
-         out["flex_kw"][s]) = draw_state(rng, rng_flex, by_flags, n_cust, steps, augment)
+         out["flex_kw"][s]) = r[:7]
+        if cap_kva is not None:
+            out["flex_kw_drawn"][s], out["gamma"][s] = r[7:]
     return out
 
 

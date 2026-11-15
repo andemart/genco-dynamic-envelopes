@@ -2,7 +2,8 @@
 
     python -m gencodoe.fourwire_scale identify [--networks 1 2 ...] [--processes k]
 
-identify (Amendment 1): per network, the first 500 training states (frozen generator order), OpenDSS
+identify (Amendments 1, 2): per network, the first 500 training states (frozen generator order, capped
+augmentation), OpenDSS
 labels under the §3 failure rule, and the Thevenin root equivalent fitted on the converged ones, with
 fit diagnostics. Writes data_out/fourwire_scale/ (networks, labels, Thevenin) and
 results/fourwire_scale_identification.json (hashes, diagnostics, frozen E and Z_th).
@@ -30,6 +31,7 @@ SPLIT_INDEX = {"train": 0, "val": 1, "calib": 2, "test": 3}
 AUGMENT = 0.5            # §2.5, passed explicitly; the generator default stays 0.0
 N_IDENT = 500            # Amendment 1
 OPENDSS = {"tolerance": 1e-6, "retry_algorithm": "newton"}   # §3
+CAP_KVA = 1.10 * 800.0   # Amendment 2: aggregate customer apparent power cap for the augmentation
 
 
 def seed(network: int, split: str) -> int:
@@ -61,6 +63,15 @@ def meter_reuse(st: dict) -> dict:
                 "assignments": int(n_assign), "repeated_share": 1 - n_unique / n_assign,
                 "unique_fraction": n_unique / n_assign}
     return out
+
+
+def augmentation_report(st: dict) -> dict:
+    """Amendment 2 report: share of augmented states (drawn f != 0) with gamma < 1 and with gamma = 0."""
+    aug = st["flex_kw_drawn"] != 0
+    g = st["gamma"][aug]
+    return {"states": int(len(aug)), "augmented": int(aug.sum()),
+            "share_gamma_below_1": float((g < 1).mean()) if aug.any() else 0.0,
+            "share_gamma_0": float((g == 0).mean()) if aug.any() else 0.0}
 
 
 def fit_diagnostics(v_root: np.ndarray, i_root: np.ndarray) -> dict:
@@ -104,7 +115,7 @@ def identify_network(network: int) -> dict:
     st = {}
     for block in range(4):                                      # Amendment 1 rank rule: 500 .. 2,000 states
         n = N_IDENT * (block + 1)
-        st = customer_states(len(names), "train", n, seed(network, "train"), AUGMENT)
+        st = customer_states(len(names), "train", n, seed(network, "train"), AUGMENT, CAP_KVA)
         p, q = connection_states(st, idx, share)
         lab = label_block(ex, p[n - N_IDENT:], q[n - N_IDENT:])
         prev = rec.get("_labels")
@@ -125,9 +136,11 @@ def identify_network(network: int) -> dict:
     rec["opendss"] = {"states": int(len(c)), "converged": int(c.sum()), "newton_rescued": int(lab["rescued"].sum()),
                       "solver_indeterminate": int((~c).sum()), "retried": int(lab["retried"].sum())}
     rec["meter_reuse"] = meter_reuse(st)
+    rec["augmentation_cap"] = augmentation_report(st)
     out = OUT / "identification" / f"network_{network}.npz"
     out.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(out, step=st["step"], mix=st["mix"], flex_kw=st["flex_kw"], groups=st["groups"],
+    np.savez(out, step=st["step"], mix=st["mix"], flex_kw=st["flex_kw"], flex_kw_drawn=st["flex_kw_drawn"],
+             gamma=st["gamma"], groups=st["groups"],
              meters=st["meters"], p_kw_customer=st["p_kw"], q_kvar_customer=st["q_kvar"],
              customer_names=np.array(names), connection_customer=idx, connection_share=share,
              e=th.e, zth=th.zth, **lab)
@@ -144,7 +157,8 @@ def identify(networks: list[int], processes: int) -> Path:
     dirty = bool(subprocess.run(["git", "status", "--porcelain", "src"], capture_output=True, text=True,
                                 cwd=ROOT).stdout.strip())
     out = RESULTS / "fourwire_scale_identification.json"
-    out.write_text(json.dumps({"protocol": "docs/fourwire_scale_protocol.md, Amendment 1", "code_commit": commit,
+    out.write_text(json.dumps({"protocol": "docs/fourwire_scale_protocol.md, Amendments 1 and 2",
+                               "cap_kva": CAP_KVA, "code_commit": commit,
                                "src_dirty": dirty, "augment": AUGMENT, "opendss": OPENDSS,
                                "networks": recs}, indent=1))
     return out

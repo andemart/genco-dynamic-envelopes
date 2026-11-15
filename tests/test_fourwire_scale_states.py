@@ -34,9 +34,10 @@ def test_customer_states_equal_enwl1_generator(tmp_path):
 
 
 def test_prefix_invariance_500_of_10000():
-    """Amendment 1: a 500-state run equals states [:500] of a 10,000-state run (largest network, 883)."""
-    a = dk.customer_states(883, "train", 500, fs.seed(17, "train"), fs.AUGMENT)
-    b = dk.customer_states(883, "train", 10_000, fs.seed(17, "train"), fs.AUGMENT)
+    """Amendment 1: a 500-state run equals states [:500] of a 10,000-state run (largest network, 883),
+    with the Amendment 2 cap."""
+    a = dk.customer_states(883, "train", 500, fs.seed(17, "train"), fs.AUGMENT, fs.CAP_KVA)
+    b = dk.customer_states(883, "train", 10_000, fs.seed(17, "train"), fs.AUGMENT, fs.CAP_KVA)
     _same(a, b, 500)
 
 
@@ -93,3 +94,35 @@ def test_fit_diagnostics_rank_and_scaling():
     assert d2["cond2_column_normalized"] == pytest.approx(d["cond2_column_normalized"])
     i_col = np.repeat(i[:, :1], 3, axis=1)                         # collinear phase currents
     assert fs.fit_diagnostics(np.zeros((50, 3)), i_col)["rank"] == 2
+
+
+def test_cap_gamma_one_is_bit_identical_and_cap_holds():
+    """Amendment 2: gamma = 1 leaves the state bit-identical; otherwise the aggregate stays within the cap."""
+    n_cust = 471
+    raw = dk.customer_states(n_cust, "train", 300, 7007, fs.AUGMENT)
+    cap = dk.customer_states(n_cust, "train", 300, 7007, fs.AUGMENT, fs.CAP_KVA)
+    for k in ("step", "mix", "groups", "meters", "q_kvar"):
+        assert np.array_equal(raw[k], cap[k]), k                  # same draws, same streams
+    assert np.array_equal(raw["flex_kw"], cap["flex_kw_drawn"])
+    one = cap["gamma"] == 1.0
+    assert np.array_equal(raw["p_kw"][one], cap["p_kw"][one]) and np.array_equal(raw["flex_kw"][one], cap["flex_kw"][one])
+    assert (~one).any() and ((cap["flex_kw_drawn"] < 0) & ~one).any() and ((cap["flex_kw_drawn"] > 0) & ~one).any()
+    s_agg = np.hypot(cap["p_kw"].sum(1), cap["q_kvar"].sum(1))
+    s0 = np.hypot((raw["p_kw"] + raw["flex_kw"][:, None]).sum(1), raw["q_kvar"].sum(1))   # unaugmented
+    part = (cap["gamma"] > 0) & (cap["gamma"] < 1)
+    assert np.allclose(s_agg[part], fs.CAP_KVA)                     # largest gamma: exactly on the cap
+    assert np.all(s_agg[one & (cap["flex_kw_drawn"] != 0)] <= fs.CAP_KVA + 1e-9)   # full augmentation fits
+    zero = (cap["gamma"] == 0) & (cap["flex_kw_drawn"] != 0)
+    assert np.all(s0[zero] > fs.CAP_KVA) and np.allclose(cap["p_kw"][zero], raw["p_kw"][zero] + raw["flex_kw"][zero, None])
+    assert np.array_equal(cap["gamma"][cap["flex_kw_drawn"] == 0], np.ones((cap["flex_kw_drawn"] == 0).sum()))
+
+
+def test_gamma_edge_cases():
+    p, q = np.full(10, 50.0), np.full(10, 10.0)                    # S0 = |500 + 100j| ~ 510 kVA
+    assert dk.augmentation_gamma(p, q, 0.0, 880.0) == 1.0
+    assert dk.augmentation_gamma(p, q, -1.0, 880.0) == 1.0         # 600 + 100j fits
+    g = dk.augmentation_gamma(p, q, -50.0, 880.0)                  # import: 1000 + 100j does not fit
+    assert 0 < g < 1 and np.isclose(np.hypot(500 + 500 * g, 100), 880.0)
+    g = dk.augmentation_gamma(p, q, 200.0, 880.0)                  # export: P goes negative
+    assert np.isclose(np.hypot(500 - 2000 * g, 100), 880.0) and 500 - 2000 * g < 0
+    assert dk.augmentation_gamma(np.full(10, 100.0), q, -1.0, 880.0) == 0.0   # unaugmented > cap
