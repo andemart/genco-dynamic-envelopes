@@ -1,6 +1,7 @@
 """Label shards, manifests and the integrity gate of the 25-network study
 (docs/fourwire_scale_protocol.md §2.5, §3, §9 gate 4). Train states only."""
 import json
+import re
 
 import numpy as np
 import pytest
@@ -8,6 +9,7 @@ import pytest
 from gencodoe import csiro_convert as cc
 from gencodoe import datakit_fluvius as dk
 from gencodoe import fourwire_scale as fs
+from gencodoe.fourwire_net import V_PN_NOM
 
 pytest.importorskip("opendssdirect")
 pytestmark = pytest.mark.skipif(not (dk.ROOT / "data_out/fluvius/geen_ZP.npz").exists()
@@ -74,3 +76,17 @@ def test_integrity_passes_and_fails_closed(small):
     (folder / "manifest.json").write_text(json.dumps(man))
     short = fs.integrity_split(TASK)
     assert short["states"] == 24 and not short["ok"]
+
+
+def test_constant_power_range_uses_the_declared_load_rating(tmp_path):
+    """Amendment 4, correction: OpenDSS switches the load model at 0.5 and 1.5 pu of the load's 0.23 kV
+    (115 V and 345 V), not of the 240.18 V study base."""
+    lo, hi = 0.5 * 0.23, 1.5 * 0.23                               # kV
+    v = np.array([[lo, 0.24], [np.nextafter(lo, 0), 0.24], [hi, 0.24], [np.nextafter(hi, 1), 0.24],
+                  [0.49 * V_PN_NOM, 0.24],                        # 117.7 V: the first rule counted it
+                  [1.45 * V_PN_NOM, 0.24]])                       # 348.3 V: the first rule missed it
+    assert fs.outside_constant_power_range(v).tolist() == [False, True, False, True, False, True]
+    assert not fs.outside_constant_power_range(np.array([[0.4793 * V_PN_NOM]]))[0]   # network_7's lowest
+    cc.convert_all(tmp_path)
+    declared = {m for f in tmp_path.glob("network_*/Loads.dss") for m in re.findall(r"kV=([0-9.]+)", f.read_text())}
+    assert declared == {str(fs.LOAD_KV)}                          # every load of the 25 networks

@@ -524,6 +524,17 @@ def labels(networks: list[int], splits: list[str], processes: int) -> Path:
     return OUT / "labels"
 
 
+LOAD_KV, LOAD_V_PU = 0.23, (0.5, 1.5)   # every load's declared rating; Vminpu and Vmaxpu of §3 (unbalanced.py)
+
+
+def outside_constant_power_range(v_kv: np.ndarray) -> np.ndarray:
+    """Customer phase-to-neutral voltage magnitudes (S, n_customers) in kV -> (S,): a customer is outside
+    OpenDSS's constant-power range (Amendment 4, correction). OpenDSS applies Vminpu/Vmaxpu to the load's
+    declared kV, not to the study base of phase_neutral_pu (0.24018 kV): the limits are 115 V and 345 V.
+    A voltage exactly at a limit counts as inside."""
+    return ((v_kv < LOAD_V_PU[0] * LOAD_KV) | (v_kv > LOAD_V_PU[1] * LOAD_KV)).any(1)
+
+
 def _same(a: np.ndarray, b: np.ndarray) -> bool:
     return a.shape == b.shape and a.dtype == b.dtype and a.tobytes() == b.tobytes()
 
@@ -536,8 +547,8 @@ def integrity_split(task: tuple[int, str]) -> dict:
     - stored inputs equal the states regenerated from the seed, and their calendar days are the split's;
     - the ENWL1 semantic checker (fourwire_labels.semantic_check, its thresholds) on every shard;
     - where the identification (train) or E1 (val) labels are on disk: the same states are bit-identical.
-    Reported only: converged states with a customer voltage outside 0.5-1.5 pu, where OpenDSS no longer
-    models the load as constant power (§3)."""
+    Reported only: converged states with a customer voltage outside OpenDSS's constant-power range
+    (outside_constant_power_range)."""
     from .datakit_fluvius import day_split
     from .fourwire_labels import semantic_check
     from .fourwire_net import load_fourwire, phase_neutral_pu
@@ -567,7 +578,8 @@ def integrity_split(task: tuple[int, str]) -> dict:
         p, q = arrays["p_kw_customer"][:, idx] * share, arrays["q_kvar_customer"][:, idx] * share
         sem.append(semantic_check({"scenario": arrays["state"], "p_kw": p, "q_kvar": q, **arrays}, net))
         vpn = phase_neutral_pu(net, arrays["V"][arrays["converged"]])
-        rep["converged_states_outside_constant_power_range"] += int(((vpn < 0.5) | (vpn > 1.5)).any(1).sum())
+        rep["converged_states_outside_constant_power_range"] += int(
+            outside_constant_power_range(vpn * V_PN_NOM_KV).sum())
         pos = b
     rep["states"] = pos
     rep["split_days_ok"] = bool(set(day_split(st["step"])) == {split})
