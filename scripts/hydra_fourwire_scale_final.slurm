@@ -3,7 +3,7 @@
 # One script, six stages; the stage and the array say what a task does. Submit from the worktree that was
 # created for the frozen commit and is never moved, after `python -m gencodoe.fourwire_scale_eval networks`:
 #
-#   scripts/hydra_fourwire_scale_submit.sh <label folder> [<job ids of the A100 dry runs>]
+#   scripts/hydra_fourwire_scale_submit.sh <label folder>
 # which submits, with their dependencies:
 #   stage      array                 time limit   cores
 #   pgpre      0-11                  12 h         8
@@ -14,7 +14,7 @@
 #   envelopes  25,10,1,7,2,17        4 h          8      after every evaluate task
 #
 # pgpre: task = 3 x fold + seed. Every other stage: task = network number.
-# A run with a valid record is skipped (the command says so with exit code 10): it is never run again.
+# A run whose record is valid and passes every check is skipped (exit code 10): it is never run again.
 # Whether an attempt that left no valid record may be run again is decided by the command (Amendment 7).
 # An error inside a final run halts every later final command (data_out/fourwire_scale/runs/final/HALT.json).
 #SBATCH --job-name=fwscale-final
