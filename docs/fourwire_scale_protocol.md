@@ -357,3 +357,14 @@ Specifies how the labels of §2.5 are generated and what §9 gate 4 checks. Comm
 - A failed check is reported as it is.
 
 **Test split.** Test labels are generated in this run and pass through the gate. The gate is a consistency check: it computes no model metric and no violation share. As §3 requires for every network and split, the counts of converged, Newton-rescued and solver-indeterminate test states are reported. Test shards live in their own directory tree (`labels/test/`), which training, debugging and calibration code never reads (§2.6).
+
+## Amendment 4, correction (2026-11-15): voltage base of the reported constant-power diagnostic
+Appended after the full label run and its first integrity report (commit f0fbbdd). The Amendment 4 text above is left as written.
+
+**What was wrong.** Amendment 4 reports, without gating on it, the converged states "with a customer voltage outside 0.5–1.5 pu, where OpenDSS no longer models the load as constant power". The checker applied 0.5 and 1.5 to the study base of 240.18 V. OpenDSS applies `Vminpu` and `Vmaxpu` to each load's declared rating, and every load of the 25 networks declares `kV=0.23`. The load model therefore switches at 115 V and 345 V, which is 0.479 and 1.436 pu on the study base.
+
+**First report (kept in the git history, f0fbbdd).** It counted 113 converged states: network_7 108, network_8 3, network_22 2. In the training states among them, the affected customers sit between 0.479 and 0.500 pu of the study base, and KCL with constant-power loads closes to below 1 mA. These states are inside OpenDSS's constant-power range.
+
+**Corrected rule.** A converged state is counted when a customer's phase-to-neutral voltage is below 0.5 × 230 V or above 1.5 × 230 V. A voltage exactly at a limit counts as inside. The declared rating is covered by a unit test, and the network files are pinned by hash to the identification run.
+
+**Scope.** Only this reported diagnostic changes. No label, no threshold and no gate check changes: the gate result of the first report (96 of 96 network-splits) does not depend on the diagnostic. `label-integrity` is rerun on the same labels (commit 6ad2af6). The corrected report replaces the first one, which stays in the git history.
