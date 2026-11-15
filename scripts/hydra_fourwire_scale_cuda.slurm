@@ -9,7 +9,7 @@
 #SBATCH --time=08:00:00
 #SBATCH --output=logs/%x-%j.out
 set -euo pipefail
-cd "$VSC_DATA/genco-dynamic-envelopes"
+cd "${GENCODOE_WORKTREE:-$VSC_DATA/genco-dynamic-envelopes}"
 module load Python/3.12.3-GCCcore-13.3.0
 export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 : "${GENCODOE_COMMIT:?GENCODOE_COMMIT must be set}"
