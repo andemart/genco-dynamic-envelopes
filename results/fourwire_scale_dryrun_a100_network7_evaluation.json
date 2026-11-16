@@ -1,0 +1,1015 @@
+{
+ "protocol": "docs/fourwire_scale_protocol.md \u00a75-\u00a77, Amendments 8 and 9",
+ "network": 7,
+ "fold": 0,
+ "dry_run": true,
+ "evaluated_split": "second half of val",
+ "calibration_split": "first half of val",
+ "code_commit": "e85164c24ecf0adc29bdd97e60d0c62b61f45ccd",
+ "gencodoe_commit": "e85164c24ecf0adc29bdd97e60d0c62b61f45ccd",
+ "src_dirty": false,
+ "source_sha256": "661c1d265b870c57a51df58312930b78d5b0c81c259d24434dd30ceac1c4be87",
+ "job_id": "13588811",
+ "node": "node408.hydra.os",
+ "platform": "Linux-5.14.0-687.65.1.el9_8.x86_64-x86_64-with-glibc2.34",
+ "cpus": 32,
+ "python": "3.12.3",
+ "numpy": "2.4.6",
+ "torch": "2.11.0+cu126",
+ "torch_geometric": "2.8.1",
+ "device": "cuda",
+ "deterministic_algorithms": true,
+ "cublas_workspace_config": ":4096:8",
+ "cudnn_benchmark": false,
+ "cudnn_deterministic": false,
+ "tf32": false,
+ "software": {
+  "python": "3.12.3",
+  "numpy": "2.4.6",
+  "scipy": "1.18.1",
+  "torch": "2.11.0+cu126",
+  "torch_cuda": "12.6",
+  "torch_geometric": "2.8.1",
+  "numba": "0.68.0",
+  "opendssdirect": "0.9.4",
+  "pyg_lib": null,
+  "torch_scatter": "2.1.2+pt211cu126",
+  "torch_sparse": null,
+  "torch_cluster": null
+ },
+ "label_manifest_sha256": "5625aa637941593ba7212abc69bd277cac58afcf57ff482b23749742785b7dc9",
+ "identification_sha256": "34f1d07469721d8915143faec1aa78caa1bbab3bf1d557fd389cf55f9994f123",
+ "freeze_sha256": null,
+ "cuda": "12.6",
+ "cudnn": 91002,
+ "cuda_device": "NVIDIA A100-PCIE-40GB",
+ "cuda_total_mb": 40468.4375,
+ "unchanged_during_run": true,
+ "valid": true,
+ "label_commit": "6ad2af67233ebb162ece7640cd047e1a4f1dd631",
+ "earlier_attempts": [],
+ "screen_implementation_sha256": "80c66e51636f949019d7bd9c67f078717fe5c0f6b8911331e1b691fbf4bb9e90",
+ "alpha": 0.01,
+ "microbatch": 256,
+ "retained_buses": 876,
+ "states": 1500,
+ "converged": 1325,
+ "truth": {
+  "converged_not_safe": {
+   "import": 827,
+   "export": 756
+  }
+ },
+ "exact_sweep_vs_opendss": {
+  "states": 1500,
+  "opendss_indeterminate": 175,
+  "sweep_nonconverged": 180,
+  "sweep_nonconverged_opendss_converged": 5,
+  "sweep_converged_opendss_indeterminate": 0,
+  "sweep_clears_opendss_indeterminate_pairs": 0,
+  "flag_differs_where_both_converge": {
+   "undervoltage": 0,
+   "overvoltage": 0,
+   "cable_overload": 0,
+   "transformer_overload": 2
+  },
+  "sweep_clears_opendss_flags": {
+   "undervoltage": 0,
+   "overvoltage": 0,
+   "cable_overload": 0,
+   "transformer_overload": 2
+  },
+  "decision_differs_pairs": 0,
+  "sweep_safe_opendss_not_safe_pairs": 0
+ },
+ "per_state_file": "network_7_20261116T030503.npz",
+ "per_state_sha256": "e03cddba5e487eda34b1d16a4eff2af499c921a6829c5e02285c041ec59b0478",
+ "methods": {
+  "U1": {
+   "fit": null,
+   "checkpoint_sha256": null,
+   "selected_epoch": null,
+   "calibration": {
+    "set": "target calib",
+    "states": 1500,
+    "converged": 1333,
+    "usable": true,
+    "margins": {
+     "lo": [
+      -0.012697815220880204,
+      -0.07872351833480717,
+      1.000094095837793,
+      0.8260528853706797
+     ],
+     "hi": [
+      0.25839387420973015,
+      0.05039374840780719,
+      1.4890748440358768,
+      1.0869845649273444
+     ]
+    }
+   },
+   "state": {
+    "converged_states": 1325,
+    "nonfinite_predictions": 0,
+    "vpn": {
+     "mae": 0.008311097621678766,
+     "max": 0.26607092896414736,
+     "p95": 0.04314265694074272,
+     "p99": 0.13287928849498837
+    },
+    "complex_voltage": {
+     "mae": 0.0036657631335117275,
+     "max": 0.13978275990995156
+    },
+    "neutral_voltage": {
+     "mae": 0.003911960490418951,
+     "max": 0.11911060863193394
+    },
+    "phase_current_over_rating": {
+     "mae": 0.0011141315622013202,
+     "max": 1.3058166608883504
+    },
+    "neutral_current_over_rating": {
+     "mae": 0.0031218370406836016,
+     "max": 1.3042676241837226
+    },
+    "transformer_loading": {
+     "mae": 0.011420325783287026,
+     "max": 0.09637332329596515
+    },
+    "transformer_loading_proxy_of_opendss_state": {
+     "mae": 0.003472232937859786,
+     "max": 0.02708488981425898
+    }
+   },
+   "screen": {
+    "import": {
+     "cleared": 0,
+     "rejected": 888,
+     "fallback": 612,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 53,
+     "rejected": 844,
+     "fallback": 603,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.405
+   },
+   "fallback_exact_engine": {
+    "fallback_pairs": 1215,
+    "decision_differs_pairs": 0,
+    "exact_safe_opendss_not_safe_pairs": 0
+   },
+   "screen_cu120_240": {
+    "import": {
+     "cleared": 0,
+     "rejected": 888,
+     "fallback": 612,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 53,
+     "rejected": 844,
+     "fallback": 603,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.405
+   },
+   "screen_cu16_89": {
+    "import": {
+     "cleared": 0,
+     "rejected": 891,
+     "fallback": 609,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 829,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036071483643479573
+    },
+    "export": {
+     "cleared": 53,
+     "rejected": 847,
+     "fallback": 600,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 761,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.003928835142446395
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.403
+   }
+  },
+  "PG-net": {
+   "fit": "pgnet_net7",
+   "checkpoint_sha256": "9d9a0c2983fc17a3f24b7397c7744c0217c0024031b1e89974a9a3309b2907ca",
+   "selected_epoch": 2,
+   "calibration": {
+    "set": "target calib",
+    "states": 1500,
+    "converged": 1333,
+    "usable": true,
+    "margins": {
+     "lo": [
+      -0.023650743721487122,
+      -0.037293758814915146,
+      0.982451524964502,
+      0.8261793097248209
+     ],
+     "hi": [
+      0.21422260050138664,
+      0.04380934250875934,
+      1.4014548752937253,
+      1.0776586995514796
+     ]
+    }
+   },
+   "state": {
+    "converged_states": 1325,
+    "nonfinite_predictions": 0,
+    "vpn": {
+     "mae": 0.005635799085858529,
+     "max": 0.22210895418665472,
+     "p95": 0.01934625322959304,
+     "p99": 0.08914868758551657
+    },
+    "complex_voltage": {
+     "mae": 0.002609180952941982,
+     "max": 0.11296503317336419
+    },
+    "neutral_voltage": {
+     "mae": 0.003297828530719792,
+     "max": 0.10168344961723312
+    },
+    "phase_current_over_rating": {
+     "mae": 0.0008007521621594658,
+     "max": 1.148528416970713
+    },
+    "neutral_current_over_rating": {
+     "mae": 0.002186749735904527,
+     "max": 1.1478221630505425
+    },
+    "transformer_loading": {
+     "mae": 0.008935608781932097,
+     "max": 0.08599830040778156
+    },
+    "transformer_loading_proxy_of_opendss_state": {
+     "mae": 0.003472232937859786,
+     "max": 0.02708488981425898
+    }
+   },
+   "screen": {
+    "import": {
+     "cleared": 0,
+     "rejected": 888,
+     "fallback": 612,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 245,
+     "rejected": 872,
+     "fallback": 383,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.33166666666666667
+   },
+   "fallback_exact_engine": {
+    "fallback_pairs": 995,
+    "decision_differs_pairs": 0,
+    "exact_safe_opendss_not_safe_pairs": 0
+   },
+   "screen_cu120_240": {
+    "import": {
+     "cleared": 0,
+     "rejected": 888,
+     "fallback": 612,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 245,
+     "rejected": 872,
+     "fallback": 383,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.33166666666666667
+   },
+   "screen_cu16_89": {
+    "import": {
+     "cleared": 0,
+     "rejected": 891,
+     "fallback": 609,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 829,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036071483643479573
+    },
+    "export": {
+     "cleared": 244,
+     "rejected": 875,
+     "fallback": 381,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 761,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.003928835142446395
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.33
+   }
+  },
+  "PG-pre-tc": {
+   "fit": "pgpre_fold0_seed0",
+   "checkpoint_sha256": "d36fca5820725a4752d7e4acaf8bd26e74bd87752691daa4afbb792959a88ce3",
+   "selected_epoch": 2,
+   "calibration": {
+    "set": "target calib",
+    "states": 1500,
+    "converged": 1333,
+    "usable": true,
+    "margins": {
+     "lo": [
+      -0.013856052678155595,
+      -0.07513496109146,
+      0.9965281137789912,
+      0.8259821797106449
+     ],
+     "hi": [
+      0.2549854422028942,
+      0.051521468286957584,
+      1.4823147246893376,
+      1.0866945303026598
+     ]
+    }
+   },
+   "state": {
+    "converged_states": 1325,
+    "nonfinite_predictions": 0,
+    "vpn": {
+     "mae": 0.008377751414374803,
+     "max": 0.26267969366945326,
+     "p95": 0.04007902978717893,
+     "p99": 0.12945891171703786
+    },
+    "complex_voltage": {
+     "mae": 0.003888323559434777,
+     "max": 0.13668734908706756
+    },
+    "neutral_voltage": {
+     "mae": 0.003995699571930659,
+     "max": 0.11847411558852357
+    },
+    "phase_current_over_rating": {
+     "mae": 0.0010669990146938647,
+     "max": 1.29434735308759
+    },
+    "neutral_current_over_rating": {
+     "mae": 0.0029900241949081226,
+     "max": 1.2929787680706908
+    },
+    "transformer_loading": {
+     "mae": 0.011389579222110653,
+     "max": 0.0960135496601009
+    },
+    "transformer_loading_proxy_of_opendss_state": {
+     "mae": 0.003472232937859786,
+     "max": 0.02708488981425898
+    }
+   },
+   "screen": {
+    "import": {
+     "cleared": 0,
+     "rejected": 898,
+     "fallback": 602,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 68,
+     "rejected": 845,
+     "fallback": 587,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.3963333333333333
+   },
+   "fallback_exact_engine": {
+    "fallback_pairs": 1189,
+    "decision_differs_pairs": 0,
+    "exact_safe_opendss_not_safe_pairs": 0
+   },
+   "screen_cu120_240": {
+    "import": {
+     "cleared": 0,
+     "rejected": 898,
+     "fallback": 602,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 68,
+     "rejected": 845,
+     "fallback": 587,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.3963333333333333
+   },
+   "screen_cu16_89": {
+    "import": {
+     "cleared": 0,
+     "rejected": 901,
+     "fallback": 599,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 829,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036071483643479573
+    },
+    "export": {
+     "cleared": 68,
+     "rejected": 848,
+     "fallback": 584,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 761,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.003928835142446395
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.3943333333333333
+   }
+  },
+  "PG-zs": {
+   "fit": "pgpre_fold0_seed0",
+   "checkpoint_sha256": "d36fca5820725a4752d7e4acaf8bd26e74bd87752691daa4afbb792959a88ce3",
+   "selected_epoch": 2,
+   "calibration": {
+    "set": "pool calib",
+    "networks": [
+     1,
+     2,
+     3,
+     5,
+     8,
+     9,
+     10,
+     11,
+     12,
+     14,
+     15,
+     17,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24
+    ],
+    "states": 27000,
+    "converged": 26374,
+    "usable": true,
+    "margins": {
+     "lo": [
+      -0.005673660735573183,
+      -0.08198958838531323,
+      0.9964578370998562,
+      0.762158503913781
+     ],
+     "hi": [
+      0.17021516570359996,
+      0.02171079548629784,
+      1.2209208337799873,
+      1.0590072328533926
+     ]
+    }
+   },
+   "state": {
+    "converged_states": 1325,
+    "nonfinite_predictions": 0,
+    "vpn": {
+     "mae": 0.008377751414374803,
+     "max": 0.26267969366945326,
+     "p95": 0.04007902978717893,
+     "p99": 0.12945891171703786
+    },
+    "complex_voltage": {
+     "mae": 0.003888323559434777,
+     "max": 0.13668734908706756
+    },
+    "neutral_voltage": {
+     "mae": 0.003995699571930659,
+     "max": 0.11847411558852357
+    },
+    "phase_current_over_rating": {
+     "mae": 0.0010669990146938647,
+     "max": 1.29434735308759
+    },
+    "neutral_current_over_rating": {
+     "mae": 0.0029900241949081226,
+     "max": 1.2929787680706908
+    },
+    "transformer_loading": {
+     "mae": 0.011389579222110653,
+     "max": 0.0960135496601009
+    },
+    "transformer_loading_proxy_of_opendss_state": {
+     "mae": 0.003472232937859786,
+     "max": 0.02708488981425898
+    }
+   },
+   "screen": {
+    "import": {
+     "cleared": 0,
+     "rejected": 931,
+     "fallback": 569,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 459,
+     "rejected": 843,
+     "fallback": 198,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.2556666666666667
+   },
+   "fallback_exact_engine": {
+    "fallback_pairs": 767,
+    "decision_differs_pairs": 0,
+    "exact_safe_opendss_not_safe_pairs": 0
+   },
+   "screen_cu120_240": {
+    "import": {
+     "cleared": 0,
+     "rejected": 931,
+     "fallback": 569,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 459,
+     "rejected": 843,
+     "fallback": 198,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.2556666666666667
+   },
+   "screen_cu16_89": {
+    "import": {
+     "cleared": 0,
+     "rejected": 933,
+     "fallback": 567,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 829,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036071483643479573
+    },
+    "export": {
+     "cleared": 456,
+     "rejected": 846,
+     "fallback": 198,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 761,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.003928835142446395
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.255
+   }
+  },
+  "PG-scratch_b200_seed0": {
+   "fit": "scratch_net7_b200_seed0",
+   "checkpoint_sha256": "9aac6cb0dda240f2dbddf180477f5ca01568e1eb7892d2bb3a9906bff02552d7",
+   "selected_epoch": 2,
+   "calibration": {
+    "set": "target calib",
+    "states": 1500,
+    "converged": 1333,
+    "usable": true,
+    "margins": {
+     "lo": [
+      -0.013755240200521546,
+      -0.06663736530441167,
+      0.9878884733789568,
+      0.8256970664672574
+     ],
+     "hi": [
+      0.24649368767103386,
+      0.048807311182465396,
+      1.465509500895368,
+      1.085750630260295
+     ]
+    }
+   },
+   "state": {
+    "converged_states": 1325,
+    "nonfinite_predictions": 0,
+    "vpn": {
+     "mae": 0.009476908111019932,
+     "max": 0.2542121334581628,
+     "p95": 0.03298128439996709,
+     "p99": 0.121033727357688
+    },
+    "complex_voltage": {
+     "mae": 0.004647852730709476,
+     "max": 0.13316352648104662
+    },
+    "neutral_voltage": {
+     "mae": 0.005507136317717551,
+     "max": 0.1139429495829002
+    },
+    "phase_current_over_rating": {
+     "mae": 0.001065997200052905,
+     "max": 1.265300338723317
+    },
+    "neutral_current_over_rating": {
+     "mae": 0.002941592962347355,
+     "max": 1.2639426492627877
+    },
+    "transformer_loading": {
+     "mae": 0.011140996803551129,
+     "max": 0.0953658855899715
+    },
+    "transformer_loading_proxy_of_opendss_state": {
+     "mae": 0.003472232937859786,
+     "max": 0.02708488981425898
+    }
+   },
+   "screen": {
+    "import": {
+     "cleared": 0,
+     "rejected": 930,
+     "fallback": 570,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 98,
+     "rejected": 846,
+     "fallback": 556,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.3753333333333333
+   },
+   "fallback_exact_engine": {
+    "fallback_pairs": 1126,
+    "decision_differs_pairs": 0,
+    "exact_safe_opendss_not_safe_pairs": 0
+   },
+   "screen_cu120_240": {
+    "import": {
+     "cleared": 0,
+     "rejected": 930,
+     "fallback": 570,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 98,
+     "rejected": 846,
+     "fallback": 556,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.3753333333333333
+   },
+   "screen_cu16_89": {
+    "import": {
+     "cleared": 0,
+     "rejected": 932,
+     "fallback": 568,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 829,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036071483643479573
+    },
+    "export": {
+     "cleared": 98,
+     "rejected": 849,
+     "fallback": 553,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 761,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.003928835142446395
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.37366666666666665
+   }
+  },
+  "PG-ft_b200_seed0": {
+   "fit": "ft_net7_b200_seed0",
+   "checkpoint_sha256": "fbb1214122bca22ff555f11242fcff41fe68393864de81cf60fdaeaa4a12642c",
+   "selected_epoch": 2,
+   "calibration": {
+    "set": "target calib",
+    "states": 1500,
+    "converged": 1333,
+    "usable": true,
+    "margins": {
+     "lo": [
+      -0.014066159050988847,
+      -0.07280966468948247,
+      0.9941529604511484,
+      0.8259256060233735
+     ],
+     "hi": [
+      0.2525820637162609,
+      0.05161743176504596,
+      1.4775525888365495,
+      1.0864723337296336
+     ]
+    }
+   },
+   "state": {
+    "converged_states": 1325,
+    "nonfinite_predictions": 0,
+    "vpn": {
+     "mae": 0.008274217195924964,
+     "max": 0.2602792566034791,
+     "p95": 0.03804961377268676,
+     "p99": 0.1270550150461041
+    },
+    "complex_voltage": {
+     "mae": 0.004059871670145463,
+     "max": 0.13511277791607984
+    },
+    "neutral_voltage": {
+     "mae": 0.00414478058645891,
+     "max": 0.11777364206188973
+    },
+    "phase_current_over_rating": {
+     "mae": 0.0010462569887151392,
+     "max": 1.2861711693309859
+    },
+    "neutral_current_over_rating": {
+     "mae": 0.0029256654806745427,
+     "max": 1.2847883020487243
+    },
+    "transformer_loading": {
+     "mae": 0.011336842309489498,
+     "max": 0.09582734474982257
+    },
+    "transformer_loading_proxy_of_opendss_state": {
+     "mae": 0.003472232937859786,
+     "max": 0.02708488981425898
+    }
+   },
+   "screen": {
+    "import": {
+     "cleared": 0,
+     "rejected": 908,
+     "fallback": 592,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 79,
+     "rejected": 845,
+     "fallback": 576,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.3893333333333333
+   },
+   "fallback_exact_engine": {
+    "fallback_pairs": 1168,
+    "decision_differs_pairs": 0,
+    "exact_safe_opendss_not_safe_pairs": 0
+   },
+   "screen_cu120_240": {
+    "import": {
+     "cleared": 0,
+     "rejected": 908,
+     "fallback": 592,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 827,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036158560282773416
+    },
+    "export": {
+     "cleared": 79,
+     "rejected": 845,
+     "fallback": 576,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 756,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.00395476805315219
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.3893333333333333
+   },
+   "screen_cu16_89": {
+    "import": {
+     "cleared": 0,
+     "rejected": 910,
+     "fallback": 590,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 829,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.0036071483643479573
+    },
+    "export": {
+     "cleared": 79,
+     "rejected": 848,
+     "fallback": 573,
+     "false_safe": 0,
+     "cleared_indeterminate": 0,
+     "false_unsafe": 0,
+     "converged_not_safe": 761,
+     "false_safe_rate": 0.0,
+     "false_safe_rate_upper95": 0.003928835142446395
+    },
+    "false_safe": 0,
+    "cleared_indeterminate": 0,
+    "false_unsafe": 0,
+    "states": 1500,
+    "fallback_share": 0.38766666666666666
+   }
+  }
+ }
+}

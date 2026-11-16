@@ -1,0 +1,170 @@
+{
+ "protocol": "docs/fourwire_scale_protocol.md \u00a76, Amendment 9 item 7",
+ "network": 7,
+ "dry_run": true,
+ "code_commit": "e85164c24ecf0adc29bdd97e60d0c62b61f45ccd",
+ "gencodoe_commit": "e85164c24ecf0adc29bdd97e60d0c62b61f45ccd",
+ "src_dirty": false,
+ "source_sha256": "661c1d265b870c57a51df58312930b78d5b0c81c259d24434dd30ceac1c4be87",
+ "job_id": "13588811",
+ "node": "node408.hydra.os",
+ "platform": "Linux-5.14.0-687.65.1.el9_8.x86_64-x86_64-with-glibc2.34",
+ "cpus": 32,
+ "python": "3.12.3",
+ "numpy": "2.4.6",
+ "torch": "2.11.0+cu126",
+ "torch_geometric": "2.8.1",
+ "device": "cuda",
+ "deterministic_algorithms": true,
+ "cublas_workspace_config": ":4096:8",
+ "cudnn_benchmark": false,
+ "cudnn_deterministic": false,
+ "tf32": false,
+ "software": {
+  "python": "3.12.3",
+  "numpy": "2.4.6",
+  "scipy": "1.18.1",
+  "torch": "2.11.0+cu126",
+  "torch_cuda": "12.6",
+  "torch_geometric": "2.8.1",
+  "numba": "0.68.0",
+  "opendssdirect": "0.9.4",
+  "pyg_lib": null,
+  "torch_scatter": "2.1.2+pt211cu126",
+  "torch_sparse": null,
+  "torch_cluster": null
+ },
+ "label_manifest_sha256": "5625aa637941593ba7212abc69bd277cac58afcf57ff482b23749742785b7dc9",
+ "identification_sha256": "34f1d07469721d8915143faec1aa78caa1bbab3bf1d557fd389cf55f9994f123",
+ "freeze_sha256": null,
+ "cuda": "12.6",
+ "cudnn": 91002,
+ "cuda_device": "NVIDIA A100-PCIE-40GB",
+ "cuda_total_mb": 40468.4375,
+ "unchanged_during_run": true,
+ "valid": true,
+ "evaluation_record": "network_7_20261116T030503.json",
+ "evaluation_record_sha256": "d197650f79e50bc1a982a6e12afff469f274a7b7a7e84c0c348b3114ca650408",
+ "pgnet_checkpoint_sha256": "9d9a0c2983fc17a3f24b7397c7744c0217c0024031b1e89974a9a3309b2907ca",
+ "earlier_attempts": [],
+ "days": [
+  3
+ ],
+ "hours": 2,
+ "scenarios": 200,
+ "eps": 0.05,
+ "beta": 0.05,
+ "acceptance_share": 0.98,
+ "levels_per_round": 4,
+ "relative_tolerance": 0.001,
+ "cap_kw": {
+  "export": 5.0,
+  "import": 7.4
+ },
+ "mix_hp_ev_pv": [
+  0.3,
+  0.3,
+  0.4
+ ],
+ "pgnet_has_model": true,
+ "evaluator_b": {
+  "import": {
+   "states": 800,
+   "to_fallback": 46,
+   "fallback_share": 0.0575
+  },
+  "export": {
+   "states": 800,
+   "to_fallback": 120,
+   "fallback_share": 0.15
+  }
+ },
+ "summary": {
+  "import": {
+   "intervals": 2,
+   "share_within_tolerance": 1.0,
+   "unsafe_envelopes": 0,
+   "largest_b_above_a_kw": 0.0,
+   "largest_b_below_a_kw": -0.0,
+   "zero_envelopes_a": 2,
+   "zero_envelopes_b": 2
+  },
+  "export": {
+   "intervals": 2,
+   "share_within_tolerance": 1.0,
+   "unsafe_envelopes": 0,
+   "largest_b_above_a_kw": 0.0,
+   "largest_b_below_a_kw": -0.0,
+   "zero_envelopes_a": 2,
+   "zero_envelopes_b": 2
+  },
+  "both": {
+   "intervals": 4,
+   "share_within_tolerance": 1.0,
+   "unsafe_envelopes": 0,
+   "largest_b_above_a_kw": 0.0,
+   "largest_b_below_a_kw": -0.0,
+   "zero_envelopes_a": 4,
+   "zero_envelopes_b": 4
+  },
+  "agreement_criterion_met": true
+ },
+ "intervals": [
+  {
+   "day": 3,
+   "date": "2024-01-04",
+   "step": 288,
+   "direction": "import",
+   "A_level_kw": 0.0,
+   "A_share_feasible": 0.01,
+   "A_states": 400,
+   "A_sweep_nonconverged": 202,
+   "B_level_kw": 0.0,
+   "B_share_feasible": 0.01,
+   "B_states": 400,
+   "B_sweep_nonconverged": 0
+  },
+  {
+   "day": 3,
+   "date": "2024-01-04",
+   "step": 288,
+   "direction": "export",
+   "A_level_kw": 0.0,
+   "A_share_feasible": 0.165,
+   "A_states": 400,
+   "A_sweep_nonconverged": 2,
+   "B_level_kw": 0.0,
+   "B_share_feasible": 0.165,
+   "B_states": 400,
+   "B_sweep_nonconverged": 0
+  },
+  {
+   "day": 3,
+   "date": "2024-01-04",
+   "step": 292,
+   "direction": "import",
+   "A_level_kw": 0.0,
+   "A_share_feasible": 0.045,
+   "A_states": 400,
+   "A_sweep_nonconverged": 200,
+   "B_level_kw": 0.0,
+   "B_share_feasible": 0.045,
+   "B_states": 400,
+   "B_sweep_nonconverged": 0
+  },
+  {
+   "day": 3,
+   "date": "2024-01-04",
+   "step": 292,
+   "direction": "export",
+   "A_level_kw": 0.0,
+   "A_share_feasible": 0.435,
+   "A_states": 400,
+   "A_sweep_nonconverged": 0,
+   "B_level_kw": 0.0,
+   "B_share_feasible": 0.435,
+   "B_states": 400,
+   "B_sweep_nonconverged": 0
+  }
+ ]
+}

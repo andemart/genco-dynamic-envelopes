@@ -64,3 +64,120 @@ data_out/fourwire_scale/determinism/job13587453/deterministic_b.json
   "max_abs_step_loss_difference": 6.651878356933594e-05
  }
 }
+== sacct (job, state, start, end, node, submit line): determinism probe rerun and the A100 dry runs of e85164c
+13587703|fwscale-determinism|COMPLETED|2026-11-16T02:59:44|2026-11-16T03:02:30|00:02:46|node406|sbatch --export=ALL,GENCODOE_COMMIT=ee2479fdc9bef5f91ca424385e175ce772f4ce38,GENCODOE_WORKTREE=/data/brussel/NNN/vscNNNNN/genco-fourwire-scale-ee2479f,GENCODOE_LABEL_ROOT=/scratch/brussel/vo/000/bvoNNNNN/genco-dynamic-envelopes/fourwire-scale/labels-6ad2af6 scripts/hydra_fourwire_scale_determinism.slurm
+13588810|fwscale-dryrun|COMPLETED|2026-11-16T03:02:14|2026-11-16T03:13:15|00:11:01|node404|sbatch --parsable --time=00:45:00 --export=ALL,GENCODOE_COMMIT=e85164c24ecf0adc29bdd97e60d0c62b61f45ccd,GENCODOE_WORKTREE=/data/brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c,GENCODOE_LABEL_ROOT=/scratch/brussel/vo/000/bvoNNNNN/genco-dynamic-envelopes/fourwire-scale/labels-6ad2af6,GENCODOE_NETWORK=17 scripts/hydra_fourwire_scale_dryrun.slurm
+13588811|fwscale-dryrun|COMPLETED|2026-11-16T03:02:17|2026-11-16T03:11:00|00:08:43|node408|sbatch --parsable --time=00:45:00 --export=ALL,GENCODOE_COMMIT=e85164c24ecf0adc29bdd97e60d0c62b61f45ccd,GENCODOE_WORKTREE=/data/brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c,GENCODOE_LABEL_ROOT=/scratch/brussel/vo/000/bvoNNNNN/genco-dynamic-envelopes/fourwire-scale/labels-6ad2af6,GENCODOE_NETWORK=7 scripts/hydra_fourwire_scale_dryrun.slurm
+== log of job 13587703 (fwscale-determinism-13587703.out)
+NVIDIA A100-PCIE-40GB, 620.70.06
+commit=ee2479fdc9bef5f91ca424385e175ce772f4ce38 node=node406.hydra.os cpus=8
+{"epoch": 0, "val_loss": 1.2141057500885037, "note": "untrained = U1 prior"}
+{"epoch": 1, "train_loss": 1.4587024727079552, "val_loss": 0.8319864096185917, "epoch_s": 2.4273230530088767, "train_s": 2.075334658031352, "eval_s": 0.35118157404940575, "steps": 32, "gpu_peak_allocated_mb": 1411.5546875, "gpu_peak_reserved_mb": 1570.0}
+data_out/fourwire_scale/determinism/job13587703/default_a.json
+{"epoch": 0, "val_loss": 1.2141057500885037, "note": "untrained = U1 prior"}
+{"epoch": 1, "train_loss": 1.4587034991709515, "val_loss": 0.8319859969061475, "epoch_s": 1.8545545840170234, "train_s": 1.502786739030853, "eval_s": 0.3509553730254993, "steps": 32, "gpu_peak_allocated_mb": 1411.5546875, "gpu_peak_reserved_mb": 1570.0}
+data_out/fourwire_scale/determinism/job13587703/default_b.json
+{"epoch": 0, "val_loss": 1.2141057500885037, "note": "untrained = U1 prior"}
+{"epoch": 1, "train_loss": 1.4587024153734092, "val_loss": 0.8319862826950509, "epoch_s": 2.5634122129995376, "train_s": 2.1298394920304418, "eval_s": 0.43276074912864715, "steps": 32, "gpu_peak_allocated_mb": 1460.98046875, "gpu_peak_reserved_mb": 1608.0}
+data_out/fourwire_scale/determinism/job13587703/deterministic_a.json
+{"epoch": 0, "val_loss": 1.2141057500885037, "note": "untrained = U1 prior"}
+{"epoch": 1, "train_loss": 1.4587024153734092, "val_loss": 0.8319862826950509, "epoch_s": 2.576897796941921, "train_s": 2.14225306303706, "eval_s": 0.43384355504531413, "steps": 32, "gpu_peak_allocated_mb": 1460.98046875, "gpu_peak_reserved_mb": 1610.0}
+data_out/fourwire_scale/determinism/job13587703/deterministic_b.json
+{
+ "what": "two processes per setting, 32 PG-pre training steps on networks 10 and 17 (train and val only); a falsification probe, not a certificate for a full fit",
+ "problems": {
+  "default_a": [],
+  "default_b": [],
+  "deterministic_a": [],
+  "deterministic_b": []
+ },
+ "same_commit_source_node_gpu_and_libraries": true,
+ "default": {
+  "valid": true,
+  "same_initial_weights": true,
+  "same_final_weights": false,
+  "identical_step_losses": false,
+  "identical_val_losses": false,
+  "steps": 32,
+  "first_step_that_differs": 2,
+  "max_abs_step_loss_difference": 6.723403930664062e-05
+ },
+ "deterministic_algorithms": {
+  "valid": true,
+  "same_initial_weights": true,
+  "same_final_weights": true,
+  "identical_step_losses": true,
+  "identical_val_losses": true,
+  "steps": 32,
+  "first_step_that_differs": null,
+  "max_abs_step_loss_difference": 0.0
+ }
+}
+== log of job 13588810 (fwscale-dryrun-13588810.out)
+NVIDIA A100-PCIE-40GB, 620.70.06
+commit=e85164c24ecf0adc29bdd97e60d0c62b61f45ccd node=node404.hydra.os cpus=16 network=17 affinity=16
+24 networks converted, with their rating variants
+{"epoch": 0, "val_loss": 2.176848544912935, "note": "before training"}
+{"epoch": 1, "train_loss": 2.081453502902554, "val_loss": 1.9239440470222453, "epoch_s": 3.0387385489884764, "train_s": 2.6112141800113022, "eval_s": 0.42677887668833137, "steps": 36, "gpu_peak_allocated_mb": 1190.04296875, "gpu_peak_reserved_mb": 1362.0}
+{"epoch": 2, "train_loss": 2.0770053217808404, "val_loss": 1.937051680950229, "epoch_s": 2.668340237927623, "train_s": 2.2412089880090207, "eval_s": 0.4263941723620519, "steps": 36, "gpu_peak_allocated_mb": 1202.4208984375, "gpu_peak_reserved_mb": 1364.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/pgpre_fold3_seed0/record.json
+{"epoch": 0, "val_loss": 2.8923173262365482, "note": "before training"}
+{"epoch": 1, "train_loss": 2.220320951193571, "val_loss": 1.8460200551443606, "epoch_s": 4.2893599070375785, "train_s": 2.2177334460429847, "eval_s": 2.070844421046786, "steps": 32, "gpu_peak_allocated_mb": 1425.04833984375, "gpu_peak_reserved_mb": 1642.0}
+{"epoch": 2, "train_loss": 1.6749381329864264, "val_loss": 1.4617990948937156, "epoch_s": 4.230309542967007, "train_s": 2.1590791560010985, "eval_s": 2.0704521851148456, "steps": 32, "gpu_peak_allocated_mb": 1425.04833984375, "gpu_peak_reserved_mb": 1642.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/pgnet_net17/record.json
+{"epoch": 0, "val_loss": 3.1267925485738557, "note": "before training"}
+{"epoch": 1, "train_loss": 2.613316740308489, "val_loss": 2.583965513473105, "epoch_s": 2.5990052960114554, "train_s": 0.5273257470689714, "eval_s": 2.070895335986279, "steps": 7, "gpu_peak_allocated_mb": 1421.38525390625, "gpu_peak_reserved_mb": 1642.0}
+{"epoch": 2, "train_loss": 2.125147206442697, "val_loss": 2.358865190738266, "epoch_s": 2.535470050992444, "train_s": 0.4681945629417896, "eval_s": 2.0665070640388876, "steps": 7, "gpu_peak_allocated_mb": 1425.04833984375, "gpu_peak_reserved_mb": 1642.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/scratch_net17_b200_seed0/record.json
+{"epoch": 0, "val_loss": 1.40007579608806, "note": "before training"}
+{"epoch": 1, "train_loss": 1.2091554829052515, "val_loss": 1.3464021854089832, "epoch_s": 2.6031398380873725, "train_s": 0.5299815280595794, "eval_s": 2.0723944639321417, "steps": 7, "gpu_peak_allocated_mb": 1422.22802734375, "gpu_peak_reserved_mb": 1642.0}
+{"epoch": 2, "train_loss": 1.1364863855498177, "val_loss": 1.3358957902031534, "epoch_s": 2.539880563970655, "train_s": 0.4698766099754721, "eval_s": 2.0692336469655856, "steps": 7, "gpu_peak_allocated_mb": 1425.89111328125, "gpu_peak_reserved_mb": 1642.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/ft_net17_b200_seed0/record.json
+U1 {"fallback_share": 0.21533333333333332, "false_safe": 0, "cleared_indeterminate": 0}
+PG-net {"fallback_share": 0.21466666666666667, "false_safe": 0, "cleared_indeterminate": 0}
+PG-pre-tc {"fallback_share": 0.21866666666666665, "false_safe": 0, "cleared_indeterminate": 0}
+PG-zs {"fallback_share": 0.23199999999999998, "false_safe": 0, "cleared_indeterminate": 0}
+PG-scratch_b200_seed0 {"fallback_share": 0.215, "false_safe": 0, "cleared_indeterminate": 0}
+PG-ft_b200_seed0 {"fallback_share": 0.21633333333333332, "false_safe": 0, "cleared_indeterminate": 0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/eval_dry/network_17_20261116T030545.json
+1 {"opendss": 0.16887, "numpy": 0.12467, "sweep_cpu": 0.0018, "sweep_gpu": 0.02731, "u1_cpu": 0.0035, "u1_gpu": 0.00349, "pgnet_cpu": 0.0106, "pgnet_gpu": 0.01056, "sweep_cpu_noopendss": 0.00172, "sweep_gpu_noopendss": 0.02667, "u1_cpu_noopendss": 0.0035, "u1_gpu_noopendss": 0.00349, "pgnet_cpu_noopendss": 0.01058, "pgnet_gpu_noopendss": 0.01056}
+256 {"opendss": 7.32233, "sweep_cpu": 2.87063, "sweep_gpu": 3.06022, "u1_cpu": 0.0148, "u1_gpu": 0.03505, "pgnet_cpu": 0.21923, "pgnet_gpu": 0.17648, "sweep_cpu_noopendss": 0.05313, "sweep_gpu_noopendss": 0.25497, "u1_cpu_noopendss": 0.01208, "u1_gpu_noopendss": 0.03294, "pgnet_cpu_noopendss": 0.15475, "pgnet_gpu_noopendss": 0.1762}
+3000 {"sweep_cpu": 22.3739, "sweep_gpu": 22.51148, "u1_cpu": 0.13574, "u1_gpu": 0.09336, "pgnet_cpu": 1.8315, "pgnet_gpu": 1.74692, "sweep_cpu_noopendss": 0.43874, "sweep_gpu_noopendss": 0.32312, "u1_cpu_noopendss": 0.10794, "u1_gpu_noopendss": 0.07094, "pgnet_cpu_noopendss": 1.78489, "pgnet_gpu_noopendss": 1.7463, "opendss": 58.72057}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/e2_dry/timing_network_17_20261116T030704.json
+3 4
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/e2_dry/envelopes_network_17_20261116T031306.json
+DRY_RUN_OK
+== log of job 13588811 (fwscale-dryrun-13588811.out)
+NVIDIA A100-PCIE-40GB, 620.70.06
+commit=e85164c24ecf0adc29bdd97e60d0c62b61f45ccd node=node408.hydra.os cpus=16 network=7 affinity=16
+24 networks converted, with their rating variants
+{"epoch": 0, "val_loss": 4.21030803401595, "note": "before training"}
+{"epoch": 1, "train_loss": 3.164707227713532, "val_loss": 3.7704299636509107, "epoch_s": 3.875318340025842, "train_s": 3.4283248890424147, "eval_s": 0.44624986313283443, "steps": 36, "gpu_peak_allocated_mb": 1652.0283203125, "gpu_peak_reserved_mb": 1888.0}
+{"epoch": 2, "train_loss": 3.046163986954424, "val_loss": 3.740709779531213, "epoch_s": 2.7033131300704554, "train_s": 2.2567405360750854, "eval_s": 0.44585025520063937, "steps": 36, "gpu_peak_allocated_mb": 1665.23193359375, "gpu_peak_reserved_mb": 1888.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/pgpre_fold0_seed0/record.json
+{"epoch": 0, "val_loss": 3.380104119388388, "note": "before training"}
+{"epoch": 1, "train_loss": 2.7231291364878416, "val_loss": 2.525571638251535, "epoch_s": 3.2295284329447895, "train_s": 2.0715167809976265, "eval_s": 1.1572735720546916, "steps": 32, "gpu_peak_allocated_mb": 775.447265625, "gpu_peak_reserved_mb": 920.0}
+{"epoch": 2, "train_loss": 1.9744995217770338, "val_loss": 1.538202060713097, "epoch_s": 3.16436464805156, "train_s": 2.0075905499979854, "eval_s": 1.1560511159477755, "steps": 32, "gpu_peak_allocated_mb": 775.447265625, "gpu_peak_reserved_mb": 920.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/pgnet_net7/record.json
+{"epoch": 0, "val_loss": 3.1145309651140165, "note": "before training"}
+{"epoch": 1, "train_loss": 3.5800534997667586, "val_loss": 2.5825326322971027, "epoch_s": 1.659888142021373, "train_s": 0.5017699509626254, "eval_s": 1.1573857619659975, "steps": 7, "gpu_peak_allocated_mb": 773.36376953125, "gpu_peak_reserved_mb": 920.0}
+{"epoch": 2, "train_loss": 2.740685684340341, "val_loss": 2.431591402147837, "epoch_s": 1.5938294740626588, "train_s": 0.43713647802360356, "eval_s": 1.1559636020101607, "steps": 7, "gpu_peak_allocated_mb": 775.447265625, "gpu_peak_reserved_mb": 920.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/scratch_net7_b200_seed0/record.json
+{"epoch": 0, "val_loss": 14.199975213222345, "note": "before training"}
+{"epoch": 1, "train_loss": 17.485328129359655, "val_loss": 13.747761515767346, "epoch_s": 1.6551967699779198, "train_s": 0.5008831430459395, "eval_s": 1.1535822589648888, "steps": 7, "gpu_peak_allocated_mb": 774.20654296875, "gpu_peak_reserved_mb": 920.0}
+{"epoch": 2, "train_loss": 14.05663435799735, "val_loss": 13.556731235900259, "epoch_s": 1.5898562640650198, "train_s": 0.4357857919530943, "eval_s": 1.1533448449335992, "steps": 7, "gpu_peak_allocated_mb": 776.2900390625, "gpu_peak_reserved_mb": 920.0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/runs/dry/ft_net7_b200_seed0/record.json
+U1 {"fallback_share": 0.405, "false_safe": 0, "cleared_indeterminate": 0}
+PG-net {"fallback_share": 0.33166666666666667, "false_safe": 0, "cleared_indeterminate": 0}
+PG-pre-tc {"fallback_share": 0.3963333333333333, "false_safe": 0, "cleared_indeterminate": 0}
+PG-zs {"fallback_share": 0.2556666666666667, "false_safe": 0, "cleared_indeterminate": 0}
+PG-scratch_b200_seed0 {"fallback_share": 0.3753333333333333, "false_safe": 0, "cleared_indeterminate": 0}
+PG-ft_b200_seed0 {"fallback_share": 0.3893333333333333, "false_safe": 0, "cleared_indeterminate": 0}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/eval_dry/network_7_20261116T030503.json
+1 {"opendss": 0.05258, "numpy": 0.07704, "sweep_cpu": 0.00633, "sweep_gpu": 0.03505, "u1_cpu": 0.00387, "u1_gpu": 0.00382, "pgnet_cpu": 0.01085, "pgnet_gpu": 0.01077, "sweep_cpu_noopendss": 0.00106, "sweep_gpu_noopendss": 0.03549, "u1_cpu_noopendss": 0.00381, "u1_gpu_noopendss": 0.0038, "pgnet_cpu_noopendss": 0.01079, "pgnet_gpu_noopendss": 0.01078}
+256 {"opendss": 3.2327, "sweep_cpu": 1.74686, "sweep_gpu": 2.0372, "u1_cpu": 0.01044, "u1_gpu": 0.03672, "pgnet_cpu": 0.13428, "pgnet_gpu": 0.13296, "sweep_cpu_noopendss": 0.04188, "sweep_gpu_noopendss": 0.29222, "u1_cpu_noopendss": 0.00908, "u1_gpu_noopendss": 0.03538, "pgnet_cpu_noopendss": 0.08515, "pgnet_gpu_noopendss": 0.11184}
+3000 {"sweep_cpu": 19.63787, "sweep_gpu": 19.46971, "u1_cpu": 0.07238, "u1_gpu": 0.06561, "pgnet_cpu": 1.0067, "pgnet_gpu": 0.94913, "sweep_cpu_noopendss": 0.37301, "sweep_gpu_noopendss": 0.32818, "u1_cpu_noopendss": 0.06668, "u1_gpu_noopendss": 0.056, "pgnet_cpu_noopendss": 0.96061, "pgnet_gpu_noopendss": 0.94954, "opendss": 27.22263}
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/e2_dry/timing_network_7_20261116T030622.json
+3 4
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/e2_dry/envelopes_network_7_20261116T031053.json
+DRY_RUN_OK
