@@ -311,6 +311,12 @@ def test_reruns_are_registered_and_must_retrace_the_killed_attempt(study, monkey
 
     rec = {**second, "valid": False}                                  # an invalid record: set aside, rerun, compared
     (run / "record.json").write_text(json.dumps(rec))
+    mine = json.loads((run / "attempt.json").read_text())
+    (run / "attempt.json").write_text(json.dumps({**mine, "pid": os.getppid()}))      # but not while its owner lives
+    with pytest.raises(RuntimeError, match="another attempt of this run is running"):
+        tt.final_fit(root, "pgnet", "cpu", network=25)
+    assert run.exists() and not (tt.runs() / f"{name}.invalid1").exists()
+    (run / "attempt.json").write_text(json.dumps(mine))
     old = (run / "curve.jsonl").read_text().splitlines()
     (run / "curve.jsonl").write_text("\n".join([old[0], old[1].replace('"val_loss": ', '"val_loss": 9')] + old[2:]) + "\n")
     tt.final_fit(root, "pgnet", "cpu", network=25)
@@ -320,6 +326,12 @@ def test_reruns_are_registered_and_must_retrace_the_killed_attempt(study, monkey
     assert not by[f"{name}.invalid1"]["reproduced_by_this_run"] and by[f"{name}.invalid1"]["epochs_recorded"] == 3
     assert by[f"{name}.invalid1"]["set_aside_because"] == "its record is invalid"
     (run / "record.json").unlink()
+    mine = json.loads((run / "attempt.json").read_text())
+    (run / "attempt.json").write_text(json.dumps({**mine, "pid": os.getppid()}))      # the third attempt is still running:
+    with pytest.raises(RuntimeError, match="another attempt of this run is running"):
+        tt.final_fit(root, "pgnet", "cpu", network=25)
+    assert not tt.halt_file().exists()                                # no third failure yet, so no halt
+    (run / "attempt.json").write_text(json.dumps(mine))
     with pytest.raises(RuntimeError, match="needs an amendment"):     # two reruns at most
         tt.final_fit(root, "pgnet", "cpu", network=25)
     assert run.exists() and not (tt.runs() / f".{name}.lock").exists()   # the refused attempt moved nothing
@@ -512,7 +524,7 @@ def test_the_held_out_reader_serves_only_the_claimed_final_evaluation(study, mon
     assert z["PG-net__codes"].shape == (12, 2) and z["U1__summary"].shape == (12, 4) and z["exact_safe"].shape == (12, 2)
     assert z["truth_safe"].shape == (12, 2) and z["truth_safe"].dtype == bool
     assert rep["exact_sweep_vs_opendss"]["states"] == 12
-    with pytest.raises(tt.AlreadyDone, match="evaluated once"):
+    with pytest.raises(tt.AlreadyDone, match="never run again"):
         ev.evaluate(root, 25, "cpu")
     with pytest.raises(PermissionError, match="no open claim"):                       # the claim closed with the record
         ev.TestStore(root, 25, prov)

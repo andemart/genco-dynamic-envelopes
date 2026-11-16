@@ -372,11 +372,7 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
     if final:
         tt.check_freeze(prov, variants=True)
         out, done = eval_dir() / f"network_{network}.json", eval_runs() / f"network_{network}"
-        if tt.completed(done, lambda rec: tt.check_final_record(rec, done.name, "evaluation")):
-            tt.publish(done, out)                                     # also after a crash between the two writes
-            evaluation_record(network)
-            raise tt.AlreadyDone(f"{out.name}: a network is evaluated once")
-        if out.exists():
+        if out.exists() and not (done / "record.json").exists():
             raise RuntimeError(f"{out} exists without a completed evaluation behind it")
     else:
         out = fs.OUT / "eval_dry" / f"network_{network}_{time.strftime('%Y%m%dT%H%M%S')}.json"
@@ -398,7 +394,14 @@ def evaluate(label_root: Path, network: int, device: str, dry: bool = False) -> 
         runs[name] = (tt.load_run(base, name, device, dry) if rec["checkpoint_sha256"]
                       else {"record": rec, "state_dict": None})
     if final:                                                         # the claim comes before any held-out label
-        folder, earlier = tt.claim_run_folder(eval_runs(), f"network_{network}", prov, final=True)
+
+        def usable(rec):                                              # a completed evaluation: its record and its file
+            tt.check_final_record(rec, done.name, "evaluation")
+            if rec["network"] != network or fs._sha(done / rec["per_state_file"]) != rec["per_state_sha256"]:
+                raise AssertionError(f"{done / rec['per_state_file']} does not have the hash of its record")
+
+        folder, earlier = tt.claim_run_folder(eval_runs(), f"network_{network}", prov, final=True, validate=usable,
+                                              publish_to=out)
         fs._write_json(folder / "fits_checked.json", sorted(runs))    # what the reader of the held-out labels asks for
     else:
         folder = out.parent

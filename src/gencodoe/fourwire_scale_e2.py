@@ -271,13 +271,20 @@ def _run_files(kind: str, network: int, dry: bool, prov: dict):
         folder.mkdir(parents=True, exist_ok=True)
         return folder, folder / f"{kind}_network_{network}_{time.strftime('%Y%m%dT%H%M%S')}.json", []
     out, done = fs.RESULTS / f"fourwire_scale_e2_{kind}" / f"network_{network}.json", fs.OUT / "e2" / f"{kind}_network_{network}"
-    if tt.completed(done, lambda rec: tt.check_final_record(rec, done.name, kind)):
-        tt.publish(done, out)                                         # also after a crash between the two writes
-        e2_record(kind, network)
-        raise tt.AlreadyDone(f"{out.name}: a network has one {kind} run")
-    if out.exists():
+    if out.exists() and not (done / "record.json").exists():
         raise RuntimeError(f"{out} exists without a completed run behind it")
-    folder, earlier = tt.claim_run_folder(fs.OUT / "e2", f"{kind}_network_{network}", prov, final=True)
+
+    def usable(rec):                                                  # a completed run: its record and what it names
+        tt.check_final_record(rec, done.name, kind)
+        if rec["network"] != network:
+            raise AssertionError(f"{done}: not the {kind} record of network {network}")
+        if kind == "timing" and fs._sha(done / rec["decisions_file"]) != rec["decisions_sha256"]:
+            raise AssertionError(f"{done / rec['decisions_file']} does not have the hash of its record")
+        if kind == "envelopes":
+            check_envelopes(rec, str(done))
+
+    folder, earlier = tt.claim_run_folder(fs.OUT / "e2", f"{kind}_network_{network}", prov, final=True,
+                                          validate=usable, publish_to=out)
     return folder, out, earlier
 
 

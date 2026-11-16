@@ -710,19 +710,6 @@ def check_record(rec: dict, name: str, dry: bool) -> dict:
     return check_final_record(rec, name, "fits")
 
 
-def completed(folder: Path, validate) -> bool:
-    """Does a run folder hold a completed run? If its record says valid, the record must pass validate
-    (which raises otherwise): a run is skipped only when what it left can be used."""
-    f = folder / "record.json"
-    if not f.exists():
-        return False
-    rec = json.loads(f.read_text())
-    if not rec["valid"]:
-        return False
-    validate(rec)
-    return True
-
-
 def publish(folder: Path, out: Path) -> None:
     """Copy a run folder's record to results/, atomically; also after a crash between the two writes."""
     data = (folder / "record.json").read_bytes()
@@ -798,7 +785,7 @@ def rerun_reason(a: dict) -> str:
     if word in RERUN_STATES or (word == "CANCELLED" and by is not None and by != str(os.getuid())):
         return f"Slurm accounting: {state}"
     deviation = os.environ.get("GENCODOE_RERUN_DEVIATION")
-    if word == "CANCELLED" and deviation:
+    if word == "CANCELLED" and deviation:                            # ours, or without a name: only as a declared deviation
         return f"DEVIATION, cancelled by us ({state}): {deviation}"
     raise RuntimeError(f"Slurm accounting says {state or 'nothing'} for job {a['job_id']}: no reason for a rerun")
 
@@ -810,15 +797,18 @@ def _curve(folder: Path) -> dict:
     return {r["epoch"]: (r.get("train_loss"), r["val_loss"]) for r in rows if "epoch" in r}
 
 
-def claim_run_folder(base: Path, name: str, prov: dict, final: bool) -> tuple[Path, list[dict]]:
-    """The run folder of a new attempt and what is known of the earlier attempts of the same run.
-    - A run with a valid record is never run again (AlreadyDone).
+def claim_run_folder(base: Path, name: str, prov: dict, final: bool, validate=None,
+                     publish_to: Path | None = None) -> tuple[Path, list[dict]]:
+    """The run folder of a new attempt and what is known of the earlier attempts of the same run. One
+    process at a time does all of this (a lock folder); a second one is refused.
+    - A folder without an owner is refused. A folder whose owner is still running is refused, whatever it
+      holds.
+    - A run with a valid record is never run again: validate(record) must accept what it left (it raises
+      otherwise), the record is published to publish_to if that is given, and AlreadyDone is raised.
     - A folder with an invalid record is set aside: the record states why it is invalid.
-    - A folder without a record is set aside only if its attempt has ended and, for a final run, if
-      rerun_reason allows it. A folder without an owner is refused.
-    - At most MAX_RERUNS earlier attempts.
-    - The new folder appears with its owner already in it, by one rename: two attempts cannot both start,
-      and no folder is ever without an owner."""
+    - A folder without a record is set aside only if, for a final run, rerun_reason allows it.
+    - At most MAX_RERUNS earlier attempts; one more, for a final run, halts the final runs.
+    - The new folder appears with its owner already in it, by one rename."""
     out_dir = base / name
     base.mkdir(parents=True, exist_ok=True)
     lock = base / f".{name}.lock"
@@ -831,10 +821,17 @@ def claim_run_folder(base: Path, name: str, prov: dict, final: bool) -> tuple[Pa
         earlier = [q for q in sorted(base.glob(f"{name}.*")) if q.is_dir()]
         if out_dir.exists():
             rec, owner = out_dir / "record.json", out_dir / "attempt.json"
-            if rec.exists() and json.loads(rec.read_text())["valid"]:
-                raise AlreadyDone(f"{name} has a valid record: it is never run again")
             if not owner.exists():
                 raise RuntimeError(f"{name}: a run folder without an owner; it needs a recorded decision")
+            a = json.loads(owner.read_text())
+            if _attempt_running(a):                                  # first: nothing of a live attempt is touched
+                raise RuntimeError(f"{name}: another attempt of this run is running")
+            if rec.exists() and json.loads(rec.read_text())["valid"]:
+                if validate is not None:
+                    validate(json.loads(rec.read_text()))            # raises unless what it left can be used
+                if publish_to is not None:
+                    publish(out_dir, publish_to)                     # also after a crash between the two writes
+                raise AlreadyDone(f"{name} has a valid record that passes its checks: it is never run again")
             if len(earlier) >= MAX_RERUNS:
                 if final:                                            # Amendment 7, item 3: a third failure stops the runs
                     halt_file().parent.mkdir(parents=True, exist_ok=True)
@@ -842,12 +839,9 @@ def claim_run_folder(base: Path, name: str, prov: dict, final: bool) -> tuple[Pa
                                                  "job_id": prov["job_id"], "node": prov["node"],
                                                  "time": time.strftime("%Y-%m-%dT%H:%M:%S%z")})
                 raise RuntimeError(f"{name}: {len(earlier)} earlier attempts; a further rerun needs an amendment")
-            a = json.loads(owner.read_text())
             if rec.exists():
                 kind, reason = "invalid", "its record is invalid"
             else:
-                if _attempt_running(a):
-                    raise RuntimeError(f"{name}: another attempt of this run is running")
                 kind, reason = "incomplete", rerun_reason(a) if final else "dry run"
             k = 1
             while (base / f"{name}.{kind}{k}").exists():
@@ -885,8 +879,6 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
     prov = start_provenance(device, set_determinism(True))          # before anything is trained
     if final:
         check_freeze(prov)
-    if completed(base / name, lambda rec: fit_record(base, name, not final)):
-        raise AlreadyDone(f"{name} has a valid record: it is never run again")
     start = init = None
     if kind == "pgpre":
         pool, n_train = pool_of(fold), N_PRE
@@ -898,7 +890,7 @@ def final_fit(label_root: Path, kind: str, device: str, fold: int | None = None,
             if start["record"]["checkpoint_sha256"] is not None:
                 start = load_run(base, pre_name, device, not final)
                 init = {"state_dict": start["state_dict"], "scalers": start["record"]["scalers"]}
-    out_dir, earlier = claim_run_folder(base, name, prov, final)
+    out_dir, earlier = claim_run_folder(base, name, prov, final, validate=lambda rec: fit_record(base, name, not final))
     with halting(name, prov, final):
         store = fd.LabelStore(label_root)
         epochs, n_val = cfg["epochs"], None
