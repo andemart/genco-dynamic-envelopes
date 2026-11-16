@@ -16,5 +16,6 @@ The files are copied as written, with three mechanical replacements: absolute pa
 | 008 | 2026-11-16 09:26 | `a4068ef` (the freeze) | Ready to submit, no blockers |
 | 009 | 2026-11-16 14:35 | `a8a2612` (weak-seed note and diagnostic script) | One blocker in the script, corrected in `e34d242` |
 | 010 | 2026-11-16 20:48 | `bd1cc9c` (Amendment 10: stabilised-recipe analysis) | Not ready to submit: five blockers in the checks around the analysis, corrected in `73f37af` |
+| 011 | 2026-11-16 21:09 | `745ce0b` (the corrections of round 10) | Gate and collection resolved; two blockers left (attempt limit outside the lock, links in the path guard), corrected in `bb89f92` |
 
 How each finding was answered is recorded in the protocol's amendments and notes and in the commits that follow each round.
