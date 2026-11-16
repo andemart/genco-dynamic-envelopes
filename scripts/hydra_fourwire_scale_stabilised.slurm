@@ -10,9 +10,12 @@
 #   sbatch --parsable "$E,GENCODOE_STAGE=fit" --array=0-11 --time=12:00:00 --dependency=afterok:$eq $S
 #
 # equivalence: the frozen fit routine and the script's loop with the frozen switches on one reduced fit
-#              (fold 2, seed 1, 650 train and 256 val states per network, 4 epochs); it fails unless they are
-#              equal bit for bit, and the fits then do not start.
-# fit:         task = 3 x fold + seed, as the pgpre stage of the final runs. A run folder is never replaced.
+#              (fold 2, seed 1, 648 train and 312 val states per network, 4 epochs: the last training batch
+#              holds 8 states and the last validation batch 56, as at full size). It fails unless the two are
+#              equal bit for bit, both completed, and nothing changed during the run; the fits then do not start.
+# fit:         task = 3 x fold + seed, as the pgpre stage of the final runs. A fit with a valid record is
+#              skipped (exit code 10 of the command); whether an attempt without a record may be run again
+#              is decided by the command, as for the final fits (Amendment 7, item 3).
 #SBATCH --job-name=fwscale-stab
 #SBATCH --partition=ampere_gpu
 #SBATCH --gpus=1
@@ -39,7 +42,7 @@ S=scripts/fourwire_scale_pgpre_stabilised.py
 
 case "$GENCODOE_STAGE" in
   equivalence)
-    $PY $S equivalence --fold 2 --seed 1 --n-train 650 --n-val 256 --epochs 4 \
+    $PY $S equivalence --fold 2 --seed 1 --n-train 648 --n-val 312 --epochs 4 \
       --label-root "$GENCODOE_LABEL_ROOT" --device cuda \
       --work data_out/fourwire_scale/stabilised_equivalence \
       --out results/fourwire_scale_pgpre_stabilised_equivalence.json ;;
@@ -50,4 +53,5 @@ case "$GENCODOE_STAGE" in
 esac
 RC=$?
 echo "rc=$RC"
+if [ $RC -eq 10 ]; then echo "SKIP: the fit has a valid record"; RC=0; fi
 exit $RC

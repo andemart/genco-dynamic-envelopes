@@ -14,20 +14,29 @@ With the switches of "frozen" it is the frozen routine; `equivalence` checks tha
 what the frozen routine does not: the validation loss of every pool network and its four terms after every
 epoch, and the loss, gradient norm and learning rate of every step.
 
-    fit          one PG-pre fit into <runs>/<name>/: best.pt, curve.jsonl, steps.npz, record.json
+    fit          one PG-pre fit into <runs>/<name>/: best.pt, curve.jsonl, steps.npz, record.json. The run
+                 folder is claimed as the final fits claim theirs (fourwire_scale_train.claim_run_folder): a
+                 fit with a valid record is never run again (exit code 10), and a folder without a record is
+                 set aside only when Slurm accounting shows an infrastructure end state.
     equivalence  fourwire_scale_train.fit and train() with the frozen switches on one reduced fit, compared
     collect      the twelve stabilised fits next to the twelve frozen PG-pre records
 
+At full size (no --n-train/--n-val/--epochs; equivalence: no --dry) a command runs only as a final command of
+the study would (pinned to HEAD, the frozen source, inputs, libraries and GPU model). No output may lie in a
+run folder of the study (runs/final or runs/dry of any checkout, or --frozen-runs), and no file is replaced.
+
     python scripts/fourwire_scale_pgpre_stabilised.py fit --fold 2 --seed 1 --label-root <labels> --device cuda
-    python scripts/fourwire_scale_pgpre_stabilised.py equivalence --fold 2 --seed 1 --n-train 650 --n-val 256 \
+    python scripts/fourwire_scale_pgpre_stabilised.py equivalence --fold 2 --seed 1 --n-train 648 --n-val 312 \
         --epochs 4 --label-root <labels> --device cuda --work <new folder> --out <new file>
-    python scripts/fourwire_scale_pgpre_stabilised.py collect --frozen-runs <runs/final> --out <new file>
+    python scripts/fourwire_scale_pgpre_stabilised.py collect --frozen-runs <runs/final> \
+        --equivalence <the equivalence record> --out <new file>
 """
 from __future__ import annotations
 
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -51,23 +60,63 @@ def inside(path: Path, folder: Path) -> bool:
     return p == f or f in p.parents
 
 
-def guard(runs: Path | None = None, out: Path | None = None) -> None:
-    """Nothing is written into the study's run folders, and no file is replaced. Checked before any work."""
-    for own in (tt.runs(False), tt.runs(True)):
-        for path in (runs, out):
-            if path is not None and (inside(path, own) or inside(own, path)):
-                raise SystemExit(f"{path}: the study's run folders are not written to")
-    if out is not None and out.exists():
-        raise SystemExit(f"{out} exists: it is not replaced")
+def guard(*outputs: Path, frozen_runs: Path | None = None) -> None:
+    """Checked before any work: no output lies in a run folder of the study (runs/final or runs/dry of any
+    checkout, or the folder given as --frozen-runs), and none contains one."""
+    own = [tt.runs(False), tt.runs(True)] + ([frozen_runs] if frozen_runs is not None else [])
+    for path in outputs:
+        parts = path.resolve().parts
+        named = any(a == "runs" and b in ("final", "dry") for a, b in zip(parts, parts[1:]))
+        if named or any(inside(path, f) or inside(f, path) for f in own):
+            raise SystemExit(f"{path}: the run folders of the study are not written to")
+
+
+def write_new(path: Path, obj) -> None:
+    """Write a JSON file that must not exist: an existing file is never replaced."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "x") as f:
+        f.write(json.dumps(obj, indent=1))
+
+
+def script_sha() -> str:
+    return fs._sha(Path(__file__).resolve())
+
+
+def script_committed() -> bool:
+    """This file is tracked by git and identical to HEAD: the commit then names the analysis code."""
+    f = str(Path(__file__).resolve())
+    tracked = subprocess.run(["git", "ls-files", "--error-unmatch", f], capture_output=True, cwd=fs.ROOT)
+    status = subprocess.run(["git", "status", "--porcelain", "--", f], capture_output=True, text=True, cwd=fs.ROOT)
+    return tracked.returncode == 0 and status.returncode == 0 and not status.stdout.strip()
+
+
+def start(device: str, final: bool) -> dict:
+    """Provenance read before a run. final: only as a final command of the study runs (tt.check_freeze:
+    pinned to HEAD, the frozen source, inputs, libraries and GPU model, deterministic algorithms), and from
+    this script as committed."""
+    prov = tt.start_provenance(device, tt.set_determinism(True))
+    prov["analysis_script_sha256"] = script_sha()
+    if final:
+        tt.check_freeze(prov)
+        if not script_committed():
+            raise RuntimeError("this script differs from HEAD")
+    return prov
+
+
+def unchanged(prov: dict) -> bool:
+    return bool(tt.checkout_unchanged(prov) and script_sha() == prov["analysis_script_sha256"])
 
 
 def train(store, pool: list[int], recipe: dict, epochs: int, device: str, seed: int, out_dir: Path,
           n_train: int | None = None, n_val: int | None = None) -> tuple[dict, dict]:
     """fourwire_scale_train.fit (PG-pre: no given weights, the frozen patience and selection rule) with the
     switches of recipe. Statement for statement the frozen routine wherever a switch is off. Returns the
-    result and the per-step arrays; out_dir must not exist."""
+    result and the per-step arrays. out_dir is new, or a claimed run folder that holds neither a checkpoint
+    nor a curve: nothing is overwritten."""
     n_train = tt.N_PRE if n_train is None else n_train
-    out_dir.mkdir(parents=True, exist_ok=False)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if (out_dir / "best.pt").exists() or (out_dir / "curve.jsonl").exists():
+        raise FileExistsError(out_dir)
 
     def log(rec):
         print(json.dumps(rec), flush=True)
@@ -243,38 +292,88 @@ def train(store, pool: list[int], recipe: dict, epochs: int, device: str, seed: 
                  "lr": np.array(cols[4], np.float64)}
 
 
+def check_record(rec: dict, name: str, dry: bool) -> dict:
+    """A record of `fit` is the stabilised fit of that name and can be used: valid; and (full size) the
+    stabilised recipe with the frozen training configuration, made as a final command of the study is made."""
+    want = tt.canonical_fits()[name]
+    bad = {"not that fit": rec["name"] != name or any(rec[k] != want[k] for k in ("kind", "fold", "seed", "pool")),
+           "not valid": not rec["valid"],
+           "a dry run where a full fit is asked for, or the reverse": (rec["dry_run"] is not None) != dry}
+    if not dry:
+        fr = json.loads(tt.freeze_file().read_text())
+        cfg = {**CONFIG, "lr": RECIPES["stabilised"]["lr"], "max_epochs": CONFIG["max_epochs"], "seed": rec["seed"]}
+        bad.update({
+            "not the stabilised recipe": rec["recipe_name"] != "stabilised" or rec["recipe"] != RECIPES["stabilised"],
+            "another training configuration": rec["config"] != cfg or rec["epochs_requested"] != CONFIG["max_epochs"]
+            or rec["states"]["train_per_network"] != tt.N_PRE,
+            "not under this freeze": rec["freeze_sha256"] != fs._sha(tt.freeze_file()),
+            "not the frozen source, libraries or inputs": rec["source_sha256"] != fr["source_sha256"]
+            or rec["software"] != fr["software"] or any(rec[k] != fr[k] for k in tt.input_hashes()),
+            "not pinned to an unmodified checkout": rec["gencodoe_commit"] != rec["code_commit"] or rec["src_dirty"],
+            "not the frozen GPU model or numerical mode": rec["cuda_device"] != tt.FINAL_DEVICE
+            or not rec["deterministic_algorithms"] or rec["tf32"],
+            "the checkout changed during the run": not rec["unchanged_during_run"]})
+    problems = [what for what, is_bad in bad.items() if is_bad]
+    if problems:
+        raise AssertionError(f"{name}: " + "; ".join(problems))
+    return rec
+
+
+def check_files(folder: Path, rec: dict) -> None:
+    ck, st = folder / "best.pt", folder / "steps.npz"
+    if (rec["checkpoint_sha256"] is None) == ck.exists() or (ck.exists() and fs._sha(ck) != rec["checkpoint_sha256"]):
+        raise AssertionError(f"{rec['name']}: the checkpoint is not the one its record names")
+    if fs._sha(st) != rec["steps_sha256"]:
+        raise AssertionError(f"{rec['name']}: the step file is not the one its record names")
+
+
 def fit(recipe: str, fold: int, seed: int, label_root: Path, device: str, runs: Path, dry: dict | None) -> Path:
-    """One PG-pre fit of a recipe. Full size (dry is None): the stabilised recipe only, and only as a final
-    command of the study would run (tt.check_freeze: pinned to HEAD, the frozen source, inputs, libraries
-    and GPU model, deterministic algorithms)."""
-    guard(runs=runs)
-    name = tt.run_name("pgpre", fold=fold, seed=seed)
-    if dry is None and recipe != "stabilised":
-        raise SystemExit("at full size only the stabilised recipe is run (Amendment 10)")
-    prov = tt.start_provenance(device, tt.set_determinism(True))
-    if dry is None:
-        tt.check_freeze(prov)
+    """One PG-pre fit of a recipe. Full size (dry is None): the stabilised recipe, into this checkout's
+    runs/stabilised, as a final command of the study runs. Attempts follow Amendment 7, item 3, through the
+    study's own claim: a valid record is never run again (tt.AlreadyDone); a folder without a record is set
+    aside only for an infrastructure end state in Slurm accounting; at most tt.MAX_RERUNS earlier attempts."""
+    final, name = dry is None, tt.run_name("pgpre", fold=fold, seed=seed)
+    if final and (recipe != "stabilised" or runs.resolve() != RUNS.resolve()):
+        raise SystemExit("at full size: the stabilised recipe, into this checkout's runs/stabilised (Amendment 10)")
+    guard(runs)
+    prov = start(device, final)
+    if final and len([q for q in runs.glob(f"{name}.*") if q.is_dir()]) >= tt.MAX_RERUNS:
+        raise SystemExit(f"{name}: {tt.MAX_RERUNS} earlier attempts; a further one needs an amendment")
+    out_dir, earlier = tt.claim_run_folder(runs, name, prov, final,
+                                           validate=lambda rec: check_files(runs / name, check_record(rec, name, not final)))
     d = dry or {}
     res, steps = train(fd.LabelStore(label_root), tt.pool_of(fold), RECIPES[recipe],
-                       d.get("epochs") or CONFIG["max_epochs"], device, seed, runs / name, d.get("n_train"), d.get("n_val"))
-    folder = runs / name
-    np.savez_compressed(folder / "steps.npz", **steps)
-    ck = folder / "best.pt"
-    fs._write_json(folder / "record.json",
-                   {"protocol": PROTOCOL, "what": "PG-pre under a training recipe; train and val states only",
-                    **prov, "unchanged_during_run": tt.checkout_unchanged(prov), "name": name, "kind": "pgpre",
-                    "fold": fold, "recipe_name": recipe, "dry_run": dry,
-                    "checkpoint_sha256": fs._sha(ck) if ck.exists() else None,
-                    "steps_sha256": fs._sha(folder / "steps.npz"), **res})
-    return folder / "record.json"
+                       d.get("epochs") or CONFIG["max_epochs"], device, seed, out_dir, d.get("n_train"), d.get("n_val"))
+    np.savez_compressed(out_dir / "steps.npz", **steps)
+    same = unchanged(prov)
+    new = {c["epoch"]: (c.get("train_loss"), c["val_loss"]) for c in res["curve"]}
+    for a in earlier:                                                 # a rerun must retrace what was recorded before
+        old = tt._curve(runs / a["folder"])
+        a.update({"epochs_recorded": len(old), "reproduced_by_this_run": all(new.get(e) == v for e, v in old.items())})
+    ck = out_dir / "best.pt"
+    rec = {"protocol": PROTOCOL, "what": "PG-pre under a training recipe; train and val states only",
+           **prov, "unchanged_during_run": same, "name": name, "kind": "pgpre", "fold": fold,
+           "recipe_name": recipe, "dry_run": dry, "earlier_attempts": earlier, **res,
+           "checkpoint_sha256": fs._sha(ck) if ck.exists() else None,
+           "steps_sha256": fs._sha(out_dir / "steps.npz")}
+    rec["valid"] = bool(same and prov["deterministic_algorithms"])
+    fs._write_json(out_dir / "record.json", rec)
+    if not same:
+        raise RuntimeError(f"checkout, script, numerical mode, libraries or inputs changed during the run; "
+                           f"{name} is not a valid fit")
+    return out_dir / "record.json"
 
 
 def equivalence(fold: int, seed: int, label_root: Path, device: str, work: Path, out: Path, n_train: int,
-                n_val: int, epochs: int) -> bool:
-    """fourwire_scale_train.fit and train() with the frozen switches, on the same reduced PG-pre fit: the
-    curve, every step loss, the three weight hashes and the selected checkpoint file must be equal."""
-    guard(runs=work, out=out)
-    prov = tt.start_provenance(device, tt.set_determinism(True))
+                n_val: int, epochs: int, dry: bool) -> bool:
+    """fourwire_scale_train.fit and train() with the frozen switches, on the same reduced PG-pre fit. Passed
+    (True) only if the curve, every step loss, the three weight hashes and the selected checkpoint file are
+    equal, both fits completed every epoch without a numerical failure, and nothing changed during the run.
+    Without dry it runs only as a final command of the study runs."""
+    guard(work, out)
+    if work.exists() or out.exists() or inside(out, work):
+        raise SystemExit("--work and --out must be new, and --out outside --work")
+    prov = start(device, not dry)
     store, pool = fd.LabelStore(label_root), tt.pool_of(fold)
     a = tt.fit(store, pool, epochs, device, seed=seed, out_dir=work / "frozen_routine", n_train=n_train,
                n_val=n_val, record_steps=True)
@@ -286,47 +385,77 @@ def equivalence(fold: int, seed: int, label_root: Path, device: str, work: Path,
             **{h: a[h] == b[h] for h in ("initial_weights_sha256", "selected_weights_sha256",
                                          "final_weights_sha256", "best_epoch", "best_val_loss", "scalers")},
             "selected_checkpoint_file": all(f.exists() for f in files) and fs._sha(files[0]) == fs._sha(files[1])}
-    fs._write_json(out, {"protocol": PROTOCOL,
-                         "what": "the frozen fit routine and this script's loop with the frozen switches, same reduced fit",
-                         **prov, "unchanged_during_run": tt.checkout_unchanged(prov), "fold": fold, "seed": seed,
-                         "n_train": n_train, "n_val": n_val, "epochs": epochs, "epochs_run": len(a["curve"]) - 1,
-                         "steps": len(a["step_losses"]), "best_epoch": a["best_epoch"],
-                         "numerical_failure": [a["numerical_failure"], b["numerical_failure"]],
-                         "same": same, "equal": all(same.values())})
-    return all(same.values())
+    completed = len(a["curve"]) - 1 == epochs and len(b["curve"]) - 1 == epochs
+    no_failure = a["numerical_failure"] is None and b["numerical_failure"] is None
+    still = unchanged(prov)
+    ok = bool(all(same.values()) and completed and no_failure and still)
+    write_new(out, {"protocol": PROTOCOL,
+                    "what": "the frozen fit routine and this script's loop with the frozen switches, same reduced fit",
+                    **prov, "unchanged_during_run": still, "frozen_environment": not dry, "fold": fold, "seed": seed,
+                    "n_train": n_train, "n_val": n_val, "epochs": epochs,
+                    "epochs_run": [len(a["curve"]) - 1, len(b["curve"]) - 1],
+                    "steps": [len(a["step_losses"]), len(steps["loss"])], "best_epoch": a["best_epoch"],
+                    "numerical_failure": [a["numerical_failure"], b["numerical_failure"]],
+                    "same": same, "equal": all(same.values()), "all_epochs_completed": completed,
+                    "no_numerical_failure": no_failure, "passed": ok})
+    return ok
 
 
-def collect(runs: Path, frozen_runs: Path, out: Path) -> Path:
-    """The twelve stabilised fits next to the twelve frozen PG-pre records (read and checked as the study's
-    commands check them). A fit is called weak when its selected validation loss is above WEAK_FACTOR times
-    the median of the twelve frozen fits, or when it selected no checkpoint."""
-    guard(out=out)
+NOTES = {"val loss, val_by_network": "as the fit's validation computes them: per batch of 128 states a mean with the "
+                                     "near-limit weights, the batches then averaged by their number of converged "
+                                     "states; not one globally weighted mean per network",
+         "grad_norm_before_clipping": "over every optimiser step of the fit, the epochs after the selected one included",
+         "median_stabilised_over_frozen": "over the fits in which both recipes selected a checkpoint (ratios_over)",
+         "weak": "selected validation loss above weak_above, or no selected checkpoint"}
+SET_ASIDE = ("Slurm accounting:", "DEVIATION", "its record is invalid")     # reasons the study's claim gives
+
+
+def collect(runs: Path, frozen_runs: Path, equivalence_file: Path, out: Path) -> Path:
+    """The twelve stabilised fits next to the twelve frozen PG-pre records. Every record is checked: the
+    frozen ones as the study's commands check them; the stabilised ones by check_record and check_files, and
+    also: same freeze, states and scalers as the frozen fit of that name; earlier attempts only those the
+    claim set aside; one commit and one script for all twelve and for the equivalence check, which passed in
+    the frozen environment."""
+    guard(out, frozen_runs=frozen_runs)
+    if out.exists():
+        raise SystemExit(f"{out} exists: it is not replaced")
     names = sorted(k for k, v in tt.canonical_fits().items() if v["kind"] == "pgpre")
     frozen = {name: tt.fit_record(frozen_runs, name, False) for name in names}
-    freeze = fs._sha(tt.freeze_file())
+    eq = json.loads(equivalence_file.read_text())
+    recs = {}
+    for name in names:
+        rec, fr = check_record(json.loads((runs / name / "record.json").read_text()), name, False), frozen[name]
+        check_files(runs / name, rec)
+        on_disk = sorted(q.name for q in runs.glob(name + ".*") if q.is_dir())
+        problems = [what for what, bad in {
+            "not under the freeze of the frozen fit": rec["freeze_sha256"] != fr["freeze_sha256"],
+            "other states or scalers than the frozen fit": rec["states"] != fr["states"] or rec["scalers"] != fr["scalers"],
+            "attempt folders on disk are not those its record lists": on_disk != sorted(a["folder"] for a in rec["earlier_attempts"]),
+            "an earlier attempt was not set aside by the claim": any(
+                not str(a.get("set_aside_because") or "").startswith(SET_ASIDE) for a in rec["earlier_attempts"]),
+        }.items() if bad]
+        if problems:
+            raise AssertionError(f"{name}: " + "; ".join(problems))
+        recs[name] = rec
+    code = {(r["code_commit"], r["analysis_script_sha256"]) for r in [*recs.values(), eq]}
+    if len(code) != 1 or not eq["passed"] or not eq["frozen_environment"] or not eq["unchanged_during_run"] \
+            or eq["freeze_sha256"] != fs._sha(tt.freeze_file()):
+        raise AssertionError("the fits and the equivalence check are not one commit and one script, or the "
+                             "equivalence check did not pass in the frozen environment")
     threshold = WEAK_FACTOR * float(np.median([frozen[name]["best_val_loss"] for name in names]))
     weak = lambda loss: loss is None or loss > threshold               # noqa: E731
     rows = []
     for name in names:
-        folder, fr = runs / name, frozen[name]
-        rec = json.loads((folder / "record.json").read_text())
-        ck = folder / "best.pt"
-        problems = [what for what, bad in {
-            "not that fit": rec["name"] != name or rec["fold"] != fr["fold"] or rec["seed"] != fr["seed"] or rec["pool"] != fr["pool"],
-            "not the stabilised recipe at full size": rec["recipe"] != RECIPES["stabilised"] or rec["dry_run"] is not None,
-            "not under the freeze of the frozen fits": rec["freeze_sha256"] != freeze or rec["freeze_sha256"] != fr["freeze_sha256"],
-            "the checkout changed during the run": not rec["unchanged_during_run"],
-            "other states or scalers than the frozen fit": rec["states"] != fr["states"] or rec["scalers"] != fr["scalers"],
-            "the checkpoint is not the recorded one": (rec["checkpoint_sha256"] is None) == ck.exists()
-            or (ck.exists() and fs._sha(ck) != rec["checkpoint_sha256"]),
-            "the step file is not the recorded one": fs._sha(folder / "steps.npz") != rec["steps_sha256"],
-        }.items() if bad]
-        if problems:
-            raise RuntimeError(f"{name}: " + "; ".join(problems))
-        st = np.load(folder / "steps.npz")
+        rec, fr = recs[name], frozen[name]
+        st = np.load(runs / name / "steps.npz")
         norm, clip = st["grad_norm"], rec["recipe"]["clip_norm"]
         sel = next((c for c in rec["curve"] if c["epoch"] == rec["best_epoch"]), None)
         both = fr["best_val_loss"] is not None and rec["best_val_loss"] is not None
+        norms = None if not len(norm) else {
+            "steps": int(len(norm)), "median": float(np.median(norm)), "p99": float(np.quantile(norm, 0.99)),
+            "max": float(norm.max()), "share_of_steps_clipped": float((norm > clip).mean()),
+            "median_by_network": {str(n): float(np.median(norm[st["network"] == n])) if (st["network"] == n).any() else None
+                                  for n in rec["pool"]}}
         rows.append({
             "name": name, "fold": rec["fold"], "seed": rec["seed"],
             "frozen": {"job_id": fr["job_id"], "best_epoch": fr["best_epoch"], "best_val_loss": fr["best_val_loss"],
@@ -335,22 +464,22 @@ def collect(runs: Path, frozen_runs: Path, out: Path) -> Path:
                            "epochs_run": len(rec["curve"]) - 1, "weak": weak(rec["best_val_loss"]),
                            "numerical_failure": rec["numerical_failure"],
                            "val_by_network_at_selected_epoch": sel["val_by_network"] if sel else None,
-                           "grad_norm_before_clipping": {
-                               "median": float(np.median(norm)), "p99": float(np.quantile(norm, 0.99)),
-                               "max": float(norm.max()), "share_of_steps_clipped": float((norm > clip).mean()),
-                               "median_by_network": {str(n): float(np.median(norm[st["network"] == n])) for n in rec["pool"]}}},
-            "stabilised_over_frozen": rec["best_val_loss"] / fr["best_val_loss"] if both else None,
-            "earlier_attempts": sorted(p.name for p in runs.glob(name + ".attempt*"))})
+                           "grad_norm_before_clipping": norms, "earlier_attempts": rec["earlier_attempts"]},
+            "stabilised_over_frozen": rec["best_val_loss"] / fr["best_val_loss"] if both else None})
     ratios = [r["stabilised_over_frozen"] for r in rows if r["stabilised_over_frozen"] is not None]
-    fs._write_json(out, {"protocol": PROTOCOL,
-                         "what": "PG-pre under the stabilised recipe next to the frozen PG-pre fits; validation "
-                                 "loss on the val states of each fit's pool; no calib or test state",
-                         "code_commit": tt.checkout_state()["head"], "freeze_sha256": freeze,
-                         "recipes": RECIPES, "weak_factor": WEAK_FACTOR, "weak_above": threshold,
-                         "weak_frozen": [r["name"] for r in rows if r["frozen"]["weak"]],
-                         "weak_stabilised": [r["name"] for r in rows if r["stabilised"]["weak"]],
-                         "median_stabilised_over_frozen": float(np.median(ratios)) if ratios else None,
-                         "fits": rows})
+    commit, script = next(iter(code))
+    write_new(out, {"protocol": PROTOCOL,
+                    "what": "PG-pre under the stabilised recipe next to the frozen PG-pre fits; validation loss on "
+                            "the val states of each fit's pool; no calib or test state",
+                    "fits_code_commit": commit, "fits_script_sha256": script,
+                    "collected_at_commit": tt.checkout_state()["head"], "collected_with_script_sha256": script_sha(),
+                    "freeze_sha256": fs._sha(tt.freeze_file()),
+                    "equivalence": {k: eq[k] for k in ("job_id", "fold", "seed", "n_train", "n_val", "epochs", "steps", "passed")},
+                    "recipes": RECIPES, "weak_factor": WEAK_FACTOR, "weak_above": threshold, "notes": NOTES,
+                    "weak_frozen": [r["name"] for r in rows if r["frozen"]["weak"]],
+                    "weak_stabilised": [r["name"] for r in rows if r["stabilised"]["weak"]],
+                    "median_stabilised_over_frozen": float(np.median(ratios)) if ratios else None,
+                    "ratios_over": len(ratios), "fits": rows})
     return out
 
 
@@ -362,31 +491,37 @@ def main():
     ap.add_argument("--seed", type=int)
     ap.add_argument("--label-root", type=Path)
     ap.add_argument("--device", default="cpu")
-    ap.add_argument("--runs", type=Path, default=RUNS, help="fit, collect: the folder of the stabilised fits")
+    ap.add_argument("--runs", type=Path, default=RUNS, help="the folder of the stabilised fits (fit: dry runs only)")
     ap.add_argument("--frozen-runs", type=Path, help="collect: the folder of the final fits (read only)")
+    ap.add_argument("--equivalence", type=Path, help="collect: the record of the equivalence check")
     ap.add_argument("--work", type=Path, help="equivalence: a new folder for its two fits")
     ap.add_argument("--out", type=Path, help="equivalence, collect: a new file")
     ap.add_argument("--n-train", type=int, help="fit: a dry run; equivalence: its size")
     ap.add_argument("--n-val", type=int)
     ap.add_argument("--epochs", type=int)
+    ap.add_argument("--dry", action="store_true", help="equivalence: outside the frozen environment (a test)")
     a = ap.parse_args()
     size = {"n_train": a.n_train, "n_val": a.n_val, "epochs": a.epochs}
     if a.cmd == "collect":
-        if a.frozen_runs is None or a.out is None:
-            ap.error("collect needs --frozen-runs and --out")
-        print(collect(a.runs, a.frozen_runs, a.out))
+        if a.frozen_runs is None or a.equivalence is None or a.out is None:
+            ap.error("collect needs --frozen-runs, --equivalence and --out")
+        print(collect(a.runs, a.frozen_runs, a.equivalence, a.out))
         return
     if a.fold is None or a.seed is None or a.label_root is None:
         ap.error(f"{a.cmd} needs --fold, --seed and --label-root")
     if a.cmd == "fit":
-        print(fit(a.recipe, a.fold, a.seed, a.label_root, a.device, a.runs,
-                  size if any(v is not None for v in size.values()) else None))
+        try:
+            print(fit(a.recipe, a.fold, a.seed, a.label_root, a.device, a.runs,
+                      size if any(v is not None for v in size.values()) else None))
+        except tt.AlreadyDone as e:
+            print(e)
+            sys.exit(10)
         return
     if a.work is None or a.out is None or None in size.values():
         ap.error("equivalence needs --work, --out, --n-train, --n-val and --epochs")
-    equal = equivalence(a.fold, a.seed, a.label_root, a.device, a.work, a.out, **size)
-    print(a.out, "EQUAL" if equal else "NOT EQUAL")
-    sys.exit(0 if equal else 1)
+    passed = equivalence(a.fold, a.seed, a.label_root, a.device, a.work, a.out, dry=a.dry, **size)
+    print(a.out, "PASSED" if passed else "NOT PASSED")
+    sys.exit(0 if passed else 1)
 
 
 if __name__ == "__main__":
