@@ -702,3 +702,31 @@ After a sixth read-only audit, of commit 6013516. It cleared the reader of the t
 1. **Claims.** One process at a time inspects, sets aside and claims a run folder; a second one is refused. **The owner's liveness is checked first:** while the attempt that owns a folder is running, nothing in that folder is set aside, validated or counted, whatever it holds. A fit's two reruns are therefore used up, and the halt written, only when its last attempt has ended.
 2. **Skips and publication happen inside the claim.** If the folder holds a valid record, that record and the files it names are checked, the record is published to `results/` where the stage has a published copy, and only then is the run reported as done. A record that fails a check is an error, not a skip. No label is read on that path.
 3. **Rerun reason.** A cancellation counts if accounting names an account other than ours. A cancellation by our account, or one that names no account, counts only as a declared deviation, whose text is recorded.
+
+## Note on two weak PG-pre seeds and an exploratory diagnostic (2026-11-16, during the final fits, before any evaluation record is opened)
+
+Written while the final runs of freeze `a4068ef` are in progress. No evaluation record, timing record or report of the final runs has been opened.
+
+**What was seen (training and validation loss only).** The curves of the twelve PG-pre fits, read from the job logs at 10:50:
+
+- Fold 2, seed 1: validation loss 0.4985 at epoch 7; at epoch 8 the training loss rose from 0.60 to 1.91 and no later epoch improved on epoch 7; the fit stopped at epoch 15 by the patience rule. Selected epoch: 7.
+- Fold 2, seed 2: validation loss 1.62 at epoch 19 (2.30 before training), still running.
+- Fold 2, seed 0, and the nine fits of the other folds: between 0.05 and 0.21 at epochs 18 to 23.
+
+**What does not change.**
+
+1. No run is stopped, changed or run again. These are valid records; under Amendment 7 the first valid attempt is the fit.
+2. They are reported as weak seeds, not as failures.
+3. Every result is reported per seed and per network. No checkpoint is replaced by another seed's or by an average.
+4. PG-zs and PG-pre-tc use PG-pre seed 0 (§4). The two weak seeds are the starting points of PG-ft with seeds 1 and 2 at B = 1,000 on the six networks of fold 2 (11, 12, 14, 15, 19, 20): 12 of the 120 PG-ft fits. Whether fine-tuning recovers from a weak starting point is part of the result and is not assumed.
+
+**Caveat for the discussion.** One PG-pre checkpoint is the starting point for the six target networks of its fold, so its effect on them is correlated within the fold. The network bootstrap of §7 stays the primary analysis; the spread over seeds per network and the pattern per fold are shown next to it.
+
+**Exploratory diagnostic (train and val states only; not a criterion).** `scripts/fourwire_scale_pgpre_diagnostic.py`, committed with this note. It reads the run folders and does not write into them.
+
+- `checkpoints`: for each of the twelve selected PG-pre checkpoints, on the val states of its pool: the validation loss per pool network and its four terms (voltage, phase-to-neutral voltage, current, voltage-drop consistency), the root-mean-square size of the predicted and of the true correction to the U1 prior, and weight norms. The pooled loss is recomputed the way the fit computes it; a fit whose recorded loss is not reproduced within a relative 1e-5 is marked and its diagnostic is not interpreted.
+- `retrace`: the fit of fold 2, seed 1 is run once more with the frozen fit routine, the same seed and deterministic algorithms on the A100, into a separate folder, keeping every step loss. Each step is given its network by replaying the fit's shuffling. This shows which networks carry the rise at epoch 8. The rerun's curve and weight hashes are compared with the record; if they differ, that is reported, the retrace is not interpreted, and the record stays the fit. The rerun is not a fit of the study and replaces nothing.
+
+The diagnostic is run and its output committed before any evaluation record or report is opened. It is not used to select, change or exclude a run, a seed or a network.
+
+**Not part of this study.** A stabilised training recipe (a lower peak learning rate, a linear warm-up, gradient-norm clipping, batches balanced across networks) is a candidate for a later robustness analysis. It would need its own dated amendment written before it is run, would cover all four folds and all three seeds, and would be reported as exploratory next to the frozen results, never in their place.
