@@ -1,7 +1,7 @@
 """Four-wire scale study: exploratory robustness analysis of PG-pre under a stabilised training recipe
-(docs/fourwire_scale_protocol.md, Amendment 10). Train and val states only: the label reader used here serves
-no other split. No fit of the study is changed or replaced, and nothing is written under
-data_out/fourwire_scale/runs/final or runs/dry.
+(docs/fourwire_scale_protocol.md, Amendment 10). Train and val states only: the label reader is asked for
+these two splits and for nothing else (it cannot serve test states). No fit of the study is changed or
+replaced, and nothing is written under data_out/fourwire_scale/runs/final or runs/dry.
 
 train() is fourwire_scale_train.fit for a PG-pre fit, with four switches (RECIPES):
     lr             peak learning rate of AdamW

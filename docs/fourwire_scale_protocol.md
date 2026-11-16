@@ -791,3 +791,7 @@ No averaged (EMA) checkpoint is used. Where the auditor's proposal left a choice
 **Known before the runs.** In a laptop dry run of the stabilised recipe (64 train states per network, 8 epochs) more than 90% of the steps had a gradient norm above 1.0. Early in training the clipping is therefore active on most steps, and the size of a step is set by the optimiser and the learning rate more than by the size of the gradient. The share of clipped steps is recorded per epoch. The clipping value is the auditor's and was not tuned.
 
 **Order.** The recipe, the runs and the reading are fixed here, before any evaluation record of the final runs is opened. The stabilised fits may therefore finish after the final reports are made without being informed by them.
+
+### Correction to Amendment 10 (2026-11-16, before any run)
+
+"Runs" says that the label reader of the fits serves no other split than train and val. That is wrong. The reader (`fourwire_scale_data.LabelStore`) serves train, val and calib states and cannot serve test states. The script asks it for train and val states only; it never requests a calib state. The script's own description said the same and is corrected.
