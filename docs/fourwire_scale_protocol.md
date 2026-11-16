@@ -730,3 +730,18 @@ Written while the final runs of freeze `a4068ef` are in progress. No evaluation 
 The diagnostic is run and its output committed before any evaluation record or report is opened. It is not used to select, change or exclude a run, a seed or a network.
 
 **Not part of this study.** A stabilised training recipe (a lower peak learning rate, a linear warm-up, gradient-norm clipping, batches balanced across networks) is a candidate for a later robustness analysis. It would need its own dated amendment written before it is run, would cover all four folds and all three seeds, and would be reported as exploratory next to the frozen results, never in their place.
+
+### Corrections to the note above (2026-11-16, after the ninth audit)
+
+The audit of commit `a8a2612` found one fault in the script and several statements to qualify. No evaluation record, timing record or report has been opened.
+
+1. **"No run is stopped, changed or run again"** means: no run of the frozen study is retried or replaced. The rerun in `retrace` is a separate, disclosed diagnostic on train and val states.
+2. **Fold 2, seed 2 was still running** when the note was written. The figures given for it are a reading of its job log at 10:50, not its record. Whether its selected checkpoint is weak is stated from its record. Until then one weak seed is established (fold 2, seed 1).
+3. **In the primary E3 comparison** (B = 1,000, the 23 fresh networks) the fits that start from the two fold-2 seeds are 12 of the 69 PG-ft fits, on 6 of the 23 networks.
+4. **The script, corrected:**
+   - It refuses an output path inside the run folders and any output file that exists. The first version checked only the rerun's folder.
+   - Every record is checked by the study's own validator (the fit of that name, valid, made under this freeze with its source, libraries and inputs, with its checkpoint). For a final record the diagnostic refuses to run with another source, library set or GPU model, and it records whether the checkout was unchanged at the end.
+   - `checkpoints` requires all twelve PG-pre fits of §8 and reads no other folder.
+   - `retrace` now observes which network each forward pass used, in addition to replaying the shuffling. The two orders must be equal, otherwise nothing is written. The first version checked only step counts, which a wrong replay can satisfy.
+   - The per-network loss is the fit's own validation quantity: a mean with the near-limit weights inside each batch of 128 states, the batches then averaged by their number of converged states. A plain mean over the converged states is reported next to it. The correction sizes are unweighted.
+5. **Jobs queued with the first version** (13593190 and 13593191, with output paths outside the run folders): they are cancelled, or their output is discarded if they ran before this correction. What happened to them is stated with the diagnostic's output.
