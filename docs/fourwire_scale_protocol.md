@@ -820,3 +820,7 @@ The audit of `73f37af` found the equivalence gate and `collect` resolved and two
 4. **Item 3 above, the figures.** Between 33 and 36 of the 36 steps of each epoch (91.7% to 100%).
 5. **`collect`** also requires the equivalence record to be the prescribed check (fold 2, seed 1, 648 train and 312 val states per network, 4 epochs).
 6. **The two laptop records** of item 2 above were made with the script of `73f37af`. The training loop is unchanged since.
+
+### Note after the twelfth audit (2026-11-16, before anything of Amendment 10 is submitted)
+
+The audit of `cdb4e83` found the two remaining blockers resolved and the analysis ready to submit. The stabilised fits and their equivalence check run from a worktree at `cdb4e83`, the audited commit. One statement of the second set is made exact: the refusal of item 1 applies when the fit's current folder exists without a valid record and two earlier attempts have been set aside. A lock left by a process that died while holding it blocks further claims of that fit until it is checked and removed as a recorded decision.
