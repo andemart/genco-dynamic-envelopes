@@ -745,3 +745,49 @@ The audit of commit `a8a2612` found one fault in the script and several statemen
    - `retrace` now observes which network each forward pass used, in addition to replaying the shuffling. The two orders must be equal, otherwise nothing is written. The first version checked only step counts, which a wrong replay can satisfy.
    - The per-network loss is the fit's own validation quantity: a mean with the near-limit weights inside each batch of 128 states, the batches then averaged by their number of converged states. A plain mean over the converged states is reported next to it. The correction sizes are unweighted.
 5. **Jobs queued with the first version** (13593190 and 13593191, with output paths outside the run folders): they are cancelled, or their output is discarded if they ran before this correction. What happened to them is stated with the diagnostic's output.
+
+## Amendment 10 (2026-11-16): exploratory robustness analysis of PG-pre under a stabilised recipe (before it is run, and before any evaluation record is opened)
+
+Written after the 276 final fits of freeze `a4068ef` ended and their fit records (training and validation loss) were read. The evaluation and envelope stages have completed on the cluster and the timing stage is running; none of their records, and no report, has been opened. The exploratory diagnostic of the note above is queued and has produced no output yet. The auditor proposed this analysis when the two weak seeds were seen; it is added at the author's request.
+
+**Question.** Are the two weak PG-pre fits a property of the frozen optimisation recipe? The analysis is exploratory. It changes no frozen result, and no criterion of §7 depends on it.
+
+**What the frozen PG-pre fits gave** (selected validation loss, from their records):
+
+| Fold | Seed 0 | Seed 1 | Seed 2 |
+|---|---|---|---|
+| 0 | 0.0308 | 0.0232 | 0.0273 |
+| 1 | 0.0175 | 0.0223 | 0.0186 |
+| 2 | 0.0201 | 0.4985 (epoch 7 of 15) | 1.5353 (epoch 60) |
+| 3 | 0.0148 | 0.0168 | 0.0179 |
+
+Fold 2, seed 2 is therefore weak by its record, as fold 2, seed 1 is (correction 2 of the note above left this open).
+
+**The stabilised recipe.** PG-pre as frozen (model, loss, the first 5,000 train states and the val states of each pool network, scalers, batch 32, AdamW with weight decay 1e-4, at most 60 epochs, patience 8, the selection rule, folds, seeds 0 to 2, deterministic algorithms on the A100, the frozen source and libraries), with four changes:
+
+1. Peak learning rate 3e-4 (frozen: 1e-3).
+2. Warm-up: over the first 5 epochs the learning rate rises linearly, step by step, from zero to the peak, which it reaches at the last step of epoch 5. The cosine decay of the frozen recipe then runs over the remaining 55 epochs, once per epoch: epoch 6 trains at the peak.
+3. The global gradient norm is clipped to 1.0 before every optimiser step.
+4. Order of the batches: an epoch is a sequence of rounds, and a round holds one batch of every pool network, in a random order. As in the frozen recipe a batch holds states of one network and an epoch visits every training state once; the frozen recipe puts the batches of all networks in one random order.
+
+No averaged (EMA) checkpoint is used. Where the auditor's proposal left a choice, this amendment fixes it: 5 warm-up epochs (proposed: 3 to 5), round-robin batches and not gradient accumulation (which would change the number of optimiser steps), no EMA (proposed as optional).
+
+**Runs.** Twelve fits: the four folds and the three seeds, never fold 2 alone. Train and val states only; the label reader of the fits serves no other split. About 3.2 hours each on the A100, about 40 GPU-hours in all. They run from their own worktree and write under `data_out/fourwire_scale/runs/stabilised`, never into the run folders of the study. Code: `scripts/fourwire_scale_pgpre_stabilised.py` and `scripts/hydra_fourwire_scale_stabilised.slurm`; `src/` is unchanged, so the freeze stays valid, and every fit must pass the checks of a final command (pinned commit, the frozen source, inputs, libraries and GPU model).
+
+**Equivalence check, before the fits.** The script has its own training loop, because the frozen routine has no switch for these changes. With the four changes off, that loop must be the frozen routine. `equivalence` runs both on one reduced fit on the A100 (fold 2, seed 1, 650 train and 256 val states per network, 4 epochs) and compares the curve, every step loss, the initial, selected and final weight hashes and the selected checkpoint file. The twelve fits start only if all are equal. On the laptop's CPU the same check (fold 0, seed 0, 80 train and 40 val states per network, 3 epochs, 162 steps) gave equality in every item.
+
+**Attempts.** The first completed attempt of a fit is the fit. A fit is run again only after an infrastructure failure (the Slurm states of Amendment 7, item 3); the folder of the failed attempt is kept under the name `<fit>.attemptK` and is listed in the output. A numerical failure is a result and is not run again.
+
+**What is recorded beyond the frozen fits.** After every epoch the validation loss of every pool network and its four terms; for every step the loss, the gradient norm before clipping and the learning rate.
+
+**How it is read.** A fit is called weak when its selected validation loss is above five times the median of the twelve frozen fits (0.0212, so above 0.106), or when it selected no checkpoint. The same threshold is used for both recipes: for a given fold they share states, scalers and loss. `collect` writes `results/fourwire_scale_pgpre_stabilised.json` with, for each of the twelve fits, the frozen and the stabilised loss, selected epoch and number of epochs, their ratio, the loss per pool network at the selected epoch and a summary of the gradient norms. There is no significance test. What may be said:
+
+- If no stabilised fit is weak: the weak seeds did not recur under the stabilised recipe, which is consistent with a sensitivity of the frozen optimisation. It does not show which change matters (four change together), and three seeds per fold do not bound how often a weak fit occurs.
+- If a stabilised fit is weak: that is reported, and the recipe is not said to remove the problem.
+- In both cases the level is reported too: whether the stabilised losses of the other fits are above or below the frozen ones.
+
+**What it is not.** No stabilised checkpoint is fine-tuned, calibrated or evaluated on calib or test states, and no result of E2 or E3 uses one. The frozen fits and everything computed from them stay the results of the study, weak seeds included. Any further use of the stabilised checkpoints needs its own amendment before it is made.
+
+**Known before the runs.** In a laptop dry run of the stabilised recipe (64 train states per network, 8 epochs) more than 90% of the steps had a gradient norm above 1.0. Early in training the clipping is therefore active on most steps, and the size of a step is set by the optimiser and the learning rate more than by the size of the gradient. The share of clipped steps is recorded per epoch. The clipping value is the auditor's and was not tuned.
+
+**Order.** The recipe, the runs and the reading are fixed here, before any evaluation record of the final runs is opened. The stabilised fits may therefore finish after the final reports are made without being informed by them.
