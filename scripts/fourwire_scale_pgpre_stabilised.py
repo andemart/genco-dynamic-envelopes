@@ -52,6 +52,7 @@ RECIPES = {"frozen": {"lr": CONFIG["lr"], "warmup_epochs": 0, "clip_norm": None,
            "stabilised": {"lr": 3e-4, "warmup_epochs": 5, "clip_norm": 1.0, "order": "round_robin"}}
 TERMS = ("v", "vpn", "cur", "kvl")
 WEAK_FACTOR = 5.0                   # weak: selected validation loss above this many times the frozen median
+GATE = {"fold": 2, "seed": 1, "n_train": 648, "n_val": 312, "epochs": 4}   # the equivalence check before the fits
 RUNS = fs.OUT / "runs" / "stabilised"
 
 
@@ -62,11 +63,12 @@ def inside(path: Path, folder: Path) -> bool:
 
 def guard(*outputs: Path, frozen_runs: Path | None = None) -> None:
     """Checked before any work: no output lies in a run folder of the study (runs/final or runs/dry of any
-    checkout, or the folder given as --frozen-runs), and none contains one."""
+    checkout, or the folder given as --frozen-runs), and none contains one. The name is looked for in the
+    path as given and in the path with symbolic links followed."""
     own = [tt.runs(False), tt.runs(True)] + ([frozen_runs] if frozen_runs is not None else [])
     for path in outputs:
-        parts = path.resolve().parts
-        named = any(a == "runs" and b in ("final", "dry") for a, b in zip(parts, parts[1:]))
+        spellings = (Path(os.path.abspath(path)).parts, path.resolve().parts)
+        named = any(a == "runs" and b in ("final", "dry") for parts in spellings for a, b in zip(parts, parts[1:]))
         if named or any(inside(path, f) or inside(f, path) for f in own):
             raise SystemExit(f"{path}: the run folders of the study are not written to")
 
@@ -331,16 +333,30 @@ def fit(recipe: str, fold: int, seed: int, label_root: Path, device: str, runs: 
     """One PG-pre fit of a recipe. Full size (dry is None): the stabilised recipe, into this checkout's
     runs/stabilised, as a final command of the study runs. Attempts follow Amendment 7, item 3, through the
     study's own claim: a valid record is never run again (tt.AlreadyDone); a folder without a record is set
-    aside only for an infrastructure end state in Slurm accounting; at most tt.MAX_RERUNS earlier attempts."""
+    aside only for an infrastructure end state in Slurm accounting; at most tt.MAX_RERUNS earlier attempts.
+    A further attempt is refused here, under one lock with the claim, so that the claim never reaches the
+    point where it would write the halt file of the final runs."""
     final, name = dry is None, tt.run_name("pgpre", fold=fold, seed=seed)
     if final and (recipe != "stabilised" or runs.resolve() != RUNS.resolve()):
         raise SystemExit("at full size: the stabilised recipe, into this checkout's runs/stabilised (Amendment 10)")
     guard(runs)
     prov = start(device, final)
-    if final and len([q for q in runs.glob(f"{name}.*") if q.is_dir()]) >= tt.MAX_RERUNS:
-        raise SystemExit(f"{name}: {tt.MAX_RERUNS} earlier attempts; a further one needs an amendment")
-    out_dir, earlier = tt.claim_run_folder(runs, name, prov, final,
-                                           validate=lambda rec: check_files(runs / name, check_record(rec, name, not final)))
+    runs.mkdir(parents=True, exist_ok=True)
+    lock = runs / f".{name}.attempts.lock"
+    try:
+        lock.mkdir()                                                 # from counting the attempts to the claim
+    except FileExistsError as e:
+        raise RuntimeError(f"{name}: another attempt is being claimed ({lock.name} exists; if no process holds "
+                           "it, removing it is a recorded decision)") from e
+    try:
+        rec = runs / name / "record.json"
+        done = rec.exists() and json.loads(rec.read_text())["valid"]
+        if (runs / name).exists() and not done and len([q for q in runs.glob(f"{name}.*") if q.is_dir()]) >= tt.MAX_RERUNS:
+            raise SystemExit(f"{name}: {tt.MAX_RERUNS} earlier attempts; a further one needs an amendment")
+        out_dir, earlier = tt.claim_run_folder(
+            runs, name, prov, final, validate=lambda r: check_files(runs / name, check_record(r, name, not final)))
+    finally:
+        lock.rmdir()
     d = dry or {}
     res, steps = train(fd.LabelStore(label_root), tt.pool_of(fold), RECIPES[recipe],
                        d.get("epochs") or CONFIG["max_epochs"], device, seed, out_dir, d.get("n_train"), d.get("n_val"))
@@ -439,9 +455,9 @@ def collect(runs: Path, frozen_runs: Path, equivalence_file: Path, out: Path) ->
         recs[name] = rec
     code = {(r["code_commit"], r["analysis_script_sha256"]) for r in [*recs.values(), eq]}
     if len(code) != 1 or not eq["passed"] or not eq["frozen_environment"] or not eq["unchanged_during_run"] \
-            or eq["freeze_sha256"] != fs._sha(tt.freeze_file()):
+            or eq["freeze_sha256"] != fs._sha(tt.freeze_file()) or any(eq[k] != v for k, v in GATE.items()):
         raise AssertionError("the fits and the equivalence check are not one commit and one script, or the "
-                             "equivalence check did not pass in the frozen environment")
+                             "equivalence check is not the prescribed one, passed in the frozen environment")
     threshold = WEAK_FACTOR * float(np.median([frozen[name]["best_val_loss"] for name in names]))
     weak = lambda loss: loss is None or loss > threshold               # noqa: E731
     rows = []
