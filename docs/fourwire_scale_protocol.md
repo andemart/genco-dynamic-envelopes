@@ -695,3 +695,10 @@ Appended after a fifth read-only audit, of commit ed17a1a. The texts above are l
 11. **Submission.** The final job chain is submitted by hand, after the A100 dry run of the same source has ended with `DRY_RUN_OK` and its output has been read. There is no automatic dependency on the dry run.
 
 **D. What these guards are.** They protect the study against our own mistakes: a wrong folder, a repeated job, a stale record, two jobs for one run. They work on one file system and assume nobody edits records on purpose. They are not security.
+
+## Amendments 7 to 9: third note on the run claims (2026-11-16, before the freeze)
+After a sixth read-only audit, of commit 6013516. It cleared the reader of the test labels, the record checks, the end-of-run checks and the envelope-record check, and found three ordering faults in the claim of a run folder. This note replaces items C1 to C3 and C8 of the second set of corrections.
+
+1. **Claims.** One process at a time inspects, sets aside and claims a run folder; a second one is refused. **The owner's liveness is checked first:** while the attempt that owns a folder is running, nothing in that folder is set aside, validated or counted, whatever it holds. A fit's two reruns are therefore used up, and the halt written, only when its last attempt has ended.
+2. **Skips and publication happen inside the claim.** If the folder holds a valid record, that record and the files it names are checked, the record is published to `results/` where the stage has a published copy, and only then is the run reported as done. A record that fails a check is an error, not a skip. No label is read on that path.
+3. **Rerun reason.** A cancellation counts if accounting names an account other than ours. A cancellation by our account, or one that names no account, counts only as a declared deviation, whose text is recorded.
