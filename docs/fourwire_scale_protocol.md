@@ -1367,3 +1367,14 @@ The audit of `8e46433` found the reduction, the source, the mixes, the fresh che
 
    None of this changes the model of item 3. It is why network 1 is reported next to the published figures and not as a reproduction.
 4. **Dry runs after the amendment, on validation days.** The corrected script on the laptop: network 25, half mix, 2 days, 3 hours each (16 checked states on both days; differences 6e-16 and 2e-11 pu). Two dry runs submitted to the cluster at `8e46433` (jobs 13603420 and 13603421) were cancelled before they started.
+
+### Corrections to Amendment 12, second set (2026-11-17, after the twenty-second audit; nothing of E5 has run on a held-out day)
+
+The audit of `61b38f3` found the positive-sequence check and the disclosure resolved, the two cases it had constructed against the E4 comparison now refused, and one gap left in that comparison. The report's check is corrected with this text; the run command is unchanged.
+
+1. **The check against the E4 records compared results only where the two levels were exactly equal.** A set of records with every level moved by one rounding step, which is within the tolerance on levels, would have had no result compared and would have passed. Corrected: **every envelope that is positive in either record is compared, and it agrees only if its level is exactly equal and its three results are equal.** The report is not written if more than 0.5% of these envelopes do not agree. The other two conditions stay: at most 0.5% of the levels beyond 1e-3 × cap, and the same classification of all 24 networks with the same list of counted networks.
+2. **Why exact equality is the right expectation.** The base mix runs the same code path as E4 for these two models, with the same seeds, on nodes of the same partition; the E4 levels equalled the E2 records exactly on all 3,456 compared envelopes, across node types. If more than 0.5% of the envelopes do not agree, the report is not written and the difference is resolved under a dated note before any E5 result is read.
+3. **Dry runs on the cluster, on validation days** (commit `61b38f3`, whose run command is the one of this commit; jobs 13603615 and 13603616, 2 days each, 5 minutes each):
+   - network 17, pv mix: 4 positive four-wire-verified envelopes of 96 (3 reached 0.95), 43 balanced-load (none) and 44 positive-sequence (none); the positive-sequence level is above the balanced-load level in 44 intervals and equal in 52 (both zero);
+   - network 7, half mix: 25 four-wire-verified (24 reached 0.95), 96 balanced-load (none) and 96 positive-sequence (none), the positive-sequence level above the balanced-load level in all 96;
+   - on the OpenDSS day the sweep and OpenDSS decided every fresh state alike in both; the positive-sequence check used 16 states on every day, with differences below 1e-9 pu.

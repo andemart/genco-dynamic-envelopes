@@ -71,8 +71,8 @@ HOURS, CORES, N_FRESH = e4.HOURS, e4.CORES, e4.N_FRESH
 STREAM_DESIGN, STREAM_FRESH = e4.STREAM_DESIGN, e4.STREAM_FRESH
 MAJORITY = e4.MAJORITY
 OPENDSS_DAYS = e4.OPENDSS_DAYS
-E4_TOLERANCE_SHARE = 0.005              # report: share of base-mix levels, and of envelopes with other results,
-#                                         that may differ from the E4 records
+E4_TOLERANCE_SHARE = 0.005              # report: share of base-mix levels beyond tolerance, and of envelopes not
+#                                         agreeing exactly, that may differ from the E4 records
 POSSEQ_TOLERANCE_PU = 1e-6              # the sweep on the reduced network against the scalar power flow
 POSSEQ_CHECK_STATES = 8                 # design scenarios of the first hour of a day, each also at POSSEQ_LIGHT
 POSSEQ_LIGHT = 0.1                      # of its power, so that a day has states on which both solvers converge
@@ -427,14 +427,15 @@ def record_problems(rec: dict, network: int, mix: str, prov: dict, days: list[in
 # ------------------------------------------------------------------------------------------- report
 def e4_comparison(records: dict, recomputed: dict) -> dict:
     """The base mix against the committed E4 records, which must be the files the E4 report names. Compared: the
-    levels of the four-wire and the balanced-load model; for every envelope with an equal positive level, its
-    three results (feasible fresh draws by the sweep, by OpenDSS, decisions that differ); and the classification
-    of every network in the recomputed E4 cell against the E4 report. Every interval and model with any
-    difference is listed. Passed: at most E4_TOLERANCE_SHARE of the levels beyond tolerance, at most that share
-    of the compared envelopes with another result, and the same classification of all 24 networks."""
+    levels of the four-wire and the balanced-load model; every envelope that is positive in either record, which
+    agrees only if its level is exactly equal and its three results (feasible fresh draws by the sweep, by
+    OpenDSS, decisions that differ) are equal; and the classification of every network in the recomputed E4
+    cell against the E4 report. Every interval and model with any difference is listed. Passed: at most
+    E4_TOLERANCE_SHARE of the levels beyond tolerance, at most that share of the envelopes not agreeing, and
+    the same classification of all 24 networks."""
     e4_report = json.loads(e4.REPORT.read_text())
     out = {"levels_compared": 0, "levels_equal": 0, "levels_beyond_tolerance": 0, "largest_difference_kw": 0.0,
-           "envelopes_compared": 0, "envelopes_with_equal_results": 0, "e4_report_sha256": fs._sha(e4.REPORT),
+           "envelopes_compared": 0, "envelopes_agreeing": 0, "e4_report_sha256": fs._sha(e4.REPORT),
            "differences": []}
     for n in fs.ELIGIBLE:
         path = e4.RECORDS / f"network_{n}.json"
@@ -453,9 +454,9 @@ def e4_comparison(records: dict, recomputed: dict) -> dict:
                 was = [None if o[f"{m}_{k}"] is None else round(o[f"{m}_{k}"] * N_FRESH)
                        for k in ("fresh_share", "fresh_share_opendss")] + [o[f"{m}_fresh_decisions_differ"]]
                 same = d == 0 and new == was
-                if d == 0 and r[f"{m}_level_kw"] > 0:
+                if r[f"{m}_level_kw"] > 0 or o[f"{m}_level_kw"] > 0:     # an envelope in either record
                     out["envelopes_compared"] += 1
-                    out["envelopes_with_equal_results"] += int(same)
+                    out["envelopes_agreeing"] += int(same)
                 if not same:
                     out["differences"].append({
                         "network": n, "day": r["day"], "step": r["step"], "direction": r["direction"], "model": m,
@@ -467,8 +468,7 @@ def e4_comparison(records: dict, recomputed: dict) -> dict:
         if any(recomputed["per_network"][str(n)][k] != e4_report["per_network"][str(n)][k] for k in keys)]
     out["passed"] = bool(
         out["levels_beyond_tolerance"] <= E4_TOLERANCE_SHARE * out["levels_compared"]
-        and out["envelopes_compared"] - out["envelopes_with_equal_results"]
-        <= E4_TOLERANCE_SHARE * out["envelopes_compared"]
+        and out["envelopes_compared"] - out["envelopes_agreeing"] <= E4_TOLERANCE_SHARE * out["envelopes_compared"]
         and not out["networks_classified_differently"]
         and recomputed["unsafe_counted"] == e4_report["balanced_unsafe_counted"])
     return out
