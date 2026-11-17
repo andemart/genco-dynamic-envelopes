@@ -569,3 +569,666 @@ b42b315749a786efc6d14c54950f5492dcf34e059628ceee89cc504079b04487  results/fourwi
 e4772bd94c7fabcbc002b336203673990883ec11a82930dc8decd0484904857c  results/fourwire_scale_e4/attempts/network_7_20261117T144531_13602666_7.json
 090bf8e222b18a66def46b7b7502bdb05a0124dca5bd43b326b3ed5e4afed981  results/fourwire_scale_e4/attempts/network_8_20261117T144531_13602667_8.json
 4e40e71812cec035390a39ca37f9cae92c18d1f5cd78e82ffa783ce30ba077a7  results/fourwire_scale_e4/attempts/network_9_20261117T144531_13602668_9.json
+=== E5 (Amendment 12): accounting of the validation-day dry runs, the three run arrays (one task per network; 13603713 base mix, 13603714 half mix, 13603715 pv mix) and the report, read on 2026-11-17 after the report ended ===
+13603420|fwscale-e5-dry|CANCELLED by NNNNNNN|0:0|2026-11-17T16:56:00|None|2026-11-17T17:15:54|00:00:00|None assigned|0|
+13603421|fwscale-e5-dry|CANCELLED by NNNNNNN|0:0|2026-11-17T16:56:00|None|2026-11-17T17:15:54|00:00:00|None assigned|0|
+13603615|fwscale-e5-dry|COMPLETED|0:0|2026-11-17T17:17:14|2026-11-17T17:18:35|2026-11-17T17:23:38|00:05:03|node619|16|billing=16,cpu=16,mem=32G,node=1
+13603616|fwscale-e5-dry|COMPLETED|0:0|2026-11-17T17:17:14|2026-11-17T17:19:35|2026-11-17T17:24:58|00:05:23|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603713_1|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T17:40:18|2026-11-17T18:02:34|00:22:16|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603713_2|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T17:58:55|2026-11-17T18:43:13|00:44:18|node619|16|billing=16,cpu=16,mem=32G,node=1
+13603713_3|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:02:34|2026-11-17T18:38:23|00:35:49|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603713_4|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:16:58|2026-11-17T18:38:09|00:21:11|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603713_5|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:29:06|2026-11-17T18:54:54|00:25:48|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603713_6|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:29:54|2026-11-17T18:46:38|00:16:44|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603713_7|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:37:47|2026-11-17T19:18:56|00:41:09|node603|16|billing=16,cpu=16,mem=32G,node=1
+13603713_8|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:38:10|2026-11-17T19:19:04|00:40:54|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603713_9|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:38:13|2026-11-17T18:57:22|00:19:09|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603713_10|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:38:23|2026-11-17T18:43:49|00:05:26|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603713_11|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:43:13|2026-11-17T18:59:37|00:16:24|node619|16|billing=16,cpu=16,mem=32G,node=1
+13603713_12|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:43:49|2026-11-17T19:16:01|00:32:12|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603713_14|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:46:04|2026-11-17T19:09:12|00:23:08|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603713_15|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:46:38|2026-11-17T19:35:04|00:48:26|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603713_16|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:48:31|2026-11-17T19:09:56|00:21:25|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603713_17|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:54:54|2026-11-17T20:02:49|01:07:55|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603713_18|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:57:23|2026-11-17T19:21:29|00:24:06|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603713_19|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T18:59:37|2026-11-17T19:30:41|00:31:04|node619|16|billing=16,cpu=16,mem=32G,node=1
+13603713_20|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:09:12|2026-11-17T19:23:35|00:14:23|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603713_21|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:09:56|2026-11-17T19:25:19|00:15:23|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603713_22|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:14:44|2026-11-17T19:32:43|00:17:59|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603713_23|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:16:01|2026-11-17T19:36:25|00:20:24|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603713_24|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:18:56|2026-11-17T19:31:35|00:12:39|node603|16|billing=16,cpu=16,mem=32G,node=1
+13603713_25|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:19:04|2026-11-17T19:26:31|00:07:27|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603714_1|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:21:29|2026-11-17T19:43:59|00:22:30|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603714_2|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:23:36|2026-11-17T20:15:36|00:52:00|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603714_3|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:25:19|2026-11-17T20:06:02|00:40:43|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603714_4|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:26:31|2026-11-17T19:48:13|00:21:42|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603714_5|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:30:42|2026-11-17T19:59:14|00:28:32|node619|16|billing=16,cpu=16,mem=32G,node=1
+13603714_6|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:31:36|2026-11-17T19:48:59|00:17:23|node603|16|billing=16,cpu=16,mem=32G,node=1
+13603714_7|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:32:43|2026-11-17T20:12:51|00:40:08|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603714_8|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:35:05|2026-11-17T20:12:32|00:37:27|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603714_9|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:36:25|2026-11-17T19:57:35|00:21:10|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603714_10|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:43:59|2026-11-17T19:48:03|00:04:04|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603714_11|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:48:03|2026-11-17T20:04:25|00:16:22|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603714_12|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:48:14|2026-11-17T20:30:08|00:41:54|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603714_14|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:48:59|2026-11-17T20:11:40|00:22:41|node603|16|billing=16,cpu=16,mem=32G,node=1
+13603714_15|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:57:36|2026-11-17T20:55:17|00:57:41|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603714_16|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:57:54|2026-11-17T20:23:12|00:25:18|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603714_17|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T19:59:14|2026-11-17T21:14:10|01:14:56|node619|16|billing=16,cpu=16,mem=32G,node=1
+13603714_18|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:02:49|2026-11-17T20:28:00|00:25:11|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603714_19|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:04:25|2026-11-17T20:34:39|00:30:14|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603714_20|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:05:52|2026-11-17T20:16:03|00:10:11|node618|16|billing=16,cpu=16,mem=32G,node=1
+13603714_21|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:06:03|2026-11-17T20:20:45|00:14:42|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603714_22|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:11:40|2026-11-17T20:33:00|00:21:20|node603|16|billing=16,cpu=16,mem=32G,node=1
+13603714_23|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:12:32|2026-11-17T20:33:43|00:21:11|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603714_24|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:12:51|2026-11-17T20:23:53|00:11:02|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603714_25|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:15:37|2026-11-17T20:19:52|00:04:15|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603715_1|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:16:03|2026-11-17T20:34:47|00:18:44|node618|16|billing=16,cpu=16,mem=32G,node=1
+13603715_2|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:19:52|2026-11-17T21:01:14|00:41:22|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603715_3|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:20:45|2026-11-17T20:55:20|00:34:35|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603715_4|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:23:12|2026-11-17T20:43:06|00:19:54|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603715_5|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:23:53|2026-11-17T20:45:11|00:21:18|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603715_6|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:28:00|2026-11-17T20:43:45|00:15:45|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603715_7|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:30:08|2026-11-17T21:13:59|00:43:51|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603715_8|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:32:42|2026-11-17T21:01:12|00:28:30|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603715_9|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:33:01|2026-11-17T20:51:36|00:18:35|node603|16|billing=16,cpu=16,mem=32G,node=1
+13603715_10|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:33:43|2026-11-17T20:38:28|00:04:45|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603715_11|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:34:39|2026-11-17T20:49:14|00:14:35|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603715_12|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:34:47|2026-11-17T21:02:28|00:27:41|node618|16|billing=16,cpu=16,mem=32G,node=1
+13603715_14|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:38:28|2026-11-17T20:58:36|00:20:08|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603715_15|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:43:06|2026-11-17T21:43:12|01:00:06|node600|16|billing=16,cpu=16,mem=32G,node=1
+13603715_16|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:43:45|2026-11-17T21:05:16|00:21:31|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603715_17|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:45:11|2026-11-17T21:43:54|00:58:43|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603715_18|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:49:14|2026-11-17T21:12:40|00:23:26|node615|16|billing=16,cpu=16,mem=32G,node=1
+13603715_19|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:51:37|2026-11-17T21:22:19|00:30:42|node603|16|billing=16,cpu=16,mem=32G,node=1
+13603715_20|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:54:26|2026-11-17T21:03:58|00:09:32|node619|16|billing=16,cpu=16,mem=32G,node=1
+13603715_21|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:55:17|2026-11-17T21:09:13|00:13:56|node613|16|billing=16,cpu=16,mem=32G,node=1
+13603715_22|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:55:20|2026-11-17T21:14:09|00:18:49|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603715_23|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T20:58:37|2026-11-17T21:17:08|00:18:31|node602|16|billing=16,cpu=16,mem=32G,node=1
+13603715_24|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T21:01:12|2026-11-17T21:12:53|00:11:41|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603715_25|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T21:01:15|2026-11-17T21:05:09|00:03:54|node616|16|billing=16,cpu=16,mem=32G,node=1
+13603716_0|fwscale-e5|COMPLETED|0:0|2026-11-17T17:37:25|2026-11-17T21:44:21|2026-11-17T21:44:50|00:00:29|node602|16|billing=16,cpu=16,mem=32G,node=1
+--- first line and last lines of the logs of the 72 runs, and the log of the report (commit, node, stage, mix, task; day index, intervals done, seconds; the record; exit code)
+## logs/fwscale-e5-13603713_1.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=base task=1
+359 1728 1314s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_1.json
+rc=0
+## logs/fwscale-e5-13603713_2.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node619.hydra.os cpus=16 stage=run mix=base task=2
+359 1728 2636s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_2.json
+rc=0
+## logs/fwscale-e5-13603713_3.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=base task=3
+359 1728 2127s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_3.json
+rc=0
+## logs/fwscale-e5-13603713_4.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=base task=4
+359 1728 1249s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_4.json
+rc=0
+## logs/fwscale-e5-13603713_5.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=base task=5
+359 1728 1476s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_5.json
+rc=0
+## logs/fwscale-e5-13603713_6.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=base task=6
+359 1728 976s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_6.json
+rc=0
+## logs/fwscale-e5-13603713_7.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node603.hydra.os cpus=16 stage=run mix=base task=7
+359 1728 2368s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_7.json
+rc=0
+## logs/fwscale-e5-13603713_8.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=base task=8
+359 1728 2432s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_8.json
+rc=0
+## logs/fwscale-e5-13603713_9.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=base task=9
+359 1728 1128s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_9.json
+rc=0
+## logs/fwscale-e5-13603713_10.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=base task=10
+359 1728 304s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_10.json
+rc=0
+## logs/fwscale-e5-13603713_11.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node619.hydra.os cpus=16 stage=run mix=base task=11
+359 1728 964s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_11.json
+rc=0
+## logs/fwscale-e5-13603713_12.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=base task=12
+359 1728 1911s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_12.json
+rc=0
+## logs/fwscale-e5-13603713_14.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=base task=14
+359 1728 1365s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_14.json
+rc=0
+## logs/fwscale-e5-13603713_15.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=base task=15
+359 1728 2884s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_15.json
+rc=0
+## logs/fwscale-e5-13603713_16.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=base task=16
+359 1728 1263s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_16.json
+rc=0
+## logs/fwscale-e5-13603713_17.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=base task=17
+359 1728 4053s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_17.json
+rc=0
+## logs/fwscale-e5-13603713_18.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=base task=18
+359 1728 1425s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_18.json
+rc=0
+## logs/fwscale-e5-13603713_19.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node619.hydra.os cpus=16 stage=run mix=base task=19
+359 1728 1843s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_19.json
+rc=0
+## logs/fwscale-e5-13603713_20.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=base task=20
+359 1728 842s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_20.json
+rc=0
+## logs/fwscale-e5-13603713_21.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=base task=21
+359 1728 898s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_21.json
+rc=0
+## logs/fwscale-e5-13603713_22.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=base task=22
+359 1728 1055s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_22.json
+rc=0
+## logs/fwscale-e5-13603713_23.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=base task=23
+359 1728 1203s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_23.json
+rc=0
+## logs/fwscale-e5-13603713_24.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node603.hydra.os cpus=16 stage=run mix=base task=24
+359 1728 737s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_24.json
+rc=0
+## logs/fwscale-e5-13603713_25.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=base task=25
+359 1728 422s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/base/network_25.json
+rc=0
+## logs/fwscale-e5-13603714_1.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=half task=1
+359 1728 1330s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_1.json
+rc=0
+## logs/fwscale-e5-13603714_2.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=half task=2
+359 1728 3099s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_2.json
+rc=0
+## logs/fwscale-e5-13603714_3.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=half task=3
+359 1728 2421s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_3.json
+rc=0
+## logs/fwscale-e5-13603714_4.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=half task=4
+359 1728 1282s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_4.json
+rc=0
+## logs/fwscale-e5-13603714_5.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node619.hydra.os cpus=16 stage=run mix=half task=5
+359 1728 1692s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_5.json
+rc=0
+## logs/fwscale-e5-13603714_6.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node603.hydra.os cpus=16 stage=run mix=half task=6
+359 1728 1022s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_6.json
+rc=0
+## logs/fwscale-e5-13603714_7.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=half task=7
+359 1728 2386s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_7.json
+rc=0
+## logs/fwscale-e5-13603714_8.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=half task=8
+359 1728 2227s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_8.json
+rc=0
+## logs/fwscale-e5-13603714_9.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=half task=9
+359 1728 1249s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_9.json
+rc=0
+## logs/fwscale-e5-13603714_10.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=half task=10
+359 1728 224s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_10.json
+rc=0
+## logs/fwscale-e5-13603714_11.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=half task=11
+359 1728 961s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_11.json
+rc=0
+## logs/fwscale-e5-13603714_12.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=half task=12
+359 1728 2494s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_12.json
+rc=0
+## logs/fwscale-e5-13603714_14.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node603.hydra.os cpus=16 stage=run mix=half task=14
+359 1728 1340s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_14.json
+rc=0
+## logs/fwscale-e5-13603714_15.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=half task=15
+359 1728 3441s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_15.json
+rc=0
+## logs/fwscale-e5-13603714_16.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=half task=16
+359 1728 1494s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_16.json
+rc=0
+## logs/fwscale-e5-13603714_17.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node619.hydra.os cpus=16 stage=run mix=half task=17
+359 1728 4476s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_17.json
+rc=0
+## logs/fwscale-e5-13603714_18.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=half task=18
+359 1728 1488s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_18.json
+rc=0
+## logs/fwscale-e5-13603714_19.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=half task=19
+359 1728 1793s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_19.json
+rc=0
+## logs/fwscale-e5-13603714_20.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node618.hydra.os cpus=16 stage=run mix=half task=20
+359 1728 586s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_20.json
+rc=0
+## logs/fwscale-e5-13603714_21.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=half task=21
+359 1728 859s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_21.json
+rc=0
+## logs/fwscale-e5-13603714_22.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node603.hydra.os cpus=16 stage=run mix=half task=22
+359 1728 1259s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_22.json
+rc=0
+## logs/fwscale-e5-13603714_23.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=half task=23
+359 1728 1247s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_23.json
+rc=0
+## logs/fwscale-e5-13603714_24.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=half task=24
+359 1728 641s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_24.json
+rc=0
+## logs/fwscale-e5-13603714_25.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=half task=25
+359 1728 235s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/half/network_25.json
+rc=0
+## logs/fwscale-e5-13603715_1.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node618.hydra.os cpus=16 stage=run mix=pv task=1
+359 1728 1101s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_1.json
+rc=0
+## logs/fwscale-e5-13603715_2.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=pv task=2
+359 1728 2461s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_2.json
+rc=0
+## logs/fwscale-e5-13603715_3.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=pv task=3
+359 1728 2052s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_3.json
+rc=0
+## logs/fwscale-e5-13603715_4.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=pv task=4
+359 1728 1170s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_4.json
+rc=0
+## logs/fwscale-e5-13603715_5.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=pv task=5
+359 1728 1254s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_5.json
+rc=0
+## logs/fwscale-e5-13603715_6.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=pv task=6
+359 1728 924s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_6.json
+rc=0
+## logs/fwscale-e5-13603715_7.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=pv task=7
+359 1728 2608s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_7.json
+rc=0
+## logs/fwscale-e5-13603715_8.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=pv task=8
+359 1728 1688s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_8.json
+rc=0
+## logs/fwscale-e5-13603715_9.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node603.hydra.os cpus=16 stage=run mix=pv task=9
+359 1728 1093s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_9.json
+rc=0
+## logs/fwscale-e5-13603715_10.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=pv task=10
+359 1728 260s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_10.json
+rc=0
+## logs/fwscale-e5-13603715_11.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=pv task=11
+359 1728 854s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_11.json
+rc=0
+## logs/fwscale-e5-13603715_12.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node618.hydra.os cpus=16 stage=run mix=pv task=12
+359 1728 1639s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_12.json
+rc=0
+## logs/fwscale-e5-13603715_14.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=pv task=14
+359 1728 1183s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_14.json
+rc=0
+## logs/fwscale-e5-13603715_15.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node600.hydra.os cpus=16 stage=run mix=pv task=15
+359 1728 3584s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_15.json
+rc=0
+## logs/fwscale-e5-13603715_16.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=pv task=16
+359 1728 1269s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_16.json
+rc=0
+## logs/fwscale-e5-13603715_17.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=pv task=17
+359 1728 3501s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_17.json
+rc=0
+## logs/fwscale-e5-13603715_18.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node615.hydra.os cpus=16 stage=run mix=pv task=18
+359 1728 1383s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_18.json
+rc=0
+## logs/fwscale-e5-13603715_19.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node603.hydra.os cpus=16 stage=run mix=pv task=19
+359 1728 1821s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_19.json
+rc=0
+## logs/fwscale-e5-13603715_20.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node619.hydra.os cpus=16 stage=run mix=pv task=20
+359 1728 551s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_20.json
+rc=0
+## logs/fwscale-e5-13603715_21.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node613.hydra.os cpus=16 stage=run mix=pv task=21
+359 1728 815s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_21.json
+rc=0
+## logs/fwscale-e5-13603715_22.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=pv task=22
+359 1728 1107s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_22.json
+rc=0
+## logs/fwscale-e5-13603715_23.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=run mix=pv task=23
+359 1728 1090s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_23.json
+rc=0
+## logs/fwscale-e5-13603715_24.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=pv task=24
+359 1728 681s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_24.json
+rc=0
+## logs/fwscale-e5-13603715_25.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node616.hydra.os cpus=16 stage=run mix=pv task=25
+359 1728 217s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5/pv/network_25.json
+rc=0
+## logs/fwscale-e5-13603716_0.out
+commit=07738d3d29b9d17b1d92907eea0b07fbf7857f0e node=node602.hydra.os cpus=16 stage=report mix= task=0
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-07738d3/results/fourwire_scale_e5.json
+rc=0
+=== E5: array task id, the task's own job id (the id that the records and attempt files carry, followed by the task number), node and start, read on 2026-11-17 ===
+13603713_1|13603732|node613|2026-11-17T17:40:18
+13603713_2|13603805|node619|2026-11-17T17:58:55
+13603713_3|13603826|node613|2026-11-17T18:02:34
+13603713_4|13603903|node600|2026-11-17T18:16:58
+13603713_5|13603981|node615|2026-11-17T18:29:06
+13603713_6|13603994|node602|2026-11-17T18:29:54
+13603713_7|13604064|node603|2026-11-17T18:37:47
+13603713_8|13604069|node600|2026-11-17T18:38:10
+13603713_9|13604071|node615|2026-11-17T18:38:13
+13603713_10|13604074|node613|2026-11-17T18:38:23
+13603713_11|13604103|node619|2026-11-17T18:43:13
+13603713_12|13604121|node613|2026-11-17T18:43:49
+13603713_14|13604132|node616|2026-11-17T18:46:04
+13603713_15|13604137|node602|2026-11-17T18:46:38
+13603713_16|13604148|node602|2026-11-17T18:48:31
+13603713_17|13604196|node615|2026-11-17T18:54:54
+13603713_18|13604211|node615|2026-11-17T18:57:23
+13603713_19|13604236|node619|2026-11-17T18:59:37
+13603713_20|13604294|node616|2026-11-17T19:09:12
+13603713_21|13604297|node602|2026-11-17T19:09:56
+13603713_22|13604358|node602|2026-11-17T19:14:44
+13603713_23|13604364|node613|2026-11-17T19:16:01
+13603713_24|13604391|node603|2026-11-17T19:18:56
+13603713_25|13603713|node600|2026-11-17T19:19:04
+13603714_1|13604409|node615|2026-11-17T19:21:29
+13603714_2|13604419|node616|2026-11-17T19:23:36
+13603714_3|13604468|node602|2026-11-17T19:25:19
+13603714_4|13604508|node600|2026-11-17T19:26:31
+13603714_5|13604579|node619|2026-11-17T19:30:42
+13603714_6|13604588|node603|2026-11-17T19:31:36
+13603714_7|13604594|node602|2026-11-17T19:32:43
+13603714_8|13604614|node602|2026-11-17T19:35:05
+13603714_9|13604724|node613|2026-11-17T19:36:25
+13603714_10|13604767|node615|2026-11-17T19:43:59
+13603714_11|13604794|node615|2026-11-17T19:48:03
+13603714_12|13604798|node600|2026-11-17T19:48:14
+13603714_14|13604802|node603|2026-11-17T19:48:59
+13603714_15|13604871|node613|2026-11-17T19:57:36
+13603714_16|13604873|node600|2026-11-17T19:57:54
+13603714_17|13604882|node619|2026-11-17T19:59:14
+13603714_18|13604907|node615|2026-11-17T20:02:49
+13603714_19|13604919|node615|2026-11-17T20:04:25
+13603714_20|13604927|node618|2026-11-17T20:05:52
+13603714_21|13604930|node602|2026-11-17T20:06:03
+13603714_22|13604966|node603|2026-11-17T20:11:40
+13603714_23|13604971|node602|2026-11-17T20:12:32
+13603714_24|13604975|node602|2026-11-17T20:12:51
+13603714_25|13603714|node616|2026-11-17T20:15:37
+13603715_1|13605093|node618|2026-11-17T20:16:03
+13603715_2|13605122|node616|2026-11-17T20:19:52
+13603715_3|13605126|node602|2026-11-17T20:20:45
+13603715_4|13605138|node600|2026-11-17T20:23:12
+13603715_5|13605141|node602|2026-11-17T20:23:53
+13603715_6|13605164|node615|2026-11-17T20:28:00
+13603715_7|13605178|node600|2026-11-17T20:30:08
+13603715_8|13605191|node616|2026-11-17T20:32:42
+13603715_9|13605193|node603|2026-11-17T20:33:01
+13603715_10|13605197|node602|2026-11-17T20:33:43
+13603715_11|13605206|node615|2026-11-17T20:34:39
+13603715_12|13605207|node618|2026-11-17T20:34:47
+13603715_14|13605220|node602|2026-11-17T20:38:28
+13603715_15|13605246|node600|2026-11-17T20:43:06
+13603715_16|13605253|node615|2026-11-17T20:43:45
+13603715_17|13605264|node602|2026-11-17T20:45:11
+13603715_18|13605332|node615|2026-11-17T20:49:14
+13603715_19|13605375|node603|2026-11-17T20:51:37
+13603715_20|13605398|node619|2026-11-17T20:54:26
+13603715_21|13605405|node613|2026-11-17T20:55:17
+13603715_22|13605406|node602|2026-11-17T20:55:20
+13603715_23|13605536|node602|2026-11-17T20:58:37
+13603715_24|13605551|node616|2026-11-17T21:01:12
+13603715_25|13603715|node616|2026-11-17T21:01:15
+13603716_0|13603716|node602|2026-11-17T21:44:21
+=== E5: sha256sum of the report, the 72 records and the 72 attempt files, computed in the worktree of 07738d3 on the cluster on 2026-11-17 before they were copied ===
+09fea650fa570a6f108bb154f1968d7b2f96aa325686ca4838f83d43e4402a1e  results/fourwire_scale_e5.json
+850fa38361e4bc81b49ab02cf639e2d3fb7501953f7134d9b48400e57c898b07  results/fourwire_scale_e5/base/attempts/network_10_20261117T183842_13604074_10.json
+d3e2603d0cfb52f4d43b49261a94caa892fd941a0cb7f615e2d48a8f4c0373cf  results/fourwire_scale_e5/base/attempts/network_11_20261117T184330_13604103_11.json
+06407f5d1b8a866cfe4c7bd8624b00d4f787b331cc1601189c2af0ec5853edd0  results/fourwire_scale_e5/base/attempts/network_12_20261117T184407_13604121_12.json
+0d1c032ac6c12103c8e4c7fb68d3ce3f72447dcb029b0520528fb5e7b8729e81  results/fourwire_scale_e5/base/attempts/network_14_20261117T184624_13604132_14.json
+d94057f46146c8f5bd3f149bbd45a8fe818fc1955d11d79f5a41e22f0f95231c  results/fourwire_scale_e5/base/attempts/network_15_20261117T184656_13604137_15.json
+c895ecf0ee75f351a0fd9ab645ff6fe7ee79beae43f2a22af11638a6f8cd99c5  results/fourwire_scale_e5/base/attempts/network_16_20261117T184850_13604148_16.json
+de83a2c1461b8463ffcb49cb30d6629b7f6cbb9ddf3e3b8d4d2a69dfc5b3b341  results/fourwire_scale_e5/base/attempts/network_17_20261117T185511_13604196_17.json
+7d47d28703886ba939258449255a675595d6139db7bdc37a36cebef3a150649e  results/fourwire_scale_e5/base/attempts/network_18_20261117T185740_13604211_18.json
+cc330edb06e9700397d81c3dece38f93eb7f95c3cdafb2b2baf71fe01568ca6a  results/fourwire_scale_e5/base/attempts/network_19_20261117T185955_13604236_19.json
+3dc4625c96d5a88a03bf63db12951eb47353f47942477e104dcd6d63ac823f1d  results/fourwire_scale_e5/base/attempts/network_1_20261117T174037_13603732_1.json
+86e1a681cef461c1036202ed41f09eef479a20dd28130d05c3ebb577f205358b  results/fourwire_scale_e5/base/attempts/network_20_20261117T190930_13604294_20.json
+419359e8d83c21d8b469b99b88ddc55bba1293cdb3794b27ad4245285e2be2c3  results/fourwire_scale_e5/base/attempts/network_21_20261117T191015_13604297_21.json
+c1f617bfbe97d43fdc8b2368edc9fae041041d93fdab034d1c65f7fabeed14a3  results/fourwire_scale_e5/base/attempts/network_22_20261117T191504_13604358_22.json
+37dd7907d4ce75536fda1ebb9ebfc0d0ae6e41b732f60a4f7efd3ff6aedef1b7  results/fourwire_scale_e5/base/attempts/network_23_20261117T191619_13604364_23.json
+9f68bc02a162cf6daa87fa22efa1ba50a088fb9d5d2e966e536c0facec1be14e  results/fourwire_scale_e5/base/attempts/network_24_20261117T191914_13604391_24.json
+d1471c43e908839280e350d26f23d630517b40550fc455bfcad95b7f7daa9dd0  results/fourwire_scale_e5/base/attempts/network_25_20261117T191926_13603713_25.json
+c121070f62ac4aa5524d7e1517ccdd75f5f1163db1d05ebfe3edab13a5df69fe  results/fourwire_scale_e5/base/attempts/network_2_20261117T175913_13603805_2.json
+cac18fa97a3c5314914ab5df9b2639d180142534ecee146885460707cd3ee063  results/fourwire_scale_e5/base/attempts/network_3_20261117T180253_13603826_3.json
+e64a9d0faa43df58dac846bc11ef79beac19403b087bf904da989a1f95e63786  results/fourwire_scale_e5/base/attempts/network_4_20261117T181717_13603903_4.json
+fe7577d1b273e41d0e6f08869f685a12fa0c1fcedd5a5e7ee6d58bc5e7e1c244  results/fourwire_scale_e5/base/attempts/network_5_20261117T183015_13603981_5.json
+40c08fe717bf43309a0c50dfc6a5b183e2e3b099ca9cca0da9f35e6e35dadc9e  results/fourwire_scale_e5/base/attempts/network_6_20261117T183018_13603994_6.json
+777db353b7a1b34487effff1c08e765d9ee45bd0853fcda5552dfbcd661af2de  results/fourwire_scale_e5/base/attempts/network_7_20261117T183915_13604064_7.json
+716e088de5a66c9b1b240360e9eadbfb52987bfe7e6e92be70233782f768a4db  results/fourwire_scale_e5/base/attempts/network_8_20261117T183829_13604069_8.json
+72f9d4c04917abc87989b8e263fdda8114e0af070ff161ff4d4c3683917846b7  results/fourwire_scale_e5/base/attempts/network_9_20261117T183830_13604071_9.json
+2bff863978531a2c39b5077df3fdb8aea203f0610f679b9b80fd1995fb660e5c  results/fourwire_scale_e5/base/network_1.json
+3eff61f78dafa46a693fd2828d25ad80e4b2312e2741c30b84b310977e21b343  results/fourwire_scale_e5/base/network_10.json
+2b5963b91c18576ff749cca49e0b5d0b71324082ac4b17bb0f404018941cd7d1  results/fourwire_scale_e5/base/network_11.json
+c841d82dcf3fe63bba01f9a859628741fffd70af0cb1d1e2d5bcd259cc5caf55  results/fourwire_scale_e5/base/network_12.json
+2a91540469557d8d463a3258b5d7304d203819f988cd0cc28aa42f070f4d7b30  results/fourwire_scale_e5/base/network_14.json
+8be221663fa499ea5c10af6043a190d93bbae3e1b9b704611679490e9408af3e  results/fourwire_scale_e5/base/network_15.json
+d932927de236e6a023ee737a31aaf6da4409b12d6973bfe996457b49d4aae0d7  results/fourwire_scale_e5/base/network_16.json
+473f056008d251ef13138d3eb9dd2b8feaaaacb03fbd13968678fe9cd665673c  results/fourwire_scale_e5/base/network_17.json
+517dd5cd444ea8b5d4b488da428de3e7695822f475ee81a2c1f447d47e2b5da9  results/fourwire_scale_e5/base/network_18.json
+990b372e889207c7fbe47e47e177e6a9a86ad1ad5b74c9229142578e481fc113  results/fourwire_scale_e5/base/network_19.json
+aad756adb6712df4f19d38cedf80d6b8e9f1a96182b0c7bf8fe3b4f85041288d  results/fourwire_scale_e5/base/network_2.json
+1f3b7e459d50e7c2ec54b33f365e4b6c750a1481881805ffabbfa56b5aae991e  results/fourwire_scale_e5/base/network_20.json
+499e7903d1d4892ae13ec8a22e65ec40d048158ce9efac3cc9581e326f2ccdea  results/fourwire_scale_e5/base/network_21.json
+4a24b8c2ae1a759dedc9cb6084853f728998a365b30dd2682037038262493362  results/fourwire_scale_e5/base/network_22.json
+24a91a03f66d6cb24d6c366e6ceba7db640f4e1c3c98177ecf0767ebc43de651  results/fourwire_scale_e5/base/network_23.json
+8de631f22071d6702bf28c8d02d1ddfc433021c3aac140647f7b0a521187293c  results/fourwire_scale_e5/base/network_24.json
+cd68ebb57c8b1d6d04f87df46c139dece2455e0c8c54e9a9ccf8c88ab7bb6a6f  results/fourwire_scale_e5/base/network_25.json
+a77a3d517beb2c8f99b5a777d4bb738fdfd9813f45eb42418ea3513beda117a1  results/fourwire_scale_e5/base/network_3.json
+57aba79807e3ab3ae33784a2886ab3bb7f3482115310f6e42a227d7dc66ee351  results/fourwire_scale_e5/base/network_4.json
+72d80f642f6528e240ebb39461b4889e98bfd342db9da6ee25616cfaa570e5f1  results/fourwire_scale_e5/base/network_5.json
+c5fd539b52f3e8bab79e60cf864b471fa45ea6461da74dbbae7673e4a03b3414  results/fourwire_scale_e5/base/network_6.json
+c135441b2f42faf8c833335e0ca4190560d3187868ebfc579c460ee5d97b5347  results/fourwire_scale_e5/base/network_7.json
+d5b55a6329c4080f31c9796c8176ceac8efdcd2038e555f94713e9c86bad89c6  results/fourwire_scale_e5/base/network_8.json
+9862d87f9012d7ecb92361c30818e93ea087dddf2851c07078d68f98cd9c380a  results/fourwire_scale_e5/base/network_9.json
+c006cc2e16ea9d2d3a06e12657199e8d1498bbd53d84db3c16e925ee984d337d  results/fourwire_scale_e5/half/attempts/network_10_20261117T194416_13604767_10.json
+bba6de535f81586f81da312a95bd81028b2e2988db34e7ab96f2a902f627f1a3  results/fourwire_scale_e5/half/attempts/network_11_20261117T194820_13604794_11.json
+9e5bff2c47453653cd4c5fb8d6aada124070c6e78802dd5e47fa57021600f5e4  results/fourwire_scale_e5/half/attempts/network_12_20261117T194831_13604798_12.json
+41d9626b60fa53fcb256c09072fe5229447e7cf78602ba204fe45d16843ce52b  results/fourwire_scale_e5/half/attempts/network_14_20261117T194916_13604802_14.json
+cc7dc2f613100f625d0836e6b2bf29dae8578785c34e1c562bb6a7cbfcd4ca80  results/fourwire_scale_e5/half/attempts/network_15_20261117T195753_13604871_15.json
+dfa456b0691062680d30277359c700110702e40e3628f8373e56f2f5991901df  results/fourwire_scale_e5/half/attempts/network_16_20261117T195814_13604873_16.json
+dcc143e01cca6afb6544b14845cda7199e4a7363f27ac1316acc172c549c8844  results/fourwire_scale_e5/half/attempts/network_17_20261117T195931_13604882_17.json
+ca2daa207d5961965aa541d358f1bf952e1b9a63005c0876cf35b4317a814e1e  results/fourwire_scale_e5/half/attempts/network_18_20261117T200308_13604907_18.json
+bb1be92d066902a581b8c126f91cd7f8e7d867a612cb6ef757f478c54763c4db  results/fourwire_scale_e5/half/attempts/network_19_20261117T200443_13604919_19.json
+a644086b3d484964ed8ead7c9b2cac5e26ab55233c4133085b99d0b6b48daa7d  results/fourwire_scale_e5/half/attempts/network_1_20261117T192146_13604409_1.json
+bab2819c4dc6c1cef26f2940c2339ee3d026455030c129679e8428b04e00fd4f  results/fourwire_scale_e5/half/attempts/network_20_20261117T200614_13604927_20.json
+d2ecc349212424acffd9c99edb76c714f259298abc93bf81e34752cd68daeddf  results/fourwire_scale_e5/half/attempts/network_21_20261117T200622_13604930_21.json
+93e51549b3e48eae831bf205195b4604b0f8c29dbbd11fe7dfd853272b3b4e39  results/fourwire_scale_e5/half/attempts/network_22_20261117T201158_13604966_22.json
+644315a4e55900d8e9fdbf9951ab670a40fb508ef825b1b561fdc5a18960fdfa  results/fourwire_scale_e5/half/attempts/network_23_20261117T201252_13604971_23.json
+19f2203225a357195f66429ec08218e9fbec75526bb0d8b12bf9c2d13b89962e  results/fourwire_scale_e5/half/attempts/network_24_20261117T201308_13604975_24.json
+a86c93612b084c8a0a8ca6063e069499fef845d18d8e322ab8bae8132937c060  results/fourwire_scale_e5/half/attempts/network_25_20261117T201554_13603714_25.json
+5dc94c67644d7f5d71f917f44cbabcb0f96caee10e54f05b23cf75844867ffd4  results/fourwire_scale_e5/half/attempts/network_2_20261117T192353_13604419_2.json
+7019288c2567ee0724734d1fd14828b969fb28062c27c6a4093648fa6c00641f  results/fourwire_scale_e5/half/attempts/network_3_20261117T192538_13604468_3.json
+661d4616832c01dcd16205f44216208bbbcf8203cc5e9669ed47b49dc15815f7  results/fourwire_scale_e5/half/attempts/network_4_20261117T192648_13604508_4.json
+8d068e5155eea910e95ae5f8ae59e2b5a2768745ae6b7aedbcf3168452821dae  results/fourwire_scale_e5/half/attempts/network_5_20261117T193059_13604579_5.json
+2f587ba4e4a4eb0b058a67ebc952cb31498dbc0f3f91eefaa9ace549107ac225  results/fourwire_scale_e5/half/attempts/network_6_20261117T193153_13604588_6.json
+e489270e7636e09738e912b14ac282a95a5761f620300e6e767a9ecae5666a1b  results/fourwire_scale_e5/half/attempts/network_7_20261117T193303_13604594_7.json
+9be0d69ed3b68fdda1ec214e9c39398bf063fd7009820c074c28de49a574bd6c  results/fourwire_scale_e5/half/attempts/network_8_20261117T193523_13604614_8.json
+8255ce9da2a7116cf577d157de19627ac29127af4f4d6c49ab847294b2ac82d0  results/fourwire_scale_e5/half/attempts/network_9_20261117T193643_13604724_9.json
+a74c30c2402c9cd9332cd5df556def622df6ae58e263ee3da7f869f08ea3624f  results/fourwire_scale_e5/half/network_1.json
+6ccda266536f868db90df10dfbf76685f4d9b62ef465dffe79c21f4edc79b18c  results/fourwire_scale_e5/half/network_10.json
+286e517d96dc6b57d34174f0b3811236389f287ef964d8af9ace79839b080bc1  results/fourwire_scale_e5/half/network_11.json
+063b282d576d5bc7b9bfe95a8bc402fdcf788b151ff70b12d415ed0e34a2bcf7  results/fourwire_scale_e5/half/network_12.json
+a172b18521bf9925b27c4eb7da80dba6006e117790bfa6bd18bdc2d1fa9a43dc  results/fourwire_scale_e5/half/network_14.json
+40dac71ce001cc5c7d29ffaf0daa90170d5330233bfb31a7670bfe074a49a9fa  results/fourwire_scale_e5/half/network_15.json
+ef0e21a2513ffe12fb8afb03aec5666b28a41a2aac1f4da45b73ad57e44e0c88  results/fourwire_scale_e5/half/network_16.json
+df61d7e3122dcee53543bb6707fb68639fe686fa127c3e9cfe64f7323fe2558e  results/fourwire_scale_e5/half/network_17.json
+673f1382a5683998cc4d0140b51c69611463cb2dcf26adb7a8cacbb0a3aff972  results/fourwire_scale_e5/half/network_18.json
+263dfe60e3c85f4c8a9110ca83dbe9f1fe2966a1476ea0eb81c0e02e4a57d68f  results/fourwire_scale_e5/half/network_19.json
+425a36416d0f2672cf4f1c5323324bb9658605d59672bdc639670015387f10a2  results/fourwire_scale_e5/half/network_2.json
+feb82cfeeb92081eb6055fc0dde0e8d2e205d0f223de2aace7e2cc5e81e5e2f8  results/fourwire_scale_e5/half/network_20.json
+3be1c701cb08986bd085e7b6837d7f54c63b2ff36c66209220f3156318a73f49  results/fourwire_scale_e5/half/network_21.json
+80c6a319b092d2b1a707819978cfc1d6bf380a16190473a28ca824b9b77bd469  results/fourwire_scale_e5/half/network_22.json
+78c6dc6bda5f921d85e269acc5e5641559cf067911fb39a6bcd3b05c15f054d5  results/fourwire_scale_e5/half/network_23.json
+f3b5471600085a46ee9d14d8798aaf4b60029c6983cbdc10dab5d5261b5b9a1e  results/fourwire_scale_e5/half/network_24.json
+f35c181666df8219e836efd85381e3e276c9df4848b410fc32c756755fe90b60  results/fourwire_scale_e5/half/network_25.json
+c1129f99e4134aa9e9c7bbde9f0d2f77f204dd5b097c839f75a1801173548c95  results/fourwire_scale_e5/half/network_3.json
+0e776a4e92744dd191e878ff2eb48a646b71066f0a599ee8f7a01ea45e38a758  results/fourwire_scale_e5/half/network_4.json
+99db904d322cfeb249d21e35b6350c044f7bb9ef596dd93111159ac44686c3db  results/fourwire_scale_e5/half/network_5.json
+267fb285796ef5ff8da6f51664e294a40142f6ad06a77746525b49d03276d52b  results/fourwire_scale_e5/half/network_6.json
+9d52db07bcb6c0a0552b201add1ca7c64fdf3170612b27e240fefac0144d67fd  results/fourwire_scale_e5/half/network_7.json
+b6775e4dd0a478e8bf29fd192a724272269dd3e61d52a74351fafce578388588  results/fourwire_scale_e5/half/network_8.json
+d6bbfa3c40e5432a1f6a833ff907590212eaa75935367056c8a7cfc42812a6d8  results/fourwire_scale_e5/half/network_9.json
+9a16d97e7cc4bd667e83e66fbe076021f0fc64df3b2c7fc25236c075e12f0fba  results/fourwire_scale_e5/pv/attempts/network_10_20261117T203404_13605197_10.json
+e615f74a75f1083641934cc70d3b8ab064b51861a9862aa4ecea49e2b42ce57f  results/fourwire_scale_e5/pv/attempts/network_11_20261117T203456_13605206_11.json
+1b65b63ffa1b45013b184b1d9a3a44934a10017eb446d494d351f68bc05e358e  results/fourwire_scale_e5/pv/attempts/network_12_20261117T203506_13605207_12.json
+7b0e890804618c29dc5ca3b2007432b395f75990d8bffc1fae67f88c3e9c1e23  results/fourwire_scale_e5/pv/attempts/network_14_20261117T203849_13605220_14.json
+05099fcc546179bb92af878aa71b4a9e41d29ba63e59ff27a5777850c98499fd  results/fourwire_scale_e5/pv/attempts/network_15_20261117T204325_13605246_15.json
+0a4ecf940ce057a3c98f41553cc5bf1e09588b0a3a231f0ae4051a6b62a88f38  results/fourwire_scale_e5/pv/attempts/network_16_20261117T204403_13605253_16.json
+42c940cf11f4b03f330c618c1be47ee96eba61f7db962bccc2433fedae20cf46  results/fourwire_scale_e5/pv/attempts/network_17_20261117T204530_13605264_17.json
+3ca88e3d123a330fb74f5c4e1bab50f33e92e1c49e2b43f2193101d3d3414fc4  results/fourwire_scale_e5/pv/attempts/network_18_20261117T204931_13605332_18.json
+4fc0faa419b834f3c9ea928b4d8f8008273607cc8bb7de28bd7509c8959320b0  results/fourwire_scale_e5/pv/attempts/network_19_20261117T205155_13605375_19.json
+f8fe0c7642713d1309f4f3d7cf5e6436309d3159878c03f3785fb6a6754345ae  results/fourwire_scale_e5/pv/attempts/network_1_20261117T201622_13605093_1.json
+41b3ea149444a2ec6a520ac1c20677a52d25a7e532a75e5b6775515852e69b9c  results/fourwire_scale_e5/pv/attempts/network_20_20261117T205443_13605398_20.json
+d64313a00e1f85e703308628e1d0c1fb96b9d3a33b38dbd8044e86833f9d93a4  results/fourwire_scale_e5/pv/attempts/network_21_20261117T205535_13605405_21.json
+fe05e233a96da7476e96e7aa0a27f6a809a3590b337bafd17d1d1a31a91206f6  results/fourwire_scale_e5/pv/attempts/network_22_20261117T205538_13605406_22.json
+dd5d0adf02d5539bd9ddcac2ec9586cd3962640dfc3d9f3cd1edde94687d8c98  results/fourwire_scale_e5/pv/attempts/network_23_20261117T205855_13605536_23.json
+78d8b5de51875a8b906a3dbdb3966b6aae68bdd7dd7eb3980019d648348fc79e  results/fourwire_scale_e5/pv/attempts/network_24_20261117T210129_13605551_24.json
+271deaf9eb541033722dba75f55e269c131d1d49f84bb916223d782a9182d640  results/fourwire_scale_e5/pv/attempts/network_25_20261117T210129_13603715_25.json
+274e663af6579a4f492e32a233a2fa5f67faecf9cce88fe7996a970a465c21d0  results/fourwire_scale_e5/pv/attempts/network_2_20261117T202010_13605122_2.json
+5b9ddee1ca8044d5b31bb61f8d33947ac9adb4d41d7e92cd8eebe8030ab4a690  results/fourwire_scale_e5/pv/attempts/network_3_20261117T202104_13605126_3.json
+7251d802ae5f66344ee4dcff8715223bde6d5f50de57e3a6ad9a538cfc3998a5  results/fourwire_scale_e5/pv/attempts/network_4_20261117T202332_13605138_4.json
+9933856f2fbf8f6682ed79d14b29c5ea316f492865bd0ea81f840f9e93c56034  results/fourwire_scale_e5/pv/attempts/network_5_20261117T202412_13605141_5.json
+a6f64ba5f9b4bc4cf44a975e6de369a8ab4ce698c212a16121c524717055ca0d  results/fourwire_scale_e5/pv/attempts/network_6_20261117T202817_13605164_6.json
+50e88b3f50ea1fd29ff87533ec26f8228c6fc01a5e980b88194789f2f379e055  results/fourwire_scale_e5/pv/attempts/network_7_20261117T203028_13605178_7.json
+1b996047e4e408254c9a79a097cd559886e57988582983ccdca8e78219701dff  results/fourwire_scale_e5/pv/attempts/network_8_20261117T203300_13605191_8.json
+f056a124b75d1816e18380c97e406be761c6e6251fc9e49cf1c90082fd77b830  results/fourwire_scale_e5/pv/attempts/network_9_20261117T203319_13605193_9.json
+29ba7ef0410c6765603522e387865a46005c81588ee5af9b4f786b6a64546536  results/fourwire_scale_e5/pv/network_1.json
+4d22cfc05a7d1e9712ff3a5e28209a8141407b5125fd977b8c4a007b27f4539d  results/fourwire_scale_e5/pv/network_10.json
+ad9ecf62e2b74b277248214a5bf503275bc3f6e5193292d7553795278ec7544b  results/fourwire_scale_e5/pv/network_11.json
+4b2e353bd9df7d2fff16e9106ffcdd299785037c38d9ce9e5580af0aace3b352  results/fourwire_scale_e5/pv/network_12.json
+f073af1f8c1ae4e244803a62b8c3a934a006aa789419c1861eb1e7b8da34e017  results/fourwire_scale_e5/pv/network_14.json
+c618781def1c484ba36adf657c3cda5452753816e84ef3ccd219fdd183255439  results/fourwire_scale_e5/pv/network_15.json
+cb187e6290fe3ecc2463ae9f2e5023e24225045a7c71f85b7104f0f5455f3a61  results/fourwire_scale_e5/pv/network_16.json
+cca1d2b18d2139b9bbaa15ade3b212dcac39ba7800af273382c9aea497207710  results/fourwire_scale_e5/pv/network_17.json
+0ead284f968754e082fdedafcbf07b9b392cde3e0d103461b9028070f964e9ef  results/fourwire_scale_e5/pv/network_18.json
+aaa588fae2af55852c1c17900d841e2d20a24e938b7f06c71cbfcae3fd693400  results/fourwire_scale_e5/pv/network_19.json
+6165e3d9646040bcf3d2001c0968c361598109f7883132beacea6bb68ed2649f  results/fourwire_scale_e5/pv/network_2.json
+f6ae94af6b7461154db49ad5b69619dea5cbe09a0fd64a10503eb4cf3abd9c3c  results/fourwire_scale_e5/pv/network_20.json
+7f7f8fc56d5f7006c1ba5271860be0f4e10e6b038d676ebce7094387baf7d290  results/fourwire_scale_e5/pv/network_21.json
+3a84e0b11457e22ee61b499e913222c7ba81247371fc3ba940e75e05c64ae5a3  results/fourwire_scale_e5/pv/network_22.json
+42c6e9217911d9e027323457c1be402d7c107823e6c8842ecba505ddee7b4eb1  results/fourwire_scale_e5/pv/network_23.json
+efa1ace182110df924bb3eee3efa78e6ca90fedf653ad9c483f59f227d775965  results/fourwire_scale_e5/pv/network_24.json
+a3e036912649ccab75f030843cf25332ed9db29ceaeb8654359889dd4ec8f48e  results/fourwire_scale_e5/pv/network_25.json
+6a687787a04b4f7ad0bacaed43e950bbe6846d7b2afbcfc56c2cf77d76a2146a  results/fourwire_scale_e5/pv/network_3.json
+50ac514cc2a4b5d1e8567f3ff38878cfc9e846a154850b74dc7c7f51b510a335  results/fourwire_scale_e5/pv/network_4.json
+b9dbfbf23b1b44e2fb577fc9683384644524bf5e6e6a6d5d237a01f2bf18a8bb  results/fourwire_scale_e5/pv/network_5.json
+3a862bd7eb10d44e579b496292a1aa9659d70f32b162d7547602ac2251d05394  results/fourwire_scale_e5/pv/network_6.json
+65a01823d5dcb655d0dc9067f38e0e4a48ce297e1114a355d15b4efdd3a5a4e3  results/fourwire_scale_e5/pv/network_7.json
+0c8b3185b687f0cbe288d475a8dd6cad7f4dafb1aca7eccca3e205a29cbfedab  results/fourwire_scale_e5/pv/network_8.json
+ff288761bee52628e51c5396a4c9b94f5900f5b82b950b4cee8ab5ee4deb830d  results/fourwire_scale_e5/pv/network_9.json

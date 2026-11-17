@@ -1420,3 +1420,161 @@ Exploratory, from the committed E4 records only. It changes no result or criteri
 The audit of `07738d3` recomputed the whole table from the 23 E4 records and found every number of the output section and the result file right. One sentence of its reading is corrected.
 
 - "The count of E4 does not depend on the rules that Amendment 11 chose" overstates it: the count changes between 20 and 23. What the table shows is that **the majority conclusion stays unchanged across the listed alternatives.**
+
+## Outcome of E5 (2026-11-17)
+
+Reported as Amendment 12 (item 9) and its two sets of corrections allow. E5 is a result about phase modelling in the design of envelopes, under three technology mixes. It is not evidence for GENCO or for any learned model, and it changes no result, record or criterion of E1 to E4.
+
+**Runs.**
+- Worktree of `07738d3`, the commit that the twenty-third audit cleared for submission; script SHA-256 `acbe6b34…d8223ce`, E4 script SHA-256 `e817d926…14fed25`. Every one of the 72 records is valid and unchanged during its run (source equal to the freeze, the frozen identification record, meter profiles and library versions, the UK statutory limits, both scripts as committed).
+- Submitted at 17:37 as three arrays of 24 tasks (jobs 13603713 base, 13603714 half, 13603715 pv). The tasks started between 17:40 and 21:01 and the last one ended at 21:43 (accounting lines; they show the waits and not their cause). **Every task completed on its first attempt:** each ledger holds exactly one attempt file per network (72 in all), no run was repeated, and the report lists none run more than once. Elapsed time 3 min 54 s (network 25, pv) to 1 h 14 min 56 s (network 17, half); 31.1 h for the 72 tasks. Three tasks took more than the hour that the amendment expected (network 17 under the base and half mix, network 15 under the pv mix); the limit of the job script was 4 hours. The report (job 13603716) ran at 21:44, after the last task, and passed all its checks.
+- Files: `results/fourwire_scale_e5/<mix>/network_N.json` (72 records), `results/fourwire_scale_e5/<mix>/attempts/` (72 attempt files) and `results/fourwire_scale_e5.json` (SHA-256 `09fea650…4402a1e`), copied with hashes equal to those computed in the worktree on the cluster. Appended to `results/fourwire_scale_hydra_job_evidence.txt`: the accounting lines of the four jobs and of the validation-day dry runs named in the corrections (13603420 and 13603421, cancelled before they started; 13603615 and 13603616), the last lines of the 73 logs, each array task's own job id (the id that its record and attempt file carry), and the hashes of the 145 files as computed on the cluster.
+- The field `cpus` of a record is `os.cpu_count()` (64 on these nodes). The allocation of 16 cores was enforced at the start of each run (`numba_threads` and `opendss_processes` are 16 in every record) and is in the accounting lines.
+- The figures of the report that are used below were recounted from the 72 records with code that uses no function of the two scripts, and are equal. The intervals over days are taken from the report without a recount. Figures that the report does not hold (the levels of the two design models against each other, the split of the differing states) are counted from the records.
+
+**The positive-sequence check (item 3 and corrections, item 1): passed on every run.** In each of the 72 runs, 16 states were checked on each of the 36 days. The largest difference between the three phase-voltage magnitudes of the reduced network is 1.7e-15 pu, and the largest difference from the scalar power flow 1.6e-9 pu (tolerance 1e-6 pu). No run stopped.
+
+**Check against the E4 records (item 7 and both sets of corrections): passed.** Under the base mix all 82,944 four-wire-verified and balanced-load levels equal the committed E4 records (largest difference 0.0 kW). All 64,397 envelopes that are positive in either record agree exactly in level and in their three results. All 24 networks are classified as in the E4 report, with the same list of counted networks. The cell of the base mix with the balanced-load model is therefore E4 again: 21 of 23, 64 of 32,662.
+
+**Criteria: all six cells met** (each asked for at least 12 of the 23 fresh networks).
+
+| Mix | Design model | Networks counted as unsafe | Its positive envelopes reaching 0.95, on those networks | Four-wire-verified envelopes of the same networks, the reference | Does not hold on |
+|---|---|---|---|---|---|
+| base | positive-sequence **(primary cell)** | 21 of 23 | 64 of 32,771 (0.20%) | 20,821 of 22,038 (94.5%; 92.7 to 95.9% per network) | 25, 10 |
+| base | balanced-load (E4 computed again) | 21 of 23 | 64 of 32,662 (0.20%) | the same | 25, 10 |
+| half | positive-sequence | 21 of 23 | 114 of 34,680 (0.33%) | 25,242 of 26,761 (94.3%; 92.3 to 96.3% per network) | 25, 10 |
+| half | balanced-load | 21 of 23 | 112 of 34,628 (0.32%) | the same | 25, 10 |
+| pv | positive-sequence | 21 of 23 | 46 of 31,987 (0.14%) | 20,314 of 21,553 (94.3%; 91.4 to 95.3% per network) | 25, 10 |
+| pv | balanced-load | 21 of 23 | 45 of 31,786 (0.14%) | the same | 25, 10 |
+
+- **Primary cell.** Under the base mix, on 21 of 23 fresh networks fewer than half of the positive envelopes designed with the positive-sequence model reached 0.95 four-wire feasibility on fresh draws. The ENWL1 result replicates on a majority of the fresh networks under the positive-sequence reduction of this study's network model.
+- **Secondary cells.** The same sentence holds, each on its own, under the half mix and under the pv mix, with the positive-sequence model and with the balanced-load model: 21 of 23 in each. All six cells meet their criterion, so the summary that item 5 allows may be made: under all three mixes and both models.
+- **The 21 networks are the same in every cell.** On 20 of them no envelope of either design model reached 0.95 under any mix. Network 18 is the one with some: 64 and 64 of 1,728 (base; balanced-load and positive-sequence), 112 and 114 (half), 45 and 46 (pv), all of them import envelopes.
+- **It does not hold on networks 25 (42 customers, 79 buses) and 10 (64 customers, 94 buses), the two smallest, in any cell.** The share of their design envelopes reaching 0.95 is 70.3% and 92.8% (base), 74.4% and 96.1% (half), 72.7% and 95.4% (pv), the same for both design models, whose levels are equal on these two networks. Four-wire-verified: 98.1% and 99.5%, 98.8% and 99.5%, 98.1% and 99.7%.
+- No network was left uncounted in any cell: every network has positive envelopes of both design models under every mix, the engines were compared on all 24 and classify all 24 alike.
+- **The six cells are not six independent tests.** They use the same networks, days and meters; the technology flags of the three mixes are nested (item 2); and the two design models give equal levels on networks 25 and 10 and nearly equal ones on network 18. That the count is 21 six times reflects the same 21 networks. No correction for the number of cells is made, as fixed in item 5.
+
+**Per network.** One table per mix, both directions together; "feasibility" is the four-wire feasibility on fresh draws, by the sweep; "median ratio" is the design level over the four-wire-verified level where both are positive. The figures per direction that Amendment 11, item 5 lists (import and export separately, intervals in which the four-wire rule admits no envelope, both at the cap, envelope-hours per household-year, the smallest four-wire-verified level, the OpenDSS days per direction) are in `results/fourwire_scale_e5.json` for every cell and network, computed by the E4 code, and are not repeated here.
+
+**Mix base, both directions together** (1,728 intervals per network; ordered by number of customers):
+
+| Network | Customers | Four-wire-verified: positive | reach 0.95 | share | Balanced-load: positive | reach 0.95 | share (95% interval over days) | mean feasibility | Positive-sequence: positive | reach 0.95 | share (95% interval over days) | mean feasibility | Median ratio to four-wire: balanced-load | positive-sequence | Unsafe: balanced-load | positive-sequence |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 42 | 1,728 | 1,695 | 98.1% | 1,728 | 1,214 | 70.3% (64.8 to 75.9%) | 0.919 | 1,728 | 1,214 | 70.3% (64.8 to 75.9%) | 0.919 | 1.00 | 1.00 | no | no |
+| 10 | 64 | 1,728 | 1,719 | 99.5% | 1,728 | 1,604 | 92.8% (90.0 to 95.4%) | 0.987 | 1,728 | 1,604 | 92.8% (90.0 to 95.4%) | 0.987 | 1.00 | 1.00 | no | no |
+| 24 | 135 | 1,697 | 1,591 | 93.8% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.001 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1.58 | 1.60 | yes | yes |
+| 21 | 157 | 1,680 | 1,599 | 95.2% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.241 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.216 | 1.20 | 1.20 | yes | yes |
+| 20 | 162 | 1,051 | 989 | 94.1% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 4.14 | 4.16 | yes | yes |
+| 6 | 171 | 1,711 | 1,621 | 94.7% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.292 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.255 | 1.16 | 1.17 | yes | yes |
+| 22 | 184 | 1,518 | 1,436 | 94.6% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 2.22 | 2.40 | yes | yes |
+| 4 | 186 | 1,639 | 1,555 | 94.9% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.482 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.443 | 1.21 | 1.22 | yes | yes |
+| 1 (ENWL1, not counted) | 200 | 1,092 | 1,028 | 94.1% | 1,693 | 0 | 0.0% (0.0 to 0.0%) | 0.296 | 1,696 | 0 | 0.0% (0.0 to 0.0%) | 0.239 | 1.67 | 1.75 | yes | yes |
+| 11 | 214 | 1,212 | 1,137 | 93.8% | 1,702 | 0 | 0.0% (0.0 to 0.0%) | 0.319 | 1,702 | 0 | 0.0% (0.0 to 0.0%) | 0.300 | 1.52 | 1.53 | yes | yes |
+| 16 | 238 | 1,565 | 1,474 | 94.2% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.003 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.001 | 1.78 | 1.93 | yes | yes |
+| 23 | 291 | 942 | 903 | 95.9% | 1,592 | 0 | 0.0% (0.0 to 0.0%) | 0.257 | 1,592 | 0 | 0.0% (0.0 to 0.0%) | 0.252 | 1.70 | 1.71 | yes | yes |
+| 9 | 293 | 611 | 579 | 94.8% | 1,287 | 0 | 0.0% (0.0 to 0.0%) | 0.470 | 1,291 | 0 | 0.0% (0.0 to 0.0%) | 0.458 | 1.68 | 1.69 | yes | yes |
+| 14 | 317 | 696 | 654 | 94.0% | 1,714 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,714 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 3.69 | 3.83 | yes | yes |
+| 18 | 328 | 1,537 | 1,461 | 95.1% | 1,728 | 64 | 3.7% (2.3 to 5.3%) | 0.436 | 1,728 | 64 | 3.7% (2.3 to 5.3%) | 0.436 | 1.37 | 1.37 | yes | yes |
+| 12 | 330 | 898 | 832 | 92.7% | 1,626 | 0 | 0.0% (0.0 to 0.0%) | 0.355 | 1,639 | 0 | 0.0% (0.0 to 0.0%) | 0.233 | 1.68 | 1.85 | yes | yes |
+| 5 | 335 | 336 | 319 | 94.9% | 864 | 0 | 0.0% (0.0 to 0.0%) | 0.530 | 870 | 0 | 0.0% (0.0 to 0.0%) | 0.521 | 1.98 | 1.99 | yes | yes |
+| 19 | 353 | 1,397 | 1,316 | 94.2% | 1,722 | 0 | 0.0% (0.0 to 0.0%) | 0.079 | 1,722 | 0 | 0.0% (0.0 to 0.0%) | 0.069 | 1.68 | 1.69 | yes | yes |
+| 8 | 354 | 523 | 496 | 94.8% | 1,305 | 0 | 0.0% (0.0 to 0.0%) | 0.123 | 1,347 | 0 | 0.0% (0.0 to 0.0%) | 0.037 | 1.90 | 2.15 | yes | yes |
+| 3 | 370 | 1,274 | 1,205 | 94.6% | 1,720 | 0 | 0.0% (0.0 to 0.0%) | 0.111 | 1,720 | 0 | 0.0% (0.0 to 0.0%) | 0.046 | 1.53 | 1.76 | yes | yes |
+| 7 | 471 | 653 | 618 | 94.6% | 1,716 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,718 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 2.87 | 3.14 | yes | yes |
+| 2 | 567 | 287 | 270 | 94.1% | 1,229 | 0 | 0.0% (0.0 to 0.0%) | 0.247 | 1,243 | 0 | 0.0% (0.0 to 0.0%) | 0.177 | 2.23 | 2.31 | yes | yes |
+| 15 | 636 | 514 | 488 | 94.9% | 1,183 | 0 | 0.0% (0.0 to 0.0%) | 0.499 | 1,187 | 0 | 0.0% (0.0 to 0.0%) | 0.478 | 1.80 | 1.82 | yes | yes |
+| 17 | 883 | 297 | 278 | 93.6% | 1,178 | 0 | 0.0% (0.0 to 0.0%) | 0.252 | 1,202 | 0 | 0.0% (0.0 to 0.0%) | 0.191 | 2.80 | 2.93 | yes | yes |
+
+**Mix half, both directions together** (1,728 intervals per network; ordered by number of customers):
+
+| Network | Customers | Four-wire-verified: positive | reach 0.95 | share | Balanced-load: positive | reach 0.95 | share (95% interval over days) | mean feasibility | Positive-sequence: positive | reach 0.95 | share (95% interval over days) | mean feasibility | Median ratio to four-wire: balanced-load | positive-sequence | Unsafe: balanced-load | positive-sequence |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 42 | 1,728 | 1,708 | 98.8% | 1,728 | 1,285 | 74.4% (68.6 to 80.1%) | 0.947 | 1,728 | 1,285 | 74.4% (68.6 to 80.1%) | 0.947 | 1.00 | 1.00 | no | no |
+| 10 | 64 | 1,728 | 1,720 | 99.5% | 1,728 | 1,660 | 96.1% (94.4 to 97.6%) | 0.992 | 1,728 | 1,660 | 96.1% (94.4 to 97.6%) | 0.992 | 1.00 | 1.00 | no | no |
+| 24 | 135 | 1,702 | 1,607 | 94.4% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1.54 | 1.55 | yes | yes |
+| 21 | 157 | 1,700 | 1,608 | 94.6% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.154 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.133 | 1.17 | 1.18 | yes | yes |
+| 20 | 162 | 1,353 | 1,280 | 94.6% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 3.85 | 3.87 | yes | yes |
+| 6 | 171 | 1,728 | 1,623 | 93.9% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.207 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.171 | 1.13 | 1.14 | yes | yes |
+| 22 | 184 | 1,625 | 1,532 | 94.3% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 2.13 | 2.33 | yes | yes |
+| 4 | 186 | 1,690 | 1,590 | 94.1% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.415 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.369 | 1.17 | 1.18 | yes | yes |
+| 1 (ENWL1, not counted) | 200 | 1,388 | 1,308 | 94.2% | 1,726 | 0 | 0.0% (0.0 to 0.0%) | 0.257 | 1,726 | 0 | 0.0% (0.0 to 0.0%) | 0.197 | 1.54 | 1.63 | yes | yes |
+| 11 | 214 | 1,515 | 1,411 | 93.1% | 1,723 | 0 | 0.0% (0.0 to 0.0%) | 0.247 | 1,724 | 0 | 0.0% (0.0 to 0.0%) | 0.228 | 1.42 | 1.43 | yes | yes |
+| 16 | 238 | 1,648 | 1,582 | 96.0% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.002 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1.77 | 1.92 | yes | yes |
+| 23 | 291 | 1,306 | 1,230 | 94.2% | 1,686 | 0 | 0.0% (0.0 to 0.0%) | 0.175 | 1,686 | 0 | 0.0% (0.0 to 0.0%) | 0.171 | 1.59 | 1.60 | yes | yes |
+| 9 | 293 | 945 | 891 | 94.3% | 1,545 | 0 | 0.0% (0.0 to 0.0%) | 0.398 | 1,549 | 0 | 0.0% (0.0 to 0.0%) | 0.383 | 1.52 | 1.52 | yes | yes |
+| 14 | 317 | 1,053 | 997 | 94.7% | 1,724 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,724 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 3.39 | 3.57 | yes | yes |
+| 18 | 328 | 1,629 | 1,535 | 94.2% | 1,728 | 112 | 6.5% (4.7 to 8.3%) | 0.442 | 1,728 | 114 | 6.6% (4.7 to 8.5%) | 0.442 | 1.34 | 1.34 | yes | yes |
+| 12 | 330 | 1,259 | 1,181 | 93.8% | 1,710 | 0 | 0.0% (0.0 to 0.0%) | 0.333 | 1,714 | 0 | 0.0% (0.0 to 0.0%) | 0.207 | 1.61 | 1.78 | yes | yes |
+| 5 | 335 | 629 | 597 | 94.9% | 1,255 | 0 | 0.0% (0.0 to 0.0%) | 0.535 | 1,262 | 0 | 0.0% (0.0 to 0.0%) | 0.523 | 1.77 | 1.78 | yes | yes |
+| 19 | 353 | 1,593 | 1,498 | 94.0% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.044 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.036 | 1.62 | 1.63 | yes | yes |
+| 8 | 354 | 906 | 858 | 94.7% | 1,565 | 0 | 0.0% (0.0 to 0.0%) | 0.078 | 1,572 | 0 | 0.0% (0.0 to 0.0%) | 0.014 | 1.86 | 2.03 | yes | yes |
+| 3 | 370 | 1,492 | 1,405 | 94.2% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.084 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.030 | 1.46 | 1.67 | yes | yes |
+| 7 | 471 | 994 | 935 | 94.1% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 2.86 | 3.21 | yes | yes |
+| 2 | 567 | 596 | 557 | 93.5% | 1,500 | 0 | 0.0% (0.0 to 0.0%) | 0.238 | 1,513 | 0 | 0.0% (0.0 to 0.0%) | 0.170 | 1.83 | 1.95 | yes | yes |
+| 15 | 636 | 881 | 848 | 96.3% | 1,484 | 0 | 0.0% (0.0 to 0.0%) | 0.435 | 1,490 | 0 | 0.0% (0.0 to 0.0%) | 0.413 | 1.60 | 1.61 | yes | yes |
+| 17 | 883 | 517 | 477 | 92.3% | 1,428 | 0 | 0.0% (0.0 to 0.0%) | 0.207 | 1,438 | 0 | 0.0% (0.0 to 0.0%) | 0.149 | 2.06 | 2.23 | yes | yes |
+
+**Mix pv, both directions together** (1,728 intervals per network; ordered by number of customers):
+
+| Network | Customers | Four-wire-verified: positive | reach 0.95 | share | Balanced-load: positive | reach 0.95 | share (95% interval over days) | mean feasibility | Positive-sequence: positive | reach 0.95 | share (95% interval over days) | mean feasibility | Median ratio to four-wire: balanced-load | positive-sequence | Unsafe: balanced-load | positive-sequence |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 42 | 1,728 | 1,695 | 98.1% | 1,728 | 1,256 | 72.7% (67.4 to 78.4%) | 0.932 | 1,728 | 1,256 | 72.7% (67.4 to 78.4%) | 0.932 | 1.00 | 1.00 | no | no |
+| 10 | 64 | 1,728 | 1,722 | 99.7% | 1,728 | 1,649 | 95.4% (93.1 to 97.4%) | 0.992 | 1,728 | 1,649 | 95.4% (93.1 to 97.4%) | 0.992 | 1.00 | 1.00 | no | no |
+| 24 | 135 | 1,707 | 1,606 | 94.1% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1.58 | 1.59 | yes | yes |
+| 21 | 157 | 1,710 | 1,614 | 94.4% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.249 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.223 | 1.20 | 1.21 | yes | yes |
+| 20 | 162 | 969 | 904 | 93.3% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 4.05 | 4.07 | yes | yes |
+| 6 | 171 | 1,719 | 1,630 | 94.8% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.296 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.258 | 1.17 | 1.17 | yes | yes |
+| 22 | 184 | 1,500 | 1,421 | 94.7% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 2.16 | 2.38 | yes | yes |
+| 4 | 186 | 1,607 | 1,527 | 95.0% | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.485 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.445 | 1.20 | 1.21 | yes | yes |
+| 1 (ENWL1, not counted) | 200 | 1,039 | 992 | 95.5% | 1,641 | 0 | 0.0% (0.0 to 0.0%) | 0.305 | 1,650 | 0 | 0.0% (0.0 to 0.0%) | 0.245 | 1.67 | 1.77 | yes | yes |
+| 11 | 214 | 1,197 | 1,120 | 93.6% | 1,690 | 0 | 0.0% (0.0 to 0.0%) | 0.338 | 1,692 | 0 | 0.0% (0.0 to 0.0%) | 0.318 | 1.49 | 1.50 | yes | yes |
+| 16 | 238 | 1,536 | 1,446 | 94.1% | 1,727 | 0 | 0.0% (0.0 to 0.0%) | 0.003 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1.78 | 1.94 | yes | yes |
+| 23 | 291 | 890 | 846 | 95.1% | 1,504 | 0 | 0.0% (0.0 to 0.0%) | 0.254 | 1,508 | 0 | 0.0% (0.0 to 0.0%) | 0.249 | 1.67 | 1.68 | yes | yes |
+| 9 | 293 | 530 | 503 | 94.9% | 1,163 | 0 | 0.0% (0.0 to 0.0%) | 0.469 | 1,174 | 0 | 0.0% (0.0 to 0.0%) | 0.457 | 1.64 | 1.65 | yes | yes |
+| 14 | 317 | 676 | 638 | 94.4% | 1,699 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,708 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 3.42 | 3.62 | yes | yes |
+| 18 | 328 | 1,549 | 1,473 | 95.1% | 1,728 | 45 | 2.6% (1.3 to 4.2%) | 0.438 | 1,728 | 46 | 2.7% (1.4 to 4.2%) | 0.438 | 1.37 | 1.37 | yes | yes |
+| 12 | 330 | 874 | 799 | 91.4% | 1,547 | 0 | 0.0% (0.0 to 0.0%) | 0.367 | 1,572 | 0 | 0.0% (0.0 to 0.0%) | 0.243 | 1.66 | 1.83 | yes | yes |
+| 5 | 335 | 335 | 314 | 93.7% | 847 | 0 | 0.0% (0.0 to 0.0%) | 0.567 | 855 | 0 | 0.0% (0.0 to 0.0%) | 0.557 | 1.86 | 1.87 | yes | yes |
+| 19 | 353 | 1,361 | 1,286 | 94.5% | 1,694 | 0 | 0.0% (0.0 to 0.0%) | 0.086 | 1,700 | 0 | 0.0% (0.0 to 0.0%) | 0.075 | 1.66 | 1.68 | yes | yes |
+| 8 | 354 | 512 | 480 | 93.8% | 1,203 | 0 | 0.0% (0.0 to 0.0%) | 0.114 | 1,236 | 0 | 0.0% (0.0 to 0.0%) | 0.030 | 1.90 | 2.11 | yes | yes |
+| 3 | 370 | 1,254 | 1,170 | 93.3% | 1,666 | 0 | 0.0% (0.0 to 0.0%) | 0.115 | 1,696 | 0 | 0.0% (0.0 to 0.0%) | 0.048 | 1.51 | 1.73 | yes | yes |
+| 7 | 471 | 634 | 604 | 95.3% | 1,644 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,664 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 2.65 | 2.97 | yes | yes |
+| 2 | 567 | 262 | 247 | 94.3% | 1,133 | 0 | 0.0% (0.0 to 0.0%) | 0.257 | 1,154 | 0 | 0.0% (0.0 to 0.0%) | 0.186 | 1.94 | 2.06 | yes | yes |
+| 15 | 636 | 453 | 423 | 93.4% | 1,106 | 0 | 0.0% (0.0 to 0.0%) | 0.505 | 1,116 | 0 | 0.0% (0.0 to 0.0%) | 0.484 | 1.60 | 1.62 | yes | yes |
+| 17 | 883 | 278 | 263 | 94.6% | 1,067 | 0 | 0.0% (0.0 to 0.0%) | 0.276 | 1,088 | 0 | 0.0% (0.0 to 0.0%) | 0.208 | 2.47 | 2.68 | yes | yes |
+
+**Reading, within what item 9 allows.**
+- **Positive-sequence against balanced-load levels.** Of the 41,472 intervals of the 24 networks, the positive-sequence level is above the balanced-load level in 32,803 (base), 34,709 (half) and 32,043 (pv), equal in 8,642, 6,740 and 9,406 (both zero and both at the cap included), and below in 27, 23 and 23, all of them on network 18. Where both are positive, the median ratio per network is 1.00 (networks 10, 25 and 18) to 1.18 (base, network 3), 1.19 (half, network 3) and 1.14 (pv, network 22). The disclosure of the amendment expected positive-sequence envelopes to be at least as large as balanced-load ones; that held on 23 of the 24 networks and not in those intervals of network 18.
+- **Network 18.** Its two design models give the same level in 1,611 (base), 1,656 (half) and 1,562 (pv) of 1,728 intervals. Why they coincide there, and why the positive-sequence level is the lower one in some intervals, is not analysed here.
+- **The two networks on which it does not hold.** On networks 25 and 10 both design models issue the cap in every interval under every mix (counted from the records); the four-wire rule does in 1,061 and 1,510 (base), 1,161 and 1,589 (half), 1,155 and 1,548 (pv) of the 1,728. The shortfall of the design envelopes is on imports. For imports alone the share on network 25 is 40.5% (base; interval over days 29.6 to 51.9%), 48.7% (half; 37.3 to 60.2%) and 45.4% (pv; 34.7 to 56.7%), below one half in each mix with an interval that contains one half; the classification uses both directions together, as fixed before the runs, so network 25 is not counted.
+- **How far the design envelopes fall short.** On the 21 networks their mean four-wire feasibility per network is between 0.000 and 0.530 (base, balanced-load), 0.521 (base, positive-sequence), 0.535 and 0.523 (half), 0.567 and 0.557 (pv), and below 0.01 on the same six networks in every cell (20, 22, 7, 14, 24 and 16). That of the four-wire-verified envelopes is 0.973 to 0.976 under every mix.
+- **Levels against the reference.** In no interval of any network, under any mix, is the level of a design model below the four-wire-verified level.
+- **Intervals in which the four-wire rule admits no envelope.** Of the positive envelopes of the positive-sequence model on the 21 networks, 10,733 of 32,771 (base), 7,919 of 34,680 (half) and 10,434 of 31,987 (pv) are in such intervals; of the balanced-load model, 10,624 of 32,662, 7,867 of 34,628 and 10,233 of 31,786. None of them reached 0.95. The envelopes that did are all in intervals with a positive four-wire-verified envelope, on network 18. A failed check shows that the states with the envelope are infeasible too often; it does not show that the envelope caused the violation (Amendment 11, second set of corrections, item 4).
+- **The half mix.** The amendment called it the least predictable, because with lower uptake more networks might be barely constrained. Under it the four-wire rule admits more envelopes on the 21 networks (26,761 positive, against 22,038 under the base mix), and the classification is the same on all 24 networks.
+- **The reference falls short too.** 1,217 of 22,038 (5.5%, base), 1,519 of 26,761 (5.7%, half) and 1,239 of 21,553 (5.7%, pv) positive four-wire-verified envelopes of the 21 networks did not reach 0.95 on the fresh draws. This is an observation; why they fall short is not analysed here. E5 compares the models under the same check; it does not measure the true feasibility of any of them.
+- **Interval over days.** In no cell does the interval of a network's classified share contain 0.5, and no replicate was without a positive envelope. On the 20 networks without an envelope reaching 0.95 every replicate gives 0. Network 18: 2.3 to 5.3% (base, both models), 4.7 to 8.3% and 4.7 to 8.5% (half), 1.3 to 4.2% and 1.4 to 4.2% (pv). Networks 25 and 10: in the tables.
+
+**The OpenDSS days (2024-01-10, 2024-05-09, 2024-09-06).** OpenDSS solved the fresh states of every positive envelope of the three models on the 24 networks. Counted per cell (four-wire-verified plus the cell's design model; the four-wire-verified states are the same in the two cells of a mix): 1,046,000 and 1,046,800 states (base; balanced-load and positive-sequence), 1,156,200 and 1,156,600 (half), 1,028,800 and 1,031,600 (pv).
+- **The two engines classify every network alike in every cell.**
+- **Network 18 is again the network on which they differ,** and the sweep is the more lenient engine there:
+
+  | Mix | States that differ: four-wire-verified | balanced-load | positive-sequence | Of these, feasible for OpenDSS only | Envelopes that change status | Design envelopes reaching 0.95, of 144: sweep, OpenDSS | Four-wire-verified envelopes reaching 0.95: sweep, OpenDSS |
+  |---|---|---|---|---|---|---|---|
+  | base | 38 | 577 | 571 | 0, 2, 1 | 6 in each cell | 4, 0 (both models) | 114, 112 of 121 |
+  | half | 293 | 1,111 | 1,111 | 0, 3, 3 | 23 in each cell | 6, 0 (both models) | 123, 106 of 128 |
+  | pv | 61 | 564 | 564 | 0, 1, 1 | 4 in each cell | 1, 0 (both models) | 112, 109 of 118 |
+
+  All but 2 (base, balanced-load), 1 (base, positive-sequence), 3 and 3 (half) and 1 and 1 (pv) of these states belong to import envelopes. Every envelope that changes status reaches 0.95 by the sweep and not by OpenDSS.
+- **What follows for network 18.** Both engines classify it as unsafe in every cell on the days on which both were run (no design envelope reached 0.95 by OpenDSS). Its sweep figures over the 36 days are probably too high for all three models, the reference included: under the half mix 123 of its 128 four-wire-verified envelopes of the three days reached 0.95 by the sweep and 106 by OpenDSS. How OpenDSS would classify the network over all 36 days is not known and not claimed. **If network 18 were not counted, the count would be 20 of 23 in every cell.** The cause of the difference is not established by the records (they do not hold which limit decided a state).
+- **On the other 23 networks:** under the base mix the engines decided every state alike. Under the half mix they differ on one state each of a balanced-load export envelope of networks 9 and 12 and of a positive-sequence export envelope of network 17; under the pv mix on one state of a balanced-load import envelope of network 15 and on one state each of two positive-sequence import envelopes of network 2. No envelope changes status on these networks.
+- Agreement of the engines is measured on three days only. Every four-wire feasibility figure over the 36 days is the sweep's.
+
+**Network 1 (ENWL1): reported next to the published figures, never counted, not a reproduction.**
+- Positive-sequence model of this study: none of its positive envelopes reached 0.95 under any mix: 0 of 1,696 (base; 0 of 848 import, 0 of 848 export), 0 of 1,726 (half), 0 of 1,650 (pv). Base mix: mean four-wire feasibility 0.44 (import) and 0.04 (export); median ratio to the four-wire-verified level 1.91 (import) and 1.71 (export). Balanced-load model: 0 of 1,693, 0 of 1,726 and 0 of 1,641. Four-wire-verified: 1,028 of 1,092 (94.1%), 1,308 of 1,388 (94.2%) and 992 of 1,039 (95.5%).
+- Published for ENWL1 with the positive-sequence model of the challenge entry (`README.md`, `docs/claims.md`): no positive balanced-model envelope reached 0.95 (0 of 823 import, 0 of 864 export), and envelopes "about 2–3× larger" on the summer day.
+- The two models differ in the ways listed in item 3 and in the first set of corrections, item 3 (source, limits, where the reduction is applied, placement and draws), so the numbers of positive envelopes and the ratios are not expected to be equal. Both find no envelope of this network reaching 0.95.
+
+**What is and is not claimed.**
+- **Claimed:** the sentence of each cell above, with the four-wire-verified share next to it and the two networks on which it does not hold; and, for the primary cell, that the ENWL1 result replicates on a majority of the fresh networks under the positive-sequence reduction of this study's network model.
+- **Not claimed:** that a balanced or positive-sequence model is unsafe on every network (it does not hold on 2 of 23, in every cell); operational safety of any envelope (the check is pointwise, per interval and direction, with full and uniform uptake); a result judged by OpenDSS beyond the three days; another operator's networks or another year; a result for a mix other than these three, or that a mix stands for a year or a region; that the positive-sequence model is the ENWL1 model of the challenge entry bus for bus; anything about GENCO or a learned model.
+- **Still to keep in mind.** E5 was designed after the outcome of E4 was known, and its disclosure stated what was expected; it is a test fixed before its runs, not one designed without knowledge of results. The fresh draws are a resampling under the same conditions, not new meters or other days. The mixes change the shares of households with a technology; the caps, the meters and the 2024 profiles are unchanged. Network 1 is not fresh. The 23 fresh networks come from one library of one operator.
