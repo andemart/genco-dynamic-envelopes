@@ -1378,3 +1378,35 @@ The audit of `61b38f3` found the positive-sequence check and the disclosure reso
    - network 17, pv mix: 4 positive four-wire-verified envelopes of 96 (3 reached 0.95), 43 balanced-load (none) and 44 positive-sequence (none); the positive-sequence level is above the balanced-load level in 44 intervals and equal in 52 (both zero);
    - network 7, half mix: 25 four-wire-verified (24 reached 0.95), 96 balanced-load (none) and 96 positive-sequence (none), the positive-sequence level above the balanced-load level in all 96;
    - on the OpenDSS day the sweep and OpenDSS decided every fresh state alike in both; the positive-sequence check used 16 states on every day, with differences below 1e-9 pu.
+
+## Output of the specification table for E4 (Amendment 12, item 6; 2026-11-17)
+
+Exploratory, from the committed E4 records only. It changes no result or criterion of E4.
+
+**Run.** `scripts/fourwire_scale_e4_robustness.py` at `61b38f3`, in a clean checkout of that commit, after the twenty-first audit found item 6 and its script ready as written. The 23 E4 records read are the files that the E4 report names by hash. File: `results/fourwire_scale_e4_robustness.json` (SHA-256 `71536379…8eb1c4592`).
+
+**The combination of Amendment 11 reproduces the E4 report:** 21 of 23, with networks 10 and 25 not unsafe.
+
+**One rule changed at a time** (count of balanced-unsafe fresh networks, of 23):
+
+| Rule changed | Count | Networks not unsafe |
+|---|---|---|
+| Feasibility to reach 0.90 instead of 0.95 | 21 | 10, 25 |
+| Feasibility to reach 0.98 | 21 | 10, 25 |
+| Unsafe if the share is below 0.25 instead of 0.5 | 21 | 10, 25 |
+| Unsafe if the share is below 0.75 | 22 | 10 |
+| Import envelopes only | 22 | 10 |
+| Export envelopes only | 21 | 10, 25 |
+| Only intervals with a positive four-wire-verified envelope | 21 | 10, 25 |
+| The sweep on the three OpenDSS days | 21 | 10, 25 |
+| OpenDSS on the three OpenDSS days | 21 | 10, 25 |
+
+**All 162 combinations.**
+- The count is between 20 and 23, and at least 12 in every combination: 20 in 4 combinations, 21 in 124, 22 in 28 and 23 in 6.
+- **Twenty fresh networks are balanced unsafe under every combination.** Only networks 10, 18 and 25 change.
+- **Network 18 is not unsafe in 4 combinations:** import envelopes only, judged by the sweep, with the feasibility to reach lowered to 0.90 and the threshold lowered to 0.25. These give the count of 20. Judged by OpenDSS on the three days it is unsafe in every combination.
+- **Network 25 becomes unsafe in 34 combinations and network 10 in 6.** The count of 23 needs import envelopes only, a feasibility of 0.98 and a threshold of 0.75.
+- Without network 18 the count is between 20 and 22.
+- In no combination is a network without a positive envelope among those the combination selects.
+
+**Reading.** Within these alternatives the count of E4 does not depend on the rules that Amendment 11 chose: it moves by at most one network down and two up, and stays far above the 12 that the criterion asks for. This describes the sensitivity of a result that was already known when the alternatives were listed. It is not a test, and it says nothing about choices outside the list (the envelope rule, the caps, the technology mix, the fresh draws, the balanced model), part of which E5 addresses.

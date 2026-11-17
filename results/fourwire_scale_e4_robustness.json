@@ -1,0 +1,2413 @@
+{
+ "protocol": "docs/fourwire_scale_protocol.md Amendment 12, item 6 (exploratory; from the E4 records)",
+ "code_commit": "61b38f31219d2023e5db3aa79ef10cf83610b74d",
+ "tracked_files_modified": false,
+ "script_sha256": "79ec2ae6d01a0aef2964ccf4c68c1e437b74f0ec761ea48d158491f2844b9ca9",
+ "e4_script_sha256": "e817d926c4e6938500af391148a99fd71eb881892cb8ed24ad5cd734914fed25",
+ "e4_report_sha256": "64aab9b0b16e02c393bfac0f99aa67823dc9ea3194ae209ba9618863098e4998",
+ "python": "3.12.13",
+ "numpy": "2.4.6",
+ "fresh_networks": 23,
+ "majority": 12,
+ "choices": {
+  "target": [
+   0.95,
+   0.9,
+   0.98
+  ],
+  "unsafe_below": [
+   0.5,
+   0.25,
+   0.75
+  ],
+  "scope": [
+   "both",
+   "import",
+   "export"
+  ],
+  "intervals": [
+   "all",
+   "fourwire_positive"
+  ],
+  "engine": [
+   "sweep_36_days",
+   "sweep_opendss_days",
+   "opendss_opendss_days"
+  ]
+ },
+ "registered": {
+  "target": 0.95,
+  "unsafe_below": 0.5,
+  "scope": "both",
+  "intervals": "all",
+  "engine": "sweep_36_days",
+  "count": 21,
+  "count_without_network_18": 20,
+  "not_unsafe": [
+   10,
+   25
+  ],
+  "without_positive_envelope": []
+ },
+ "one_change_at_a_time": [
+  {
+   "target": 0.9,
+   "unsafe_below": 0.5,
+   "scope": "both",
+   "intervals": "all",
+   "engine": "sweep_36_days",
+   "count": 21,
+   "count_without_network_18": 20,
+   "not_unsafe": [
+    10,
+    25
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.98,
+   "unsafe_below": 0.5,
+   "scope": "both",
+   "intervals": "all",
+   "engine": "sweep_36_days",
+   "count": 21,
+   "count_without_network_18": 20,
+   "not_unsafe": [
+    10,
+    25
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.95,
+   "unsafe_below": 0.25,
+   "scope": "both",
+   "intervals": "all",
+   "engine": "sweep_36_days",
+   "count": 21,
+   "count_without_network_18": 20,
+   "not_unsafe": [
+    10,
+    25
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.95,
+   "unsafe_below": 0.75,
+   "scope": "both",
+   "intervals": "all",
+   "engine": "sweep_36_days",
+   "count": 22,
+   "count_without_network_18": 21,
+   "not_unsafe": [
+    10
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.95,
+   "unsafe_below": 0.5,
+   "scope": "import",
+   "intervals": "all",
+   "engine": "sweep_36_days",
+   "count": 22,
+   "count_without_network_18": 21,
+   "not_unsafe": [
+    10
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.95,
+   "unsafe_below": 0.5,
+   "scope": "export",
+   "intervals": "all",
+   "engine": "sweep_36_days",
+   "count": 21,
+   "count_without_network_18": 20,
+   "not_unsafe": [
+    10,
+    25
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.95,
+   "unsafe_below": 0.5,
+   "scope": "both",
+   "intervals": "fourwire_positive",
+   "engine": "sweep_36_days",
+   "count": 21,
+   "count_without_network_18": 20,
+   "not_unsafe": [
+    10,
+    25
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.95,
+   "unsafe_below": 0.5,
+   "scope": "both",
+   "intervals": "all",
+   "engine": "sweep_opendss_days",
+   "count": 21,
+   "count_without_network_18": 20,
+   "not_unsafe": [
+    10,
+    25
+   ],
+   "without_positive_envelope": []
+  },
+  {
+   "target": 0.95,
+   "unsafe_below": 0.5,
+   "scope": "both",
+   "intervals": "all",
+   "engine": "opendss_opendss_days",
+   "count": 21,
+   "count_without_network_18": 20,
+   "not_unsafe": [
+    10,
+    25
+   ],
+   "without_positive_envelope": []
+  }
+ ],
+ "grid": {
+  "combinations": 162,
+  "smallest_count": 20,
+  "largest_count": 23,
+  "combinations_with_at_least_12": 162,
+  "smallest_count_without_network_18": 20,
+  "all": [
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.95,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 20,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     18,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 20,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     18,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 20,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     18,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 20,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     18,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.9,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.5,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.25,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "both",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 22,
+    "count_without_network_18": 21,
+    "not_unsafe": [
+     10
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 23,
+    "count_without_network_18": 22,
+    "not_unsafe": [],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 23,
+    "count_without_network_18": 22,
+    "not_unsafe": [],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 23,
+    "count_without_network_18": 22,
+    "not_unsafe": [],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 23,
+    "count_without_network_18": 22,
+    "not_unsafe": [],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 23,
+    "count_without_network_18": 22,
+    "not_unsafe": [],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "import",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 23,
+    "count_without_network_18": 22,
+    "not_unsafe": [],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "all",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_36_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "sweep_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   },
+   {
+    "target": 0.98,
+    "unsafe_below": 0.75,
+    "scope": "export",
+    "intervals": "fourwire_positive",
+    "engine": "opendss_opendss_days",
+    "count": 21,
+    "count_without_network_18": 20,
+    "not_unsafe": [
+     10,
+     25
+    ],
+    "without_positive_envelope": []
+   }
+  ]
+ }
+}
