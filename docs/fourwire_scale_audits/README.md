@@ -23,5 +23,6 @@ The files are copied as written, with three mechanical replacements: absolute pa
 | 015 | 2026-11-17 08:42 | `4d71551` (the corrections of round 14) | Resolved and the new figures confirmed; three wording corrections, done in the commit that follows. No record, report or criterion changed |
 | 016 | 2026-11-17 12:44 | `9d2af25` (Amendment 11: E4, balanced-model envelopes on the 24 networks) | Not ready to submit: the models and checks are what the amendment states; blockers in the isolation of dry runs, the publishing of records, the report's record checks and open edge rules, corrected in `8bb4061` |
 | 017 | 2026-11-17 13:18 | `4d74a1f` (the corrections of round 16; the output of the stabilised-recipe analysis) | E4 not yet ready: two report checks and three statements left, corrected in `78e9d1d`. Stabilised output: every figure reproduced, one sentence corrected in the same commit |
+| 018 | 2026-11-17 13:24 | `0f5cb80` (the corrections of round 17) | All five points resolved, no new blocker; ready to submit the 24 E4 runs and the report from a worktree of `0f5cb80`. The corrected sentence of the stabilised output is within the records |
 
 How each finding was answered is recorded in the protocol's amendments and notes and in the commits that follow each round.
