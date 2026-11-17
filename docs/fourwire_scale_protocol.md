@@ -1111,3 +1111,135 @@ The audit recomputed every figure of the output section from the result file and
 
 - The losses quoted for the two fits that stopped early (0.26 and 0.23 on networks 5 and 8; 0.17 and 0.16 on networks 8 and 7) are those of their **selected** epochs (11 and 18), not of the epochs at which they stopped (19 and 26).
 - The section said that the patience of 8 epochs ended these fits "with a peak learning rate of 3e-4". The records do not establish a cause: four things changed together, and no run isolates one. What is observed is that these two fits did not improve their validation loss for 8 epochs and stopped, with a selected loss above that of their frozen counterparts. That the lower learning rate under the frozen patience is the reason is a hypothesis.
+
+## Outcome of E4 (2026-11-17)
+
+Reported as Amendment 11 (item 8) and its two sets of corrections allow. E4 is a result about phase modelling in the design of envelopes. It is not evidence for GENCO or for any learned model, and it changes no result, record or criterion of E1 to E3.
+
+**Runs.**
+- Worktree of `0f5cb80`, the commit that the eighteenth audit cleared for submission; script SHA-256 `e817d926…14fed25`. Every record is valid and unchanged during its run (source equal to the freeze, the frozen identification record, meter profiles and library versions, the UK statutory limits).
+- Submitted at 13:25. The jobs waited for the CPU partition, whose nodes were not responding, and all 24 tasks of job 13602480 started at 14:44. **Every task completed on its first attempt:** the ledger holds exactly one attempt file per network, no network was run again, and the report lists none run more than once. Elapsed time 6 min 58 s (network 10) to 42 min 59 s (network 17), 8 h 12 min for the 24 tasks. The report (job 13602481) ran after the last task and passed all its checks.
+- Files: `results/fourwire_scale_e4/network_N.json` (24 records), `results/fourwire_scale_e4/attempts/` (24 attempt files) and `results/fourwire_scale_e4.json` (SHA-256 `64aab9b0…98e4998`), copied with hashes equal to those on the cluster. The accounting lines of the two jobs, and of the validation-day dry runs named in the corrections (13602076, 13602077; a third, 13602414, was cancelled before it started), are appended to `results/fourwire_scale_hydra_job_evidence.txt`.
+- The field `cpus` of a record is the core count of the node (64). The allocation of 16 cores was enforced at the start of each run (`numba_threads` and `opendss_processes` are 16 in every record) and is in the accounting lines.
+
+**Check against the E2 records (item 6): passed.** All 3,456 four-wire-verified levels of networks 25, 10, 1, 7, 2 and 17 on the 12 E2 days are equal to evaluator A of the committed E2 envelope records (largest difference 0.0 kW; no envelope differs).
+
+**Criterion: met.** On 21 of 23 fresh networks, fewer than half of the positive envelopes designed with a balanced-load model reached 0.95 four-wire feasibility on fresh draws (the criterion asked for at least 12).
+- On 20 of the 21 networks no balanced-model envelope reached 0.95. On network 18, 64 of 1,728 did (3.7%).
+- Over the 21 networks, 64 of 32,662 positive balanced-model envelopes reached 0.95 (0.2%). **The four-wire-verified envelopes of the same networks, the reference: 20,821 of 22,038 (94.5%; 92.7% to 95.9% per network).** These are sums of the table below.
+- **It does not hold on networks 25 (42 customers, 79 buses) and 10 (64 customers, 94 buses), the two smallest:** 70.3% and 92.8% of their balanced-model envelopes reached 0.95 (four-wire-verified: 98.1% and 99.5%).
+- No network was left uncounted: every network has positive balanced-model envelopes, the engines were compared on all 24 and classify all 24 alike.
+
+**Per network, both directions together** (1,728 intervals per network; ordered by number of customers; "feasibility" is the four-wire feasibility on fresh draws, by the sweep):
+
+| Network | Customers | Buses | Balanced: positive | reach 0.95 | share (95% interval over days) | mean feasibility | Four-wire-verified: positive | reach 0.95 | share | mean feasibility | OpenDSS days: states | decisions that differ | Balanced unsafe |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 42 | 79 | 1,728 | 1,214 | 70.3% (64.8 to 75.9%) | 0.919 | 1,728 | 1,695 | 98.1% | 0.990 | 57,600 | 0 | no |
+| 10 | 64 | 94 | 1,728 | 1,604 | 92.8% (90.0 to 95.4%) | 0.987 | 1,728 | 1,719 | 99.5% | 0.995 | 57,600 | 0 | no |
+| 24 | 135 | 221 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.001 | 1,697 | 1,591 | 93.8% | 0.975 | 54,600 | 0 | yes |
+| 21 | 157 | 296 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.241 | 1,680 | 1,599 | 95.2% | 0.976 | 56,000 | 0 | yes |
+| 20 | 162 | 217 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,051 | 989 | 94.1% | 0.975 | 46,800 | 0 | yes |
+| 6 | 171 | 279 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.292 | 1,711 | 1,621 | 94.7% | 0.976 | 56,000 | 0 | yes |
+| 22 | 184 | 355 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 1,518 | 1,436 | 94.6% | 0.976 | 52,800 | 0 | yes |
+| 4 | 186 | 364 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.482 | 1,639 | 1,555 | 94.9% | 0.976 | 54,400 | 0 | yes |
+| 1 (ENWL1, not counted) | 200 | 397 | 1,693 | 0 | 0.0% (0.0 to 0.0%) | 0.296 | 1,092 | 1,028 | 94.1% | 0.974 | 43,600 | 0 | yes |
+| 11 | 214 | 303 | 1,702 | 0 | 0.0% (0.0 to 0.0%) | 0.319 | 1,212 | 1,137 | 93.8% | 0.975 | 46,800 | 0 | yes |
+| 16 | 238 | 465 | 1,728 | 0 | 0.0% (0.0 to 0.0%) | 0.003 | 1,565 | 1,474 | 94.2% | 0.975 | 53,000 | 0 | yes |
+| 23 | 291 | 495 | 1,592 | 0 | 0.0% (0.0 to 0.0%) | 0.257 | 942 | 903 | 95.9% | 0.975 | 40,400 | 0 | yes |
+| 9 | 293 | 465 | 1,287 | 0 | 0.0% (0.0 to 0.0%) | 0.470 | 611 | 579 | 94.8% | 0.975 | 30,800 | 0 | yes |
+| 14 | 317 | 406 | 1,714 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 696 | 654 | 94.0% | 0.975 | 39,000 | 0 | yes |
+| 18 | 328 | 629 | 1,728 | 64 | 3.7% (2.3 to 5.3%) | 0.436 | 1,537 | 1,461 | 95.1% | 0.975 | 53,000 | 615 | yes |
+| 12 | 330 | 542 | 1,626 | 0 | 0.0% (0.0 to 0.0%) | 0.355 | 898 | 832 | 92.7% | 0.974 | 38,200 | 0 | yes |
+| 5 | 335 | 648 | 864 | 0 | 0.0% (0.0 to 0.0%) | 0.530 | 336 | 319 | 94.9% | 0.975 | 20,600 | 0 | yes |
+| 19 | 353 | 678 | 1,722 | 0 | 0.0% (0.0 to 0.0%) | 0.079 | 1,397 | 1,316 | 94.2% | 0.974 | 50,200 | 0 | yes |
+| 8 | 354 | 610 | 1,305 | 0 | 0.0% (0.0 to 0.0%) | 0.123 | 523 | 496 | 94.8% | 0.975 | 29,600 | 0 | yes |
+| 3 | 370 | 720 | 1,720 | 0 | 0.0% (0.0 to 0.0%) | 0.111 | 1,274 | 1,205 | 94.6% | 0.975 | 48,400 | 0 | yes |
+| 7 | 471 | 876 | 1,716 | 0 | 0.0% (0.0 to 0.0%) | 0.000 | 653 | 618 | 94.6% | 0.975 | 40,400 | 0 | yes |
+| 2 | 567 | 1089 | 1,229 | 0 | 0.0% (0.0 to 0.0%) | 0.247 | 287 | 270 | 94.1% | 0.974 | 25,800 | 0 | yes |
+| 15 | 636 | 1096 | 1,183 | 0 | 0.0% (0.0 to 0.0%) | 0.499 | 514 | 488 | 94.9% | 0.975 | 26,000 | 0 | yes |
+| 17 | 883 | 1668 | 1,178 | 0 | 0.0% (0.0 to 0.0%) | 0.252 | 297 | 278 | 93.6% | 0.975 | 24,400 | 0 | yes |
+
+**Import envelopes** (864 intervals per network):
+
+| Network | Balanced: positive | reach 0.95 | mean feasibility | Four-wire-verified: positive | reach 0.95 | mean feasibility | Four-wire zero, balanced positive | Both at the cap | Median ratio | MWh per household-year, four-wire | balanced | Smallest four-wire level (kW) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 864 | 350 | 0.838 | 864 | 831 | 0.979 | 0 | 197 | 1.05 | 59.86 | 65.00 | 3.44 |
+| 10 | 864 | 740 | 0.974 | 864 | 855 | 0.990 | 0 | 646 | 1.00 | 61.75 | 65.00 | 1.39 |
+| 24 | 864 | 0 | 0.001 | 848 | 797 | 0.975 | 16 | 0 | 1.77 | 15.05 | 28.10 | 0.00 |
+| 21 | 864 | 0 | 0.322 | 840 | 803 | 0.976 | 24 | 0 | 1.31 | 14.43 | 19.98 | 0.00 |
+| 20 | 864 | 0 | 0.000 | 525 | 499 | 0.975 | 339 | 0 | 6.88 | 2.11 | 18.70 | 0.00 |
+| 6 | 864 | 0 | 0.373 | 855 | 815 | 0.976 | 9 | 0 | 1.26 | 13.69 | 17.60 | 0.00 |
+| 22 | 864 | 0 | 0.000 | 722 | 686 | 0.976 | 142 | 0 | 2.87 | 7.61 | 26.40 | 0.00 |
+| 4 | 864 | 0 | 0.555 | 800 | 763 | 0.976 | 64 | 0 | 1.29 | 10.60 | 14.90 | 0.00 |
+| 1 | 846 | 0 | 0.456 | 504 | 469 | 0.974 | 342 | 0 | 1.90 | 3.09 | 8.13 | 0.00 |
+| 11 | 851 | 0 | 0.445 | 619 | 575 | 0.974 | 232 | 0 | 1.95 | 4.03 | 9.43 | 0.00 |
+| 16 | 864 | 0 | 0.002 | 772 | 726 | 0.975 | 92 | 0 | 2.20 | 7.48 | 17.66 | 0.00 |
+| 23 | 796 | 0 | 0.353 | 469 | 445 | 0.975 | 327 | 0 | 2.43 | 1.83 | 5.60 | 0.00 |
+| 9 | 643 | 0 | 0.565 | 305 | 289 | 0.974 | 338 | 0 | 2.18 | 0.87 | 2.81 | 0.00 |
+| 14 | 857 | 0 | 0.001 | 351 | 329 | 0.974 | 506 | 0 | 5.62 | 1.03 | 10.67 | 0.00 |
+| 18 | 864 | 64 | 0.820 | 761 | 723 | 0.975 | 103 | 0 | 1.17 | 12.15 | 16.81 | 0.00 |
+| 12 | 822 | 0 | 0.421 | 377 | 344 | 0.972 | 445 | 0 | 2.26 | 1.67 | 5.92 | 0.00 |
+| 5 | 431 | 0 | 0.603 | 195 | 182 | 0.975 | 236 | 0 | 2.27 | 0.36 | 1.31 | 0.00 |
+| 19 | 861 | 0 | 0.159 | 675 | 632 | 0.974 | 186 | 0 | 1.71 | 5.00 | 10.14 | 0.00 |
+| 8 | 663 | 0 | 0.082 | 260 | 248 | 0.976 | 403 | 0 | 2.61 | 0.67 | 2.85 | 0.00 |
+| 3 | 860 | 0 | 0.124 | 571 | 538 | 0.974 | 289 | 0 | 2.11 | 4.09 | 11.23 | 0.00 |
+| 7 | 859 | 0 | 0.000 | 287 | 270 | 0.973 | 572 | 0 | 5.49 | 0.87 | 9.06 | 0.00 |
+| 2 | 619 | 0 | 0.342 | 128 | 119 | 0.972 | 491 | 0 | 4.18 | 0.22 | 2.38 | 0.00 |
+| 15 | 591 | 0 | 0.604 | 257 | 244 | 0.975 | 334 | 0 | 2.34 | 0.58 | 2.22 | 0.00 |
+| 17 | 593 | 0 | 0.375 | 157 | 144 | 0.973 | 436 | 0 | 4.36 | 0.26 | 2.20 | 0.00 |
+
+**Export envelopes** (864 intervals per network):
+
+| Network | Balanced: positive | reach 0.95 | mean feasibility | Four-wire-verified: positive | reach 0.95 | mean feasibility | Four-wire zero, balanced positive | Both at the cap | Median ratio | MWh per household-year, four-wire | balanced | Smallest four-wire level (kW) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 864 | 864 | 1.000 | 864 | 864 | 1.000 | 0 | 864 | 1.00 | 43.92 | 43.92 | 5.00 |
+| 10 | 864 | 864 | 1.000 | 864 | 864 | 1.000 | 0 | 864 | 1.00 | 43.92 | 43.92 | 5.00 |
+| 24 | 864 | 0 | 0.000 | 849 | 794 | 0.975 | 15 | 0 | 1.47 | 24.09 | 37.10 | 0.00 |
+| 21 | 864 | 0 | 0.160 | 840 | 796 | 0.976 | 24 | 0 | 1.13 | 24.13 | 28.49 | 0.00 |
+| 20 | 864 | 0 | 0.000 | 526 | 490 | 0.974 | 338 | 0 | 2.76 | 5.28 | 27.83 | 0.00 |
+| 6 | 864 | 0 | 0.211 | 856 | 806 | 0.976 | 8 | 0 | 1.09 | 23.12 | 25.85 | 0.00 |
+| 22 | 864 | 0 | 0.000 | 796 | 750 | 0.976 | 68 | 0 | 1.94 | 10.99 | 24.10 | 0.00 |
+| 4 | 864 | 0 | 0.410 | 839 | 792 | 0.976 | 25 | 0 | 1.14 | 18.72 | 23.20 | 0.00 |
+| 1 | 847 | 0 | 0.136 | 588 | 559 | 0.975 | 259 | 0 | 1.59 | 5.67 | 13.40 | 0.00 |
+| 11 | 851 | 0 | 0.194 | 593 | 562 | 0.976 | 258 | 0 | 1.25 | 9.13 | 17.82 | 0.00 |
+| 16 | 864 | 0 | 0.005 | 793 | 748 | 0.976 | 71 | 0 | 1.62 | 12.41 | 22.85 | 0.00 |
+| 23 | 796 | 0 | 0.160 | 473 | 458 | 0.976 | 323 | 0 | 1.33 | 4.74 | 12.17 | 0.00 |
+| 9 | 644 | 0 | 0.375 | 306 | 290 | 0.976 | 338 | 0 | 1.26 | 2.11 | 6.57 | 0.00 |
+| 14 | 857 | 0 | 0.000 | 345 | 325 | 0.976 | 512 | 0 | 2.31 | 2.57 | 18.32 | 0.00 |
+| 18 | 864 | 0 | 0.052 | 776 | 738 | 0.976 | 88 | 0 | 1.39 | 14.68 | 24.11 | 0.00 |
+| 12 | 804 | 0 | 0.289 | 521 | 488 | 0.975 | 283 | 0 | 1.54 | 3.88 | 9.48 | 0.00 |
+| 5 | 433 | 0 | 0.458 | 141 | 137 | 0.975 | 292 | 0 | 1.30 | 0.77 | 3.20 | 0.00 |
+| 19 | 861 | 0 | 0.000 | 722 | 684 | 0.975 | 139 | 0 | 1.67 | 8.63 | 17.95 | 0.00 |
+| 8 | 642 | 0 | 0.165 | 263 | 248 | 0.975 | 379 | 0 | 1.49 | 1.35 | 5.77 | 0.00 |
+| 3 | 860 | 0 | 0.098 | 703 | 667 | 0.976 | 157 | 0 | 1.38 | 8.22 | 14.24 | 0.00 |
+| 7 | 857 | 0 | 0.001 | 366 | 348 | 0.976 | 491 | 0 | 2.30 | 2.11 | 12.78 | 0.00 |
+| 2 | 610 | 0 | 0.151 | 159 | 151 | 0.975 | 451 | 0 | 1.56 | 0.78 | 5.06 | 0.00 |
+| 15 | 592 | 0 | 0.394 | 257 | 244 | 0.975 | 335 | 0 | 1.27 | 1.65 | 5.69 | 0.00 |
+| 17 | 585 | 0 | 0.126 | 140 | 134 | 0.976 | 445 | 0 | 1.77 | 0.60 | 5.14 | 0.00 |
+
+"Four-wire zero, balanced positive" counts the intervals in which the four-wire rule admits no envelope and the balanced model issues one. "Median ratio" is balanced over four-wire-verified level where both are positive. The MWh columns are envelope-hours per household per year (the mean day × 366), not delivered energy.
+
+**Reading, within what item 8 allows.**
+- **The two networks on which it does not hold.** On networks 25 and 10 the balanced model issues the cap in every interval (counted from the records), and the four-wire rule does in 1,061 and 1,510 of the 1,728. Every export envelope of both models reached 0.95. The shortfall is on imports: 350 and 740 of 864 balanced-model import envelopes reached 0.95, against 831 and 855 four-wire-verified ones. These two networks were known before the runs to be barely constrained under this technology mix (disclosure of Amendment 11). For imports alone the share on network 25 is 40.5% (interval over days 29.6 to 51.9%), below one half; the classification uses both directions together, as fixed before the runs, so network 25 is not counted as balanced unsafe.
+- **How far the balanced-model envelopes fall short.** On the 21 networks their mean four-wire feasibility is between 0.000 and 0.530 per network, and below 0.01 on six (networks 20, 22, 7, 14, 24 and 16). That of the four-wire-verified envelopes is 0.974 to 0.976.
+- **Levels.** In no interval of any network is the balanced-model level below the four-wire-verified one. Where both are positive, the median ratio per network is 1.16 (network 6) to 4.15 (network 20) on the 21 networks.
+- **Intervals in which the four-wire rule admits no envelope.** Of the 32,662 positive balanced-model envelopes of the 21 networks, 10,624 are in such intervals and 22,038 in intervals with a positive four-wire-verified envelope. None of the former reached 0.95; of the latter, the 64 of network 18 did (their split is counted from the records). The count of 21 does not rest on the intervals in which the four-wire rule admits nothing. A failed check shows that the states with the envelope are infeasible too often; it does not show that the envelope caused the violation (second set of corrections, item 4).
+- **The reference falls short too, about one time in twenty.** 5.5% of the positive four-wire-verified envelopes of the 21 networks did not reach 0.95 on the fresh draws (mean feasibility 0.975). They were accepted on 200 design scenarios at 98% and checked on 200 other draws. E4 compares the two models under the same check; it does not measure the true feasibility of either.
+- **Interval over days.** On 20 networks no day has a balanced-model envelope that reached 0.95, so every bootstrap replicate gives 0. Network 18: 2.3 to 5.3%. Networks 25 and 10: 64.8 to 75.9% and 90.0 to 95.4%. No interval of the classified share contains 0.5, and no replicate was without a positive envelope.
+
+**The OpenDSS days (2024-01-10, 2024-05-09, 2024-09-06).** OpenDSS solved the 1,046,000 fresh states of the 5,230 positive envelopes of both models on the 24 networks.
+- **On 23 networks the sweep and OpenDSS decided every state alike.**
+- **On network 18 they differ on 615 of 53,000 states,** and the sweep is the more lenient engine: 613 states are feasible for the sweep and not for OpenDSS, 2 the reverse. 613 are states of import envelopes (53, 172 and 388 on the three days) and 2 of balanced-model export envelopes of 2024-01-10; 577 belong to 67 balanced-model envelopes and 38 to 10 four-wire-verified ones.
+- **Six envelopes change status, all imports of 2024-09-06, all reaching 0.95 by the sweep and not by OpenDSS:** four balanced-model envelopes (192 to 194 of 200 states by the sweep, 176 to 182 by OpenDSS) and two four-wire-verified ones (191 and 197 by the sweep, 186 and 179 by OpenDSS). On the three days of network 18 the balanced-model envelopes reaching 0.95 are 4 of 144 by the sweep and 0 of 144 by OpenDSS; the four-wire-verified ones 114 and 112 of 121. Both engines classify the network as balanced unsafe.
+- **What follows for network 18.** Its sweep figures over the 36 days (64 balanced-model envelopes reaching 0.95, all imports; 1,461 of 1,537 four-wire-verified ones) are probably too high for both models. By how much on the other 33 days is not measured. The classification cannot turn on it, because a stricter engine lowers the balanced share.
+- **Cause not established.** The difference is in the direction disclosed before the runs (the sweep's transformer quantity is the LV-root proxy, below OpenDSS's loading, and network 18 is the network on which the sweep cleared two test states that OpenDSS flags). The E4 records do not hold which limit decided a state, so E4 does not show that this is the reason.
+
+**Network 1 (ENWL1): reported, never counted.**
+- Under the balanced-load four-wire model of E4: none of its 1,693 positive balanced-model envelopes reached 0.95 (0 of 846 import, 0 of 847 export); mean four-wire feasibility 0.46 (import) and 0.14 (export); median ratio 1.90 (import) and 1.59 (export). Four-wire-verified: 1,028 of 1,092 reached 0.95 (94.1%).
+- Published for ENWL1 with the positive-sequence model (`README.md`, `docs/claims.md`): no positive balanced-model envelope reached 0.95 (0 of 823 import, 0 of 864 export), and envelopes "about 2–3× larger".
+- The two balanced models differ (item 2), so the numbers of positive envelopes and the ratios are not expected to be equal. Both find no balanced-model envelope of this network reaching 0.95.
+
+**What is and is not claimed.**
+- **Claimed:** the sentence under "Criterion" above, with the four-wire-verified share next to it and the two networks on which it does not hold. "The ENWL1 result replicates on a majority of the fresh networks" means this criterion under the balanced-load four-wire model. It is not a reproduction of the positive-sequence result.
+- **Not claimed:** that balanced models are unsafe on every network (it does not hold on two of 23); operational safety of any envelope (the check is pointwise, per interval and direction, with full and uniform uptake); a result judged by OpenDSS beyond the three days; a result for the positive-sequence reduction; anything for another technology mix, another operator's networks or another year.
+- **Still to keep in mind.** The fresh draws are a resampling under the same conditions, not new meters or other days (corrections, item 10). The three design choices of E4 were made after the outcomes of E1 to E3 had been read, and network 1 is not fresh. The 23 fresh networks come from one library of one operator.

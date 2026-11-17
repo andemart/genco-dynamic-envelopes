@@ -363,3 +363,133 @@ rc=0
 /vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-cdb4e83/data_out/fourwire_scale/runs/stabilised/pgpre_fold3_seed0/record.json rc=0 
 /vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-cdb4e83/data_out/fourwire_scale/runs/stabilised/pgpre_fold3_seed1/record.json rc=0 
 /vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-cdb4e83/data_out/fourwire_scale/runs/stabilised/pgpre_fold3_seed2/record.json rc=0 
+=== E4 (Amendment 11): accounting of the validation-day dry runs, the run array (one task per network) and the report, read on 2026-11-17 after the report ended ===
+13602076|fwscale-e4-dry|COMPLETED|0:0|2026-11-17T12:19:59|2026-11-17T12:20:00|2026-11-17T12:29:32|00:09:32|node601|16|billing=16,cpu=16,mem=32G,node=1
+13602077|fwscale-e4-dry|COMPLETED|0:0|2026-11-17T12:19:59|2026-11-17T12:20:00|2026-11-17T12:27:26|00:07:26|node601|16|billing=16,cpu=16,mem=32G,node=1
+13602414|fwscale-e4-dry|CANCELLED by NNNNNNN|0:0|2026-11-17T12:56:49|None|2026-11-17T13:25:00|00:00:00|None assigned|0|
+13602480_1|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:04:41|00:20:39|node600|16|billing=16,cpu=16,mem=32G,node=1
+13602480_2|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:18:32|00:34:30|node600|16|billing=16,cpu=16,mem=32G,node=1
+13602480_3|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:14:25|00:30:23|node602|16|billing=16,cpu=16,mem=32G,node=1
+13602480_4|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:01:13|00:17:11|node602|16|billing=16,cpu=16,mem=32G,node=1
+13602480_5|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:05:21|00:21:19|node602|16|billing=16,cpu=16,mem=32G,node=1
+13602480_6|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:00:57|00:16:55|node602|16|billing=16,cpu=16,mem=32G,node=1
+13602480_7|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:11:16|00:27:14|node610|16|billing=16,cpu=16,mem=32G,node=1
+13602480_8|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:03:53|00:19:51|node611|16|billing=16,cpu=16,mem=32G,node=1
+13602480_9|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T14:58:24|00:14:22|node612|16|billing=16,cpu=16,mem=32G,node=1
+13602480_10|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T14:51:00|00:06:58|node613|16|billing=16,cpu=16,mem=32G,node=1
+13602480_11|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T14:59:43|00:15:41|node614|16|billing=16,cpu=16,mem=32G,node=1
+13602480_12|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:07:57|00:23:55|node615|16|billing=16,cpu=16,mem=32G,node=1
+13602480_14|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T14:58:45|00:14:43|node616|16|billing=16,cpu=16,mem=32G,node=1
+13602480_15|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:12:56|00:28:54|node617|16|billing=16,cpu=16,mem=32G,node=1
+13602480_16|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T14:59:27|00:15:25|node618|16|billing=16,cpu=16,mem=32G,node=1
+13602480_17|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:27:01|00:42:59|node619|16|billing=16,cpu=16,mem=32G,node=1
+13602480_18|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:02|2026-11-17T15:06:57|00:22:55|node619|16|billing=16,cpu=16,mem=32G,node=1
+13602480_19|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:09|2026-11-17T15:09:48|00:25:39|node614|16|billing=16,cpu=16,mem=32G,node=1
+13602480_20|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:10|2026-11-17T14:56:48|00:12:38|node615|16|billing=16,cpu=16,mem=32G,node=1
+13602480_21|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:10|2026-11-17T14:59:04|00:14:54|node615|16|billing=16,cpu=16,mem=32G,node=1
+13602480_22|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:13|2026-11-17T15:03:14|00:19:01|node606|16|billing=16,cpu=16,mem=32G,node=1
+13602480_23|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:13|2026-11-17T15:03:42|00:19:29|node606|16|billing=16,cpu=16,mem=32G,node=1
+13602480_24|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:13|2026-11-17T14:58:56|00:14:43|node606|16|billing=16,cpu=16,mem=32G,node=1
+13602480_25|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T14:44:13|2026-11-17T14:55:31|00:11:18|node606|16|billing=16,cpu=16,mem=32G,node=1
+13602481_0|fwscale-e4|COMPLETED|0:0|2026-11-17T13:25:00|2026-11-17T15:28:08|2026-11-17T15:28:29|00:00:21|node619|16|billing=16,cpu=16,mem=32G,node=1
+--- last lines of the logs of the 24 runs and of the report (day index, intervals done, seconds; the record; exit code)
+## logs/fwscale-e4-13602480_1.out
+359 1728 916s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_1.json
+rc=0
+## logs/fwscale-e4-13602480_10.out
+359 1728 318s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_10.json
+rc=0
+## logs/fwscale-e4-13602480_11.out
+359 1728 640s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_11.json
+rc=0
+## logs/fwscale-e4-13602480_12.out
+359 1728 1143s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_12.json
+rc=0
+## logs/fwscale-e4-13602480_14.out
+359 1728 782s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_14.json
+rc=0
+## logs/fwscale-e4-13602480_15.out
+359 1728 1632s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_15.json
+rc=0
+## logs/fwscale-e4-13602480_16.out
+359 1728 820s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_16.json
+rc=0
+## logs/fwscale-e4-13602480_17.out
+359 1728 2265s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_17.json
+rc=0
+## logs/fwscale-e4-13602480_18.out
+359 1728 1058s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_18.json
+rc=0
+## logs/fwscale-e4-13602480_19.out
+359 1728 1255s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_19.json
+rc=0
+## logs/fwscale-e4-13602480_2.out
+359 1728 1757s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_2.json
+rc=0
+## logs/fwscale-e4-13602480_20.out
+359 1728 473s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_20.json
+rc=0
+## logs/fwscale-e4-13602480_21.out
+359 1728 610s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_21.json
+rc=0
+## logs/fwscale-e4-13602480_22.out
+359 1728 780s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_22.json
+rc=0
+## logs/fwscale-e4-13602480_23.out
+359 1728 808s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_23.json
+rc=0
+## logs/fwscale-e4-13602480_24.out
+359 1728 523s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_24.json
+rc=0
+## logs/fwscale-e4-13602480_25.out
+359 1728 307s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_25.json
+rc=0
+## logs/fwscale-e4-13602480_3.out
+359 1728 1438s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_3.json
+rc=0
+## logs/fwscale-e4-13602480_4.out
+359 1728 645s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_4.json
+rc=0
+## logs/fwscale-e4-13602480_5.out
+359 1728 893s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_5.json
+rc=0
+## logs/fwscale-e4-13602480_6.out
+359 1728 620s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_6.json
+rc=0
+## logs/fwscale-e4-13602480_7.out
+359 1728 1532s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_7.json
+rc=0
+## logs/fwscale-e4-13602480_8.out
+359 1728 1088s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_8.json
+rc=0
+## logs/fwscale-e4-13602480_9.out
+359 1728 761s
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4/network_9.json
+rc=0
+## logs/fwscale-e4-13602481_0.out
+commit=0f5cb80fd3fa6e13dd4e450e086d4bcbe61ab8a3 node=node619.hydra.os cpus=16 stage=report task=0
+/vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-0f5cb80/results/fourwire_scale_e4.json
+rc=0
