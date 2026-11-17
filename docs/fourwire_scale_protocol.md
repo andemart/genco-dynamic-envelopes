@@ -1344,3 +1344,26 @@ Adds a fifth experiment family and one exploratory table. It changes no result, 
 - **Never claimed:** what Amendment 11, item 8 excludes (unsafe on every network; operational safety; a result judged by OpenDSS beyond the three days; another operator's networks or another year); a result for a mix other than these three, or that a mix stands for a year or a region; that E5 was designed without knowledge of results (it follows the outcome of E4); anything about GENCO or a learned model.
 
 **Note on the duration.** The E4 runs took 7 to 43 minutes per network. E5 searches a third model and checks its envelopes, so a run is expected to take up to about an hour; the job script allows 4 hours.
+
+### Corrections to Amendment 12 (2026-11-17, after the twenty-first audit; nothing of E5 has run on a held-out day)
+
+The audit of `8e46433` found the reduction, the source, the mixes, the fresh check, the records, the isolation of dry runs, the job script and the script of item 6 to be what the amendment states, and reproduced the network-data figures of the disclosure. It found two gaps in the code and one in the text. The script is corrected with this text. Item 6 was found ready and is unchanged.
+
+1. **The positive-sequence check (item 3) could leave a record that the report refuses.** If none of the 8 states of a day's first hour converged, the day was left out, the record was still published as valid, and the report would then refuse it while the record blocked a rerun. Corrected:
+   - **States.** The first 8 design scenarios of the first hour of each day, and the same 8 at one tenth of their power: 16 states. A state is used if the sweep converges on it and the scalar power flow does (last update below 1e-12 kV within 500 iterations).
+   - **A day without a usable state, or a check out of tolerance, stops the run before any record is published.** The attempt file stays. Such a stop is deterministic, so it is resolved under a dated note and not by running again.
+   - **The report requires,** for each of the 36 days, a whole number of 1 to 16 checked states, and both differences as numbers within the tolerance. Before, any value passed as a state count.
+   - **"Equal" means equal in magnitude.** The three phase-to-neutral voltages of the reduced network are a balanced set, 120° apart.
+   - **What the check covers.** Voltage magnitudes at every bus, on converged states. It uses the same reduced impedances and source as the scalar power flow, so it tests that the sweep solves the reduced network as a positive-sequence power flow. It does not test the reduction formula, the currents or the limits; those were verified by the audit against the code of the ENWL1 study and in a probe on a validation day.
+2. **The check against the E4 records (item 7) was too weak.** It compared levels and two of the three results, and its gate looked at levels only: records with every level unchanged and every fresh-draw count altered would have passed. Corrected:
+   - **Compared:** the four-wire and balanced-load levels of every interval (82,944); for every envelope with an equal positive level, its three results (feasible fresh draws by the sweep, by OpenDSS, decisions that differ); and the classification of each of the 24 networks in the recomputed E4 cell against the E4 report.
+   - **The report is not written if** more than 0.5% of the levels differ by more than 1e-3 × cap, or more than 0.5% of the compared envelopes have another result, or any network is classified differently, or the list of counted networks is not that of the E4 report.
+   - Every interval and model with any difference is listed, with both sets of values.
+3. **Differences from the ENWL1 balanced model (item 3), completed.** Besides the three listed:
+   - **Thermal limits.** There a branch was checked by its apparent power at the sending end against a three-phase rating; here by its phase current against the ampacity.
+   - **Voltage limits.** There at every retained bus other than the source; here at customer buses.
+   - **Transformer.** There a branch of the model with its own rating; here the transformer quantity of the sweep at the LV root.
+   - **Scenario draws.** The order in which meters are drawn differs, besides the placement being drawn per day.
+
+   None of this changes the model of item 3. It is why network 1 is reported next to the published figures and not as a reproduction.
+4. **Dry runs after the amendment, on validation days.** The corrected script on the laptop: network 25, half mix, 2 days, 3 hours each (16 checked states on both days; differences 6e-16 and 2e-11 pu). Two dry runs submitted to the cluster at `8e46433` (jobs 13603420 and 13603421) were cancelled before they started.

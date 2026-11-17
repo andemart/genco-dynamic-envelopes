@@ -15,8 +15,8 @@ run: for one network and one technology mix, every hour of the 36 held-out days 
 - positive-sequence envelope: the same rule and sweep on the positive-sequence reduction of the network (every
   branch reduced to its positive-sequence impedance, the positive-sequence equivalent of the frozen source,
   every customer's power spread equally over the three phases). With these inputs the three phases are
-  decoupled and identical, so the sweep solves the positive-sequence power flow; a run checks that against
-  an independent scalar power flow in NumPy;
+  decoupled and equal in magnitude, so the sweep solves the positive-sequence power flow; a run checks that
+  against an independent scalar power flow in NumPy on every day and stops, without a record, if it fails;
 - four-wire check on fresh draws (stream 2), for every positive envelope of the three models, and on three of
   the days also by OpenDSS: as in E4.
 One record per network and mix, results/fourwire_scale_e5/<mix>/network_N.json, published once and never
@@ -24,7 +24,7 @@ replaced; every start of a final run leaves an attempt file in results/fourwire_
 
 report: per mix and design model (balanced, posseq), the summary, classification and criterion of
 Amendment 12, computed by the functions of the E4 script, and the comparison of the base mix with the
-committed E4 records.
+committed E4 records (levels, results and classification), which must pass.
 
 --dry uses validation days only and writes under data_out/fourwire_scale/e5_dry; it is not a final run.
 No command takes an output path.
@@ -71,9 +71,11 @@ HOURS, CORES, N_FRESH = e4.HOURS, e4.CORES, e4.N_FRESH
 STREAM_DESIGN, STREAM_FRESH = e4.STREAM_DESIGN, e4.STREAM_FRESH
 MAJORITY = e4.MAJORITY
 OPENDSS_DAYS = e4.OPENDSS_DAYS
-E4_TOLERANCE_SHARE = 0.005              # report: share of base-mix levels that may differ from the E4 records
+E4_TOLERANCE_SHARE = 0.005              # report: share of base-mix levels, and of envelopes with other results,
+#                                         that may differ from the E4 records
 POSSEQ_TOLERANCE_PU = 1e-6              # the sweep on the reduced network against the scalar power flow
-POSSEQ_CHECK_STATES = 8
+POSSEQ_CHECK_STATES = 8                 # design scenarios of the first hour of a day, each also at POSSEQ_LIGHT
+POSSEQ_LIGHT = 0.1                      # of its power, so that a day has states on which both solvers converge
 SAME_AS_REPORT = (*e4.SAME_AS_REPORT, "e4_script_sha256")
 A = np.exp(2j * np.pi / 3)
 POSITIVE = np.array([1, A ** 2, A])     # a positive-sequence set of phasors, phases a, b, c
@@ -173,13 +175,15 @@ def reduced_case(net, th: Thevenin, names: list[str], bus: np.ndarray):
 
 
 def scalar_power_flow(net, z1: np.ndarray, e1: complex, z1s: complex, bus: np.ndarray, s_kva: np.ndarray,
-                      iterations: int = 500, tol: float = 1e-13) -> np.ndarray:
+                      iterations: int = 500, tol: float = 1e-12) -> tuple[np.ndarray, np.ndarray]:
     """Single-phase power flow of the positive-sequence network, written independently of the sweep: customer
-    consumption s_kva (B, n_cust) in kVA (three-phase total), phase-to-neutral voltage (B, n_bus) in kV."""
+    consumption s_kva (B, n_cust) in kVA (three-phase total). Returns the phase-to-neutral voltage (B, n_bus)
+    in kV and, per state, whether its last update was below tol (kV)."""
     b = len(s_kva)
     s_bus = np.zeros((b, net.n_bus), complex)
     np.add.at(s_bus, (slice(None), bus), s_kva / 3)
     v = np.full((b, net.n_bus), e1, complex)
+    step = np.full(b, np.inf)
     for _ in range(iterations):
         cur = np.conj(s_bus / 1e3 / v)                       # kA per phase drawn at each bus
         for i in net.order[::-1][:-1]:
@@ -188,29 +192,33 @@ def scalar_power_flow(net, z1: np.ndarray, e1: complex, z1s: complex, bus: np.nd
         new[:, 0] = e1 - z1s * cur[:, 0]
         for i in net.order[1:]:
             new[:, i] = new[:, net.parent[i]] - z1[i] * cur[:, i]
-        done = np.abs(new - v).max() < tol
+        step = np.abs(new - v).max(1)
         v = new
-        if done:
+        if (step < tol).all():
             break
-    return v
+    with np.errstate(invalid="ignore"):
+        return v, step < tol
 
 
 def check_reduction(net, sweep: NumbaSweep, parts: tuple, bus: np.ndarray, s_cust: np.ndarray) -> dict:
-    """The sweep on the reduced network against the scalar power flow, on states on which the sweep converges:
-    the three phase-to-neutral voltages at every bus must be equal in magnitude, and equal to the scalar
-    solution, within POSSEQ_TOLERANCE_PU. s_cust (B, n_cust) kVA consumed per customer."""
-    o = sweep.solve(np.repeat(s_cust, 3, axis=1) / 3, return_state=True)
-    ok = o["converged"]
-    if not ok.any():
-        return {"states": 0, "phases_differ_pu": None, "against_scalar_pu": None}
-    vpn = np.abs(o["V"][ok][:, :, :3] - o["V"][ok][:, :, 3:4])
-    scalar = np.abs(scalar_power_flow(net, *parts, bus, s_cust[ok]))
+    """The sweep on the reduced network against the scalar power flow. States: s_cust (B, n_cust) kVA consumed
+    per customer, and the same states at POSSEQ_LIGHT of their power. On every state on which both solvers
+    converge, the three phase-to-neutral voltage magnitudes at every bus must be equal to each other and to
+    the scalar solution within POSSEQ_TOLERANCE_PU. A day without such a state, or out of tolerance, stops the
+    run before any record is published."""
     from gencodoe.fourwire_net import V_PN_NOM
+    states = np.concatenate([s_cust, POSSEQ_LIGHT * s_cust])
+    o = sweep.solve(np.repeat(states, 3, axis=1) / 3, return_state=True)
+    v_scalar, scalar_ok = scalar_power_flow(net, *parts, bus, states)
+    ok = o["converged"] & scalar_ok
+    if not ok.any():
+        raise RuntimeError("positive-sequence check: no state on which the sweep and the scalar power flow converge")
+    vpn = np.abs(o["V"][ok][:, :, :3] - o["V"][ok][:, :, 3:4])
     out = {"states": int(ok.sum()),
            "phases_differ_pu": float((vpn.max(2) - vpn.min(2)).max() / V_PN_NOM),
-           "against_scalar_pu": float(np.abs(vpn[:, :, 0] - scalar).max() / V_PN_NOM)}
-    if max(out["phases_differ_pu"], out["against_scalar_pu"]) > POSSEQ_TOLERANCE_PU:
-        raise AssertionError(f"the sweep on the reduced network is not the positive-sequence power flow: {out}")
+           "against_scalar_pu": float(np.abs(vpn[:, :, 0] - np.abs(v_scalar[ok])).max() / V_PN_NOM)}
+    if not max(out["phases_differ_pu"], out["against_scalar_pu"]) <= POSSEQ_TOLERANCE_PU:
+        raise RuntimeError(f"the sweep on the reduced network is not the positive-sequence power flow: {out}")
     return out
 
 
@@ -317,7 +325,6 @@ def run(network: int, mix: str, dry: bool, days: int | None = None, hours: int =
         if pool is not None:
             pool.close()
     same = unchanged(prov, final)
-    done = [c for c in reduction_checks if c["states"]]
     e4.publish(out, {
         "protocol": "docs/fourwire_scale_protocol.md Amendment 12 (E5)", "network": network, "dry_run": dry,
         **prov, "unchanged_during_run": same, "valid": same, "attempt": attempt, "earlier_attempts": earlier,
@@ -325,9 +332,9 @@ def run(network: int, mix: str, dry: bool, days: int | None = None, hours: int =
         "days": all_days, "opendss_days": dss_days, "numba_threads": int(numba.get_num_threads()),
         **settings(mix), "hours": hours, "opendss_processes": processes if dss_days else None,
         "positive_sequence_check": {
-            "days_checked": len(done), "states": int(sum(c["states"] for c in done)),
-            "phases_differ_pu": max((c["phases_differ_pu"] for c in done), default=None),
-            "against_scalar_pu": max((c["against_scalar_pu"] for c in done), default=None)},
+            "states_per_day": [c["states"] for c in reduction_checks],
+            "phases_differ_pu": max(c["phases_differ_pu"] for c in reduction_checks),
+            "against_scalar_pu": max(c["against_scalar_pu"] for c in reduction_checks)},
         "seconds": time.time() - t0, "intervals": {key: [r[key] for r in rows] for key in rows[0]}})
     if not same:
         raise RuntimeError(f"checkout, libraries, inputs or a script changed during the run; "
@@ -367,17 +374,21 @@ def _whole(x) -> bool:
 
 def record_problems(rec: dict, network: int, mix: str, prov: dict, days: list[int], folder: Path) -> list[str]:
     """What keeps a record out of the report: not a valid final record of this network, mix, commit, scripts,
-    freeze and settings; an attempt that is not in the ledger; a positive-sequence check that was not made on
-    every day or is out of tolerance; or not the complete set of intervals with every result a positive
+    freeze and settings; an attempt that is not in the ledger; a positive-sequence check without a whole number
+    of 1 to 16 states on every day or out of tolerance; or not the complete set of intervals with every result a positive
     envelope must have (counts over the 200 fresh draws, a number of differing decisions that the two counts
     allow, equal results for equal levels of one interval)."""
     dss = [days[k] for k in OPENDSS_DAYS]
-    chk = rec.get("positive_sequence_check") or {}
+    chk = rec.get("positive_sequence_check")
+    chk = chk if isinstance(chk, dict) else {}
+    per_day = chk.get("states_per_day")
     bad = [what for what, wrong in [
         ("not valid", rec.get("valid") is not True or rec.get("unchanged_during_run") is not True),
         ("a dry run", rec.get("dry_run") is not False), ("another network", rec.get("network") != network),
         ("other days", rec.get("days") != days), ("other OpenDSS days", rec.get("opendss_days") != dss),
-        ("no positive-sequence check on every day", chk.get("days_checked") != len(days)),
+        ("no positive-sequence check on every day", not (
+            isinstance(per_day, list) and len(per_day) == len(days)
+            and all(_whole(x) and 1 <= x <= 2 * POSSEQ_CHECK_STATES for x in per_day))),
         ("positive-sequence check out of tolerance", not all(
             e4._number(chk.get(k)) and 0 <= chk[k] <= POSSEQ_TOLERANCE_PU
             for k in ("phases_differ_pu", "against_scalar_pu"))),
@@ -414,12 +425,17 @@ def record_problems(rec: dict, network: int, mix: str, prov: dict, days: list[in
 
 
 # ------------------------------------------------------------------------------------------- report
-def e4_comparison(records: dict) -> dict:
-    """The base mix against the committed E4 records, which must be the files the E4 report names: the levels
-    of the four-wire and the balanced model, and their counts on the fresh draws. Every difference is listed."""
+def e4_comparison(records: dict, recomputed: dict) -> dict:
+    """The base mix against the committed E4 records, which must be the files the E4 report names. Compared: the
+    levels of the four-wire and the balanced-load model; for every envelope with an equal positive level, its
+    three results (feasible fresh draws by the sweep, by OpenDSS, decisions that differ); and the classification
+    of every network in the recomputed E4 cell against the E4 report. Every interval and model with any
+    difference is listed. Passed: at most E4_TOLERANCE_SHARE of the levels beyond tolerance, at most that share
+    of the compared envelopes with another result, and the same classification of all 24 networks."""
     e4_report = json.loads(e4.REPORT.read_text())
     out = {"levels_compared": 0, "levels_equal": 0, "levels_beyond_tolerance": 0, "largest_difference_kw": 0.0,
-           "counts_compared": 0, "counts_equal": 0, "e4_report_sha256": fs._sha(e4.REPORT), "differences": []}
+           "envelopes_compared": 0, "envelopes_with_equal_results": 0, "e4_report_sha256": fs._sha(e4.REPORT),
+           "differences": []}
     for n in fs.ELIGIBLE:
         path = e4.RECORDS / f"network_{n}.json"
         if fs._sha(path) != e4_report["per_network"][str(n)]["record_sha256"]:
@@ -433,23 +449,28 @@ def e4_comparison(records: dict) -> dict:
                 out["levels_equal"] += int(d == 0)
                 out["levels_beyond_tolerance"] += int(d > e2.REL_TOL * e2.CAP_KW[r["direction"]])
                 out["largest_difference_kw"] = max(out["largest_difference_kw"], float(d))
-                pairs = [(r[f"{m}_fresh_feasible"], o[f"{m}_fresh_share"]),
-                         (r[f"{m}_fresh_feasible_opendss"], o[f"{m}_fresh_share_opendss"])]
-                same = d == 0
-                for new, share in pairs:
-                    if d == 0 and new is not None:
-                        out["counts_compared"] += 1
-                        equal = share is not None and new == round(share * N_FRESH)
-                        out["counts_equal"] += int(equal)
-                        same = same and equal
+                new = [r[f"{m}_fresh_feasible"], r[f"{m}_fresh_feasible_opendss"], r[f"{m}_fresh_decisions_differ"]]
+                was = [None if o[f"{m}_{k}"] is None else round(o[f"{m}_{k}"] * N_FRESH)
+                       for k in ("fresh_share", "fresh_share_opendss")] + [o[f"{m}_fresh_decisions_differ"]]
+                same = d == 0 and new == was
+                if d == 0 and r[f"{m}_level_kw"] > 0:
+                    out["envelopes_compared"] += 1
+                    out["envelopes_with_equal_results"] += int(same)
                 if not same:
                     out["differences"].append({
                         "network": n, "day": r["day"], "step": r["step"], "direction": r["direction"], "model": m,
                         "e4_level_kw": o[f"{m}_level_kw"], "e5_level_kw": r[f"{m}_level_kw"],
-                        "e4_fresh_share": o[f"{m}_fresh_share"], "e5_fresh_feasible": r[f"{m}_fresh_feasible"],
-                        "e4_fresh_share_opendss": o[f"{m}_fresh_share_opendss"],
-                        "e5_fresh_feasible_opendss": r[f"{m}_fresh_feasible_opendss"]})
-    out["passed"] = bool(out["levels_beyond_tolerance"] <= E4_TOLERANCE_SHARE * out["levels_compared"])
+                        "e4_results": was, "e5_results": new})
+    keys = ("balanced_unsafe", "engines_classify_alike", "counted_unsafe")
+    out["networks_classified_differently"] = [
+        n for n in fs.ELIGIBLE
+        if any(recomputed["per_network"][str(n)][k] != e4_report["per_network"][str(n)][k] for k in keys)]
+    out["passed"] = bool(
+        out["levels_beyond_tolerance"] <= E4_TOLERANCE_SHARE * out["levels_compared"]
+        and out["envelopes_compared"] - out["envelopes_with_equal_results"]
+        <= E4_TOLERANCE_SHARE * out["envelopes_compared"]
+        and not out["networks_classified_differently"]
+        and recomputed["unsafe_counted"] == e4_report["balanced_unsafe_counted"])
     return out
 
 
@@ -486,11 +507,11 @@ def report(folder: Path = RECORDS, out: Path = REPORT) -> Path:
             if problems:
                 raise RuntimeError(f"record of network {n}, mix {mix}: " + ", ".join(problems))
             records[mix][n] = rec
-    cmp = e4_comparison(records["base"])
+    cells = {f"{mix}/{model}": cell(records[mix], model) for mix in MIXES for model in DESIGN_MODELS}
+    cmp = e4_comparison(records["base"], cells["base/balanced"])
     if not cmp["passed"]:
         raise RuntimeError(f"the base mix differs from the E4 records: "
                            f"{ {k: v for k, v in cmp.items() if k != 'differences'} }")
-    cells = {f"{mix}/{model}": cell(records[mix], model) for mix in MIXES for model in DESIGN_MODELS}
     same = unchanged(prov, True)
     e4.publish(out, {
         "protocol": "docs/fourwire_scale_protocol.md Amendment 12 (E5)", **prov, "unchanged_during_run": same,
