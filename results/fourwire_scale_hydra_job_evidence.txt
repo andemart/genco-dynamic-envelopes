@@ -181,3 +181,52 @@ PG-ft_b200_seed0 {"fallback_share": 0.3893333333333333, "false_safe": 0, "cleare
 3 4
 /vscmnt/brussel_pixiu_data/_data_brussel/NNN/vscNNNNN/genco-fourwire-scale-e85164c/data_out/fourwire_scale/e2_dry/envelopes_network_7_20261116T031053.json
 DRY_RUN_OK
+
+=== PG-pre diagnostic (protocol note of 2026-11-16): accounting, read on 2026-11-17 ===
+JobID|JobName|State|ExitCode|Submit|Start|End|Elapsed|NodeList|AllocTRES
+13593190|fwscale-retrace|COMPLETED|0:0|2026-11-16T11:01:40|2026-11-16T12:38:52|2026-11-16T13:30:18|00:51:26|node407|billing=16,cpu=16,gres/gpu:a100=1,gres/gpu=1,mem=48G,node=1
+13593191|fwscale-pgprediag|COMPLETED|0:0|2026-11-16T11:01:40|2026-11-16T13:56:38|2026-11-16T14:07:52|00:11:14|node402|billing=16,cpu=16,gres/gpu:a100=1,gres/gpu=1,mem=48G,node=1
+13595548|fwscale-retrace|COMPLETED|0:0|2026-11-16T15:58:23|2026-11-16T17:48:55|2026-11-16T18:41:44|00:52:49|node403|billing=16,cpu=16,gres/gpu:a100=1,gres/gpu=1,mem=48G,node=1
+13595549|fwscale-pgprediag|COMPLETED|0:0|2026-11-16T15:58:23|2026-11-16T17:48:56|2026-11-16T18:00:47|00:11:51|node403|billing=16,cpu=16,gres/gpu:a100=1,gres/gpu=1,mem=48G,node=1
+13593190 and 13593191: first version of the script (worktree a8a2612); output not read, not copied.
+13595548 and 13595549: corrected script (worktree e34d242); logs below.
+
+=== log of job 13595549 (checkpoints) ===
+NVIDIA A100-PCIE-40GB
+commit=e34d24217f9d7a624e314dff7748e116db553e47 node=node403.hydra.os
+pgpre_fold0_seed0 0.030767781851737872 0.030767781851737872
+pgpre_fold0_seed1 0.023191054205080573 0.023191054205080573
+pgpre_fold0_seed2 0.027298398908640113 0.027298398908640113
+pgpre_fold1_seed0 0.017525279115128477 0.017525279115128477
+pgpre_fold1_seed1 0.022271925061331077 0.022271925061331077
+pgpre_fold1_seed2 0.01861504745792839 0.01861504745792839
+pgpre_fold2_seed0 0.020079024037378008 0.020079024037378008
+pgpre_fold2_seed1 0.4985278486632711 0.4985278486632711
+pgpre_fold2_seed2 1.535346978670911 1.535346978670911
+pgpre_fold3_seed0 0.014768937438091882 0.014768937438091882
+pgpre_fold3_seed1 0.01682671701630533 0.01682671701630533
+pgpre_fold3_seed2 0.01788064247640451 0.01788064247640451
+results/fourwire_scale_pgpre_diagnostic.json
+rc=0
+
+=== log of job 13595548 (retrace of pgpre_fold2_seed1) ===
+NVIDIA A100-PCIE-40GB
+commit=e34d24217f9d7a624e314dff7748e116db553e47 node=node403.hydra.os
+{"epoch": 0, "val_loss": 2.3045085647647703, "note": "before training"}
+{"epoch": 1, "train_loss": 2.0213691947071486, "val_loss": 0.9229915467018206, "epoch_s": 194.7729155429406, "train_s": 179.6691498348955, "eval_s": 15.103021098999307, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2366.0}
+{"epoch": 2, "train_loss": 0.9396487860848122, "val_loss": 0.8583654174137244, "epoch_s": 193.72732697497122, "train_s": 178.63474729296286, "eval_s": 15.091823531896807, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 3, "train_loss": 0.8679042722087654, "val_loss": 0.8253756503272103, "epoch_s": 193.79459391604178, "train_s": 178.6837274939753, "eval_s": 15.110120645258576, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 4, "train_loss": 0.7920304928966488, "val_loss": 0.597489726352008, "epoch_s": 193.77562803495675, "train_s": 178.60664077091496, "eval_s": 15.16824112040922, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 5, "train_loss": 0.796562800179608, "val_loss": 0.5981604396209774, "epoch_s": 193.7872612819774, "train_s": 178.62620873295236, "eval_s": 15.160305335070007, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 6, "train_loss": 0.7561238032478315, "val_loss": 0.5750207066920745, "epoch_s": 193.6409886549227, "train_s": 178.5564507029485, "eval_s": 15.083794692764059, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 7, "train_loss": 0.5986256117340988, "val_loss": 0.4985278486632711, "epoch_s": 193.7101134969853, "train_s": 178.48217131197453, "eval_s": 15.227192728081718, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 8, "train_loss": 1.912427860578403, "val_loss": 1.8112146327178873, "epoch_s": 193.77960951603018, "train_s": 178.6660831599729, "eval_s": 15.11277900193818, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 9, "train_loss": 1.958453759481265, "val_loss": 1.6977709602509308, "epoch_s": 193.59071467199828, "train_s": 178.49817380402237, "eval_s": 15.091782390954904, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 10, "train_loss": 1.1920050879217348, "val_loss": 0.6276469051648361, "epoch_s": 193.72551406302955, "train_s": 178.60968358803075, "eval_s": 15.11508625827264, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 11, "train_loss": 0.6883325745777439, "val_loss": 1.6746314754770435, "epoch_s": 193.78476239193697, "train_s": 178.6689876219025, "eval_s": 15.115028386819176, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 12, "train_loss": 0.8619484362592634, "val_loss": 0.5634787553420377, "epoch_s": 197.33389788097702, "train_s": 182.23636667290702, "eval_s": 15.0967955669621, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 13, "train_loss": 0.6729537515735593, "val_loss": 0.549626227004604, "epoch_s": 197.18098724796437, "train_s": 182.06533186300658, "eval_s": 15.114907136070542, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 14, "train_loss": 0.6493969033439696, "val_loss": 0.7413823065819191, "epoch_s": 193.83198012190405, "train_s": 178.70487382495776, "eval_s": 15.126364039839245, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+{"epoch": 15, "train_loss": 0.6329367434290428, "val_loss": 0.5585475935589896, "epoch_s": 193.5148013039725, "train_s": 178.41698663600255, "eval_s": 15.097061853623018, "steps": 2826, "gpu_peak_allocated_mb": 2010.939453125, "gpu_peak_reserved_mb": 2368.0}
+results/fourwire_scale_pgpre_retrace_fold2_seed1.json
+rc=0

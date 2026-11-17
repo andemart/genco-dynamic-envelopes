@@ -824,3 +824,35 @@ The audit of `73f37af` found the equivalence gate and `collect` resolved and two
 ### Note after the twelfth audit (2026-11-16, before anything of Amendment 10 is submitted)
 
 The audit of `cdb4e83` found the two remaining blockers resolved and the analysis ready to submit. The stabilised fits and their equivalence check run from a worktree at `cdb4e83`, the audited commit. One statement of the second set is made exact: the refusal of item 1 applies when the fit's current folder exists without a valid record and two earlier attempts have been set aside. A lock left by a process that died while holding it blocks further claims of that fit until it is checked and removed as a recorded decision.
+
+## Output of the exploratory PG-pre diagnostic (2026-11-17, before any evaluation record is opened)
+
+This is the diagnostic of the note of 2026-11-16 on the weak PG-pre seeds. It is committed here, with this text, before any evaluation record, timing record or report of the final runs is opened. All final jobs of freeze `a4068ef` have ended: 96 array tasks, all `COMPLETED`, no halt file.
+
+**The jobs.**
+
+- First version of the script (commit `a8a2612`): jobs 13593190 (`retrace`, 2026-11-16 12:38 to 13:30) and 13593191 (`checkpoints`, 13:56 to 14:07). They ran while the login node could not be reached from the author's machine (11:45 to 15:55), before the corrected script could be submitted in their place. Their output was not read and not copied; it stays in the worktree of `a8a2612` on the cluster. Both ended before the timing stage of the final runs started (14:20).
+- Corrected script (commit `e34d242`): jobs 13595548 (`retrace`, 17:48 to 18:41) and 13595549 (`checkpoints`, 17:48 to 18:00), on the A100, after the timing stage had ended (17:20). Output, committed byte for byte: `results/fourwire_scale_pgpre_retrace_fold2_seed1.json` (SHA-256 `c64cbde2…427ead1`) and `results/fourwire_scale_pgpre_diagnostic.json` (SHA-256 `96eb7e23…af4e0b`). The step file of the retrace stays on the cluster; its hash is in the output. Accounting lines and job logs: `results/fourwire_scale_hydra_job_evidence.txt`.
+
+**Validity.** The checkout was unchanged during both jobs. The recomputed validation loss equals the recorded one in all twelve fits, to the last printed digit. The rerun of fold 2, seed 1 reproduced its record exactly (the curve of 15 epochs and the initial, selected and final weight hashes), and the replayed order of the networks equals the order observed in the rerun.
+
+**What the selected checkpoints show (val states of each fit's pool).**
+
+1. In the ten other fits the loss of a pool network lies between 0.0001 and 0.10. The largest values are always on the networks where the correction to the U1 prior is largest (networks 5, 2, 8, 7, 1 and 17 where they are in the pool).
+2. The two weak checkpoints are weak on those same networks and close to the others on the smallest ones. Fold 2 by seed, loss per network:
+
+   | Network | 5 | 2 | 8 | 7 | 1 | 17 | other twelve |
+   |---|---|---|---|---|---|---|---|
+   | Seed 0 | 0.066 | 0.063 | 0.047 | 0.051 | 0.038 | 0.037 | 0.0001 to 0.021 |
+   | Seed 1 | 2.26 | 1.40 | 1.16 | 1.08 | 0.85 | 0.83 | 0.002 to 0.36 |
+   | Seed 2 | 6.81 | 2.32 | 8.40 | 4.79 | 2.85 | 0.94 | 0.002 to 1.28 |
+
+3. Size of the error. The root-mean-square error of the predicted correction, in pu of the nominal phase-to-neutral voltage, is at most 0.0011 on any network in the ten other fits. On the six networks above it is 0.0034 to 0.0056 for seed 1 and 0.0039 to 0.0118 for seed 2. For seed 2 on networks 5, 8, 7, 1 and 2 the error (0.0068 to 0.0118) is about as large as the true correction (0.0080 to 0.0140): on these networks the checkpoint has learned little beyond the prior.
+4. No single loss term carries the weakness. In all twelve fits the voltage term is 69% to 80% of the pooled loss, the phase-to-neutral term 17% to 30%, the voltage-drop term 1% to 3%, and the current term below 0.1%.
+5. Weight norms: 110 to 119 in the ten other fits, 69 for seed 1 (selected at epoch 7) and 97 for seed 2.
+
+**The rise at epoch 8 of fold 2, seed 1.** The training loss went from 0.60 (epoch 7) to 1.91 (epoch 8). Networks 8, 5 and 7 carry 68% of the training loss of epoch 8, against 51% of epoch 7. Their median step loss rose from 1.2, 1.9 and 1.3 to 9.4, 7.6 and 5.9, while the median over all steps of the epoch rose from 0.23 to 0.45. The rise is therefore a shift of whole networks, not a few isolated steps. The validation loss then moved between 0.55 and 1.81 until the fit stopped at epoch 15.
+
+**Use.** Nothing here selects, changes or excludes a run, a seed or a network. It is reported next to the E3 results as context for the 12 PG-ft fits that start from these two checkpoints. It does not show why these two seeds went wrong; Amendment 10 asks whether a stabilised recipe avoids it.
+
+**Amendment 10, submitted.** After the twelfth audit and the author's confirmation, the equivalence check and the twelve stabilised fits were submitted on 2026-11-17 from a worktree at `cdb4e83`: jobs 13600689 (equivalence) and 13600690 (fits, tasks 0 to 11, starting only if the equivalence check ends successfully).
