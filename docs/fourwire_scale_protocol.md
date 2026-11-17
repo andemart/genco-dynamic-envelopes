@@ -867,3 +867,90 @@ The audit of `9aadb1d` recomputed every figure of the section above from the two
 4. **Item 4.** The weakness is not isolated to one loss term; the voltage term stays the largest. The shares are rounded: 69.4% to 79.9%, 16.8% to 29.9%, 0.7% to 3.4%, and 0.0006% to 0.0013% for the current term.
 5. **Epoch 8, "a shift of whole networks".** Meant is that most steps of networks 8, 5 and 7 got worse, as their medians show, not that every state did. The ten largest steps of epoch 8 carry 4.3% of its training loss.
 6. **Evidence for the job account.** The accounting lines of the 96 tasks of the final runs are appended to `results/fourwire_scale_hydra_job_evidence.txt`: all `COMPLETED` with exit code 0; the timing stage ran from 14:20:41 to 17:19:58. That the output of the first-version jobs was not read or copied, and that the login node could not be reached between 11:45 and 15:55, are statements of the author without a record. The absence of a halt file is supported only indirectly: the commands that gather the fits and write the two reports refuse to run during a halt, and they ran.
+
+## Outcome of the final runs (2026-11-17)
+
+The final runs of freeze `a4068ef` are complete: 276 fits, 24 evaluations, 6 timing runs and 6 envelope runs, each with a valid record from its first attempt; no fit ended with a numerical failure. The records and the two reports were written on the cluster in the frozen worktree and are committed byte for byte:
+
+- `results/fourwire_scale_fits.json` (the 276 fit records), `results/fourwire_scale_eval/` (24 networks), `results/fourwire_scale_e2_timing/` and `results/fourwire_scale_e2_envelopes/` (6 networks each);
+- `results/fourwire_scale_e3.json` (SHA-256 `43b41a52…1fbbbc0`) and `results/fourwire_scale_e2.json` (SHA-256 `fd6f71f3…97e2548`).
+
+Everything below is read from the two reports. Test states: 4,096 per network.
+
+### E3, model transfer
+
+**Primary criterion (§7, B = 1,000): not met.** PG-scratch minus PG-ft fallback share, mean over seeds 0 to 2 and then over the 23 fresh networks: **+0.32 percentage points, 95% interval −1.21 to +1.92.** The criterion asks for at least 2 points and an interval that excludes 0. False-safe and cleared-indeterminate decisions: 0 for PG-ft and 0 for PG-scratch. With network_1 included (24 networks): +0.88 points, interval −0.88 to +2.88.
+
+The §10 sentence on transfer ("reduced exact fallbacks on 23 unseen networks by Y points … with 1,000 target fitting states") is therefore not permitted.
+
+**Seed spread and pattern per fold** (the same statistic, percentage points; description, not a criterion):
+
+| | Seed 0 | Seed 1 | Seed 2 | Seeds 0 to 2 |
+|---|---|---|---|---|
+| All 23 fresh networks | +2.06 | +0.33 | −1.42 | +0.32 |
+| Fold 0 (4, 6, 7, 16, 18, 25) | +0.15 | +0.77 | +0.46 | +0.46 |
+| Fold 1 (2, 5, 10, 21, 23) | +3.68 | +3.79 | +3.52 | +3.66 |
+| Fold 2 (11, 12, 14, 15, 19, 20) | +2.75 | −5.35 | −10.11 | −4.23 |
+| Fold 3 (3, 8, 9, 17, 22, 24) | +1.90 | +2.67 | +1.28 | +1.95 |
+
+- The two negative cells are the 12 PG-ft fits that start from the two weak PG-pre checkpoints (fold 2, seeds 1 and 2). Fine-tuning did not recover from them: on network 11 PG-ft falls back on 2.2% and 20.0% of the states with seeds 1 and 2, against 0.5% with seed 0 and 1.4% for PG-scratch; with seed 2 its fallback share is close to that of the U1 screen on all six networks (for example 20.0% against 20.1% on network 11, 13.3% against 13.6% on network 15).
+- These fits are valid and stay in the primary statistic, as the note of 2026-11-16 fixed before any evaluation record was opened. No seed is replaced or left out.
+- One PG-pre checkpoint serves the six networks of its fold, so its effect is correlated within the fold; the bootstrap over networks is the primary interval and does not model that.
+- After the fact, and not a criterion: over the 17 fresh networks of folds 0, 1 and 3 the mean is +1.93 points, which is also below 2. The gain is concentrated on few networks: the mean over seeds is at least 2 points on networks 2, 5, 8 and 22, and at most −2 points on networks 11, 12, 15 and 19.
+
+**Secondary, seed 0** (same statistic, 23 fresh networks): B = 200: +5.36 points (interval 2.73 to 8.57); B = 5,000: +0.52 points (0.16 to 0.95). False-safe and cleared-indeterminate: 0 for both methods at both budgets.
+
+**Methods, seed 0, mean over the 23 fresh networks:**
+
+| Method | Fallback share | False-safe | Cleared-indeterminate | V_pn MAE |
+|---|---|---|---|---|
+| U1 screen | 14.17% | 0 | 0 | 0.00284 |
+| PG-net (10,000 target states) | 2.78% | 0 | 0 | 0.00018 |
+| PG-pre-tc (zero-shot model, target calibration) | 5.97% | 0 | 0 | 0.00092 |
+| PG-zs (zero-shot model, pool calibration) | 2.49% | **1** | 0 | 0.00092 |
+| PG-scratch, B = 200 | 10.00% | 0 | 0 | 0.00075 |
+| PG-ft, B = 200 | 4.64% | 0 | 0 | 0.00033 |
+| PG-scratch, B = 1,000 | 5.57% | 0 | 0 | 0.00030 |
+| PG-ft, B = 1,000 | 3.52% | 0 | 0 | 0.00026 |
+| PG-scratch, B = 5,000 | 3.26% | 0 | 0 | 0.00020 |
+| PG-ft, B = 5,000 | 2.74% | 0 | 0 | 0.00020 |
+
+- **Zero observed false-safe and cleared-indeterminate decisions** for every method whose screen is calibrated on the target network, on all 24 networks and all seeds.
+- **PG-zs has one observed false-safe decision** (network 7). It is the only method whose margins come from other networks. Its low fallback share cannot be read without that.
+- PG-ft with 5,000 target states reaches the fallback share of PG-net with 10,000 (2.74% against 2.78%), with seed 0 only.
+- The report also counts decisions that declare a safe state unsafe without a fallback: one each for PG-scratch at B = 200 and at B = 1,000 (seed 0, fresh networks), none for the other methods.
+
+### E2, computational scaling
+
+**Speed criterion (§7, batch 4,096, A100): met on networks 1, 7, 2 and 17; not met on networks 25 and 10.** Break-even size by the §7 rule: 397 retained buses. Speed-up of the PG-net pipeline over the optimised sweep on the GPU, with its 95% interval:
+
+| Network | Retained buses | With the §3 OpenDSS solves | Without them (sensitivity series) | OpenDSS solves of the sweep | PG-net fallback share |
+|---|---|---|---|---|---|
+| 25 | 79 | 0.08 (0.08 to 0.08) | 0.08 | 0 | 0.0% |
+| 10 | 94 | 0.09 (0.09 to 0.09) | 0.09 | 0 | 0.0% |
+| 1 (not fresh) | 397 | 5.24 (5.23 to 5.26) | 0.21 | 84 | 6.3% |
+| 7 | 876 | 23.12 (23.05 to 23.16) | 0.29 | 504 | 6.4% |
+| 2 | 1,089 | 11.43 (11.41 to 11.44) | 0.22 | 154 | 11.8% |
+| 17 | 1,668 | 14.17 (14.15 to 14.21) | 0.15 | 130 | 9.1% |
+
+False-safe and cleared-indeterminate decisions of the PG-net screen and in what the pipeline delivered: 0 on all six networks.
+
+**Which case of Amendment 9 holds.** The speed-up exists only with the §3 rule that sends the sweep's non-converged states to OpenDSS. Without those solves the PG-net pipeline is slower than the sweep on all six networks (0.08 to 0.29 times its speed), and on the two networks where the sweep converges on every state it is about twelve times slower. Declaring the non-converged states unsafe without an OpenDSS solve changed no delivered decision of any method on these states. The wording of Amendment 9, item 5 applies: "faster than the sweep pipeline with mandatory OpenDSS solves for its non-converged states", with the comparison without those solves in the same place, and no attribution of the speed-up to the model.
+
+**The U1 screen, same rule.** The screen without a learned model meets the rule on all six networks: 2.9, 3.6, 64.5, 396, 209 and 307 times the sweep's speed with the OpenDSS solves, and 2.6 to 6.0 times without them. It is faster than the PG-net pipeline on every network, at a higher fallback share (22% to 38% on the four larger networks, against 6% to 12%). As Amendment 9 requires, this is said wherever the PG-net speed-up is.
+
+**Batches 1 and 256.** At batch 1 the PG-net pipeline is slower on all six networks (0.01 to 0.15). At batch 256 it is 7.0, 15.7, 10.0 and 16.3 times faster on networks 1, 7, 2 and 17 with the OpenDSS solves, and slower on networks 25 and 10.
+
+**Scaling exponents** (median time against retained buses, batch 4,096, log–log): sweep on the GPU 2.84 with the OpenDSS solves and 1.23 without; U1 screen 1.20 and 1.11; PG-net pipeline 0.96 and 0.96; OpenDSS 0.87.
+
+**Envelope check (relative to the sweep, not to OpenDSS).** The agreement criterion is met on all six networks: the share of the 576 envelopes within tolerance is 100% on five networks and 98.96% on network 10.
+
+- Network 10 has **6 unsafe-envelope intervals**: the PG-net evaluator's envelope is above the sweep's by more than the tolerance, by at most 0.024 kW.
+- On networks 1, 7, 2 and 17 the envelope is 0 kW for both evaluators in 216, 365, 486 and 484 of the 576 intervals, because the baseline load is not feasible there. Agreement on those intervals says nothing about the screen. The intervals that carry information are 576 on networks 25 and 10, and 360, 211, 90 and 92 on the four larger networks.
+
+### What may be claimed
+
+- No claim that pretraining reduces fallbacks at 1,000 target states. The result is reported as not meeting its criterion, with the seed and fold pattern above and the two weak PG-pre seeds.
+- The speed statement only in the restricted wording above, for networks 1, 7, 2 and 17 at batch 4,096, with the comparison without the OpenDSS solves and the U1 screen next to it. Never "faster than the optimised sweep" without the qualifier, and nothing about the model being faster per state: it is slower.
+- "Zero observed false-safe decisions" for the target-calibrated screens on these test states; one for PG-zs.
+- The stabilised-recipe fits of Amendment 10 are running. Whatever they show, they change nothing above.
