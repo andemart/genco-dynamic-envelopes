@@ -1410,3 +1410,7 @@ Exploratory, from the committed E4 records only. It changes no result or criteri
 - In no combination is a network without a positive envelope among those the combination selects.
 
 **Reading.** Within these alternatives the count of E4 does not depend on the rules that Amendment 11 chose: it moves by at most one network down and two up, and stays far above the 12 that the criterion asks for. This describes the sensitivity of a result that was already known when the alternatives were listed. It is not a test, and it says nothing about choices outside the list (the envelope rule, the caps, the technology mix, the fresh draws, the balanced model), part of which E5 addresses.
+
+### Note on the source of the networks (2026-11-17)
+
+§2.1 names four authors of the CSIRO "Four-wire low voltage power network dataset" (DOI 10.25919/jaae-vc35). The dataset record lists three: Heidarihaei, Geth and Claeys. Urquhart is acknowledged there as the source of the cable impedance data, as §2.1 also states, and is not an author of the dataset. Nothing else of §2.1 changes.
