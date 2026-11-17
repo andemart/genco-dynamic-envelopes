@@ -1,17 +1,21 @@
 #!/bin/bash
 # Four-wire scale study, Amendment 11 (E4): balanced-model envelopes against four-wire-verified envelopes.
-# CPU only; no learned model and no label. Submit from a worktree created for the commit that holds this
+# CPU only; no learned model, no label read. Submit from a worktree created for the commit that holds this
 # script and never moved, after `python -m gencodoe.fourwire_scale_eval networks`:
 #
 #   E="--export=ALL,GENCODOE_COMMIT=$(git rev-parse HEAD),GENCODOE_WORKTREE=$PWD"
 #   S=scripts/hydra_fourwire_scale_e4.slurm
 #   run=$(sbatch --parsable "$E,GENCODOE_STAGE=run" --array=1-12,14-25 $S)
-#   sbatch --parsable "$E,GENCODOE_STAGE=report" --array=0 --time=00:30:00 --dependency=afterok:$run $S
+#   sbatch --parsable "$E,GENCODOE_STAGE=report" --array=0 --time=00:30:00 --dependency=afterok:$run \
+#          --kill-on-invalid-dep=yes $S
 #
-# run:    task = network number. One record, results/fourwire_scale_e4/network_N.json, written at the end.
-#         A task that ends without a record may be submitted again (Amendment 11, item 7); a record that
-#         exists is never replaced (the command then fails).
+# run:    task = network number. One record, results/fourwire_scale_e4/network_N.json, published at the end;
+#         every start leaves a file in results/fourwire_scale_e4/attempts. A record that exists is never
+#         replaced (the command then fails).
 # report: results/fourwire_scale_e4.json from the 24 records.
+# If a run task ends without a record, Slurm removes the report job. Submit that network again alone
+# (--array=N) and the report after it (--dependency=afterok:<that job>); Amendment 11, corrections 3 and 13.
+# The 16 cores are required by the command (corrections, item 5).
 #SBATCH --job-name=fwscale-e4
 #SBATCH --partition=zen4
 #SBATCH --cpus-per-task=16
