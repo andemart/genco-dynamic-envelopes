@@ -13,8 +13,10 @@
 #         every start leaves a file in results/fourwire_scale_e4/attempts. A record that exists is never
 #         replaced (the command then fails).
 # report: results/fourwire_scale_e4.json from the 24 records.
-# If a run task ends without a record, Slurm removes the report job. Submit that network again alone
-# (--array=N) and the report after it (--dependency=afterok:<that job>); Amendment 11, corrections 3 and 13.
+# If a run task fails, Slurm removes the report job. Without a record of that network: submit the network
+# again alone (--array=N) and the report after it (--dependency=afterok:<that job>). With a complete record
+# (the task failed after publishing it): keep the record, do not run the network again, submit the report
+# again alone. Amendment 11, corrections 3 and 13 and second set, item 5.
 # The 16 cores are required by the command (corrections, item 5).
 #SBATCH --job-name=fwscale-e4
 #SBATCH --partition=zen4

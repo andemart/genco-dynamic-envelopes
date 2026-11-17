@@ -405,16 +405,46 @@ def expected_intervals(days: list[int]) -> list[tuple]:
     return [(d, d * 96 + 4 * h, direction) for d in days for h in range(HOURS) for direction in ev.DIRECTIONS]
 
 
-def record_problems(rec: dict, network: int, prov: dict, days: list[int]) -> list[str]:
+def _number(x) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
+
+def _count(share) -> int | None:
+    """The number of feasible states a share stands for, if it is a count over the 200 fresh draws."""
+    if not _number(share) or not 0 <= share <= 1 or abs(share * N_FRESH - round(share * N_FRESH)) > 1e-9:
+        return None
+    return round(share * N_FRESH)
+
+
+def ledger_problems(rec: dict, network: int, prov: dict, folder: Path) -> list[str]:
+    """The record's attempt must be a file of the ledger, written by the run that wrote the record."""
+    name, earlier = rec.get("attempt"), rec.get("earlier_attempts")
+    listed = attempts(network, folder)
+    if not isinstance(name, str) or not isinstance(earlier, list) or name not in listed:
+        return ["its attempt is not in the ledger"]
+    try:
+        att = json.loads((folder / "attempts" / name).read_text())
+    except (OSError, ValueError):
+        return ["its attempt file cannot be read"]
+    same = (isinstance(att, dict) and att.get("network") == network and att.get("earlier_attempts") == earlier
+            and all(att.get(k) == rec.get(k) for k in ("job_id", "node"))
+            and all(att.get(k) == prov[k] for k in ("code_commit", "analysis_script_sha256")))
+    return ([] if same else ["its attempt file is of another run"]) + (
+        [] if all(e in listed for e in earlier) and name not in earlier else ["its earlier attempts are not in the ledger"])
+
+
+def record_problems(rec: dict, network: int, prov: dict, days: list[int], folder: Path) -> list[str]:
     """What keeps a record out of the report: not a valid final record of this network, commit, script, freeze
-    and settings, or not the complete set of intervals with every result a positive envelope must have."""
+    and settings; an attempt that is not in the ledger; or not the complete set of intervals with every result
+    a positive envelope must have, each a count over the 200 fresh draws, with a number of differing decisions
+    that the two counts allow."""
     dss = [days[k] for k in OPENDSS_DAYS]
     bad = [what for what, wrong in [
         ("not valid", rec.get("valid") is not True or rec.get("unchanged_during_run") is not True),
         ("a dry run", rec.get("dry_run") is not False), ("another network", rec.get("network") != network),
         ("other days", rec.get("days") != days), ("other OpenDSS days", rec.get("opendss_days") != dss),
-        ("no attempt", not rec.get("attempt") or not isinstance(rec.get("earlier_attempts"), list)),
     ] if wrong]
+    bad += ledger_problems(rec, network, prov, folder)
     bad += [f"another {k}" for k in SAME_AS_REPORT if rec.get(k) != prov[k]]
     bad += [f"another {k}" for k, v in SETTINGS.items() if rec.get(k) != v]
     rows = rec.get("intervals", [])
@@ -426,13 +456,18 @@ def record_problems(rec: dict, network: int, prov: dict, days: list[int]) -> lis
                 level = r[f"{m}_level_kw"]
                 res = [r[f"{m}_fresh_share"], r[f"{m}_fresh_share_opendss"], r[f"{m}_fresh_decisions_differ"]]
                 need = [level > 0, level > 0 and r["day"] in dss, level > 0 and r["day"] in dss]
-                if not 0 <= level <= e2.CAP_KW[r["direction"]] or [x is not None for x in res] != need:
+                if (not _number(level) or not 0 <= level <= e2.CAP_KW[r["direction"]]
+                        or [x is not None for x in res] != need):
                     raise ValueError
-                for share in res[:2]:
-                    if share is not None and not (0 <= share <= 1 and abs(share * N_FRESH - round(share * N_FRESH)) < 1e-9):
+                a, b, d = (_count(res[0]) if need[0] else None), (_count(res[1]) if need[1] else None), res[2]
+                if (need[0] and a is None) or (need[1] and b is None):
+                    raise ValueError
+                if need[2]:       # d states decided differently: x feasible for the sweep only, y for OpenDSS only
+                    if not isinstance(d, int) or isinstance(d, bool) or (d + a - b) % 2:
                         raise ValueError
-                if res[2] is not None and not 0 <= res[2] <= N_FRESH:
-                    raise ValueError
+                    x, y = (d + a - b) // 2, (d - a + b) // 2
+                    if not (0 <= x <= min(a, N_FRESH - b) and 0 <= y <= min(b, N_FRESH - a)):
+                        raise ValueError
     except (KeyError, TypeError, ValueError):
         bad.append("an interval without the results it must have")
     return bad
@@ -479,7 +514,7 @@ def report(folder: Path = RECORDS, out: Path = REPORT) -> Path:
     days, records = day_list(False), {}
     for n in fs.ELIGIBLE:
         rec = json.loads((folder / f"network_{n}.json").read_text())
-        problems = record_problems(rec, n, prov, days)
+        problems = record_problems(rec, n, prov, days, folder)
         if problems:
             raise RuntimeError(f"record of network {n}: " + ", ".join(problems))
         records[n] = rec
