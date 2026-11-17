@@ -1258,3 +1258,89 @@ The audit of `f377217` recomputed the report from the 24 records with its own co
 5. **The field `cpus`** is `os.cpu_count()`, the number of logical CPUs the system shows (64 on these nodes). The allocation of 16 is shown by the check at the start of each run, by `numba_threads` and `opendss_processes` in the records, and by the accounting lines, as written.
 6. **Why the jobs waited.** The accounting lines show the wait (submitted 13:25, started 14:44) and not its cause. That the nodes of the partition were not responding was seen in the scheduler's node listing at the time; it is not in the committed evidence.
 7. **Hashes on the cluster.** The SHA-256 of the 49 files as computed in the worktree on the cluster (the report, 24 records, 24 attempt files) is appended to `results/fourwire_scale_hydra_job_evidence.txt`. The committed files have these hashes.
+
+## Amendment 12 (2026-11-17): E5, the positive-sequence model and two further technology mixes; a specification table for E4 (before any such run on a held-out day)
+
+Adds a fifth experiment family and one exploratory table. It changes no result, record or criterion of E1 to E4, uses no learned model and reads no label. `src/`, the freeze and the E4 script are unchanged; the E4 script is used as a library.
+
+**Why.** Three limits of E4 that a reader will raise: its balanced model is not the positive-sequence reduction behind the ENWL1 result; it uses one technology mix; and it was devised after E1 to E3 had been read. E5 addresses the first and part of the second with runs that are fixed here before they exist. Item 6 describes how far the count of E4 depends on the rules that Amendment 11 chose.
+
+**What was seen before this amendment (disclosure).**
+- **The whole outcome of E4:** 21 of 23, the per-network figures, networks 25 and 10 at the cap, the difference between the engines on network 18.
+- **Who decided what.** After the outcome of E4 was known, the author decided on 2026-11-17 to run the positive-sequence model, two further mixes (one with lower uptake, one with more PV) and the table of item 6. The values of the two mixes, the criteria (the rule of E4, per cell) and the list of item 6 were set before the dry runs below.
+- **Network data** (no state computed): the negative-sequence part of the frozen source voltage is 6.5e-11 of the positive-sequence part on every network, and the source impedance matrix is symmetric to 1e-11; the Kron reduction of the neutral changes the positive-sequence impedance of a branch by at most 0.45%.
+- **Dry runs of the script of this amendment on validation days, on the laptop** (not held-out days; records kept outside the repository):
+  - network 25, base mix, 2 days, 4 hours each: 16 envelopes per model, all positive. The positive-sequence levels equal the balanced-load levels in all 16; 10 of the 16 reached 0.95 for both, and all 16 four-wire-verified ones;
+  - network 1, 2 days (January), under each mix. Base: 28 positive four-wire-verified envelopes of 96 (26 reached 0.95), 88 balanced-load (none; mean four-wire feasibility 0.30) and 88 positive-sequence (none; 0.24); the positive-sequence level is above the balanced-load level in 88 intervals and equal in 8 (median ratio 1.06); every four-wire and balanced-load result equals the E4 dry record of the same days. Half: 54 four-wire-verified (49 reached 0.95), 96 balanced-load (none), 96 positive-sequence (none). PV: 31 (30), 94 (none), 94 (none). On the OpenDSS day the sweep and OpenDSS decided every fresh state alike under each mix;
+  - in these runs the three phase voltages of the reduced network differed by less than 1e-15 pu and from the scalar power flow by less than 1e-9 pu.
+- **What this lets one expect.** On network 1 the positive-sequence envelopes are at least as large as the balanced-load ones, so on constrained networks the positive-sequence model is expected to fail the check at least as often as the balanced-load model did in E4. The half mix is the least predictable: with lower uptake more networks may be barely constrained, as networks 25 and 10 are in E4, and there balanced envelopes pass.
+- No positive-sequence envelope, and no envelope under the two further mixes, has been computed on a held-out day.
+
+**1. Networks, days, intervals and the envelope rule.** Those of Amendment 11, item 1: the 24 eligible networks, criteria over the 23 fresh ones; the 36 test days, the first 15-minute step of each hour, both directions; the caps and the envelope rule. Only the technology mix varies.
+
+**2. Technology mixes.** Shares of households with a heat pump, an EV and PV, each drawn independently (Amendment 9, item 7):
+
+| Mix | Heat pump | EV | PV | |
+|---|---|---|---|---|
+| base | 0.30 | 0.30 | 0.40 | the mix of E2 and E4 |
+| half | 0.15 | 0.15 | 0.20 | every share halved |
+| pv | 0.30 | 0.30 | 0.80 | the PV share doubled |
+
+- The technology flags of a network and day come from the same uniform numbers (stream 0) under every mix: a household has a technology if its number is below the share. A household that has a technology under a lower share therefore has it under a higher one.
+- Design scenarios (stream 1) and fresh draws (stream 2) are generated as in Amendment 11, from the meter groups that the flags select. With the base mix the design scenarios are those of E2 and E4; the run checks that on every hour against `fourwire_scale_e2.day_scenarios`.
+- A mix is a sensitivity. It is not a forecast for a year or a region: the caps, the meters and the 2024 profiles are unchanged.
+
+**3. Three models.**
+- **Four-wire-verified** and **balanced-load:** those of Amendment 11, item 2, with its corrections.
+- **Positive-sequence:** every branch is reduced to one impedance, by the reduction of the ENWL1 study (`gencodoe.enwl.read_linecodes`): the neutral is Kron-reduced out of the 4×4 matrix, then z1 is the mean self impedance minus the mean mutual impedance of the 3×3 phase matrix. The source is the positive-sequence voltage and impedance of the frozen Thevenin equivalent. Every customer's power, envelope included, is one third per phase. The limits are the same: the phase-to-neutral voltage at every customer bus, the cable loading, and the transformer quantity of the sweep (apparent power at the root, summed over the phases, over 800 kVA).
+- **How it is solved.** By the same Numba sweep, on a network with z1 on each phase and no coupling, a balanced source and three connections per customer. The three phases are then decoupled and identical, which is the positive-sequence power flow. Every run checks this on the first hour of every day, on 8 design scenarios: the three phase voltages at every bus must be equal, and equal to an independent scalar power flow written in NumPy, within 1e-6 pu. The run stops otherwise, and the report requires the check on all 36 days.
+- **What the positive-sequence model is and is not.** It is the positive-sequence reduction of this study's network model. It is not the ENWL1 model of the challenge entry bus for bus:
+  - there the reduction was applied per line code before chains were merged, here to the merged 4×4 matrix of each retained branch (the same for a branch of one line code);
+  - there the source was an 11 kV bus with the transformer in series, here the frozen Thevenin equivalent;
+  - there one technology placement was used for the year, here the flags are drawn per day.
+
+  Network 1 is therefore reported next to the published ENWL1 figures, not as a reproduction of them.
+
+**4. The four-wire check on fresh draws and the OpenDSS days.** Those of Amendment 11, item 3, with its corrections, for every positive envelope of each of the three models. Two models with the same level in an interval and direction give the same states, which are solved once.
+
+**5. Classification and criteria.** Six cells: three mixes × two design models (balanced-load, positive-sequence).
+- In each cell the classification is that of Amendment 11, item 4, with the edge rules of its corrections, computed by the functions of the E4 script with the cell's model in the place of the balanced model. Per network, the two directions together: unsafe if it has a positive envelope of the model and fewer than half of them reach 0.95; not counted without a positive envelope or if the two engines classify the OpenDSS days differently.
+- **Criterion of a cell: at least 12 of the 23 fresh networks are counted as unsafe.**
+- **Primary cell: base mix, positive-sequence model.** It answers the first limit.
+- **Secondary cells:** the half and the pv mix, each with the two models. They answer part of the second.
+- The cell of the base mix with the balanced-load model is E4 computed again. It has no new criterion and must agree with the E4 records (item 7).
+- Every cell is stated on its own, without a correction for the number of cells. A summary over mixes and models ("under all three mixes and both models") is allowed only if all six cells meet the criterion.
+
+**6. Specification table for E4** (exploratory; from the committed E4 records; no run). `scripts/fourwire_scale_e4_robustness.py` counts the fresh networks that are balanced unsafe under every combination of:
+
+| Rule | Amendment 11 | Other values |
+|---|---|---|
+| Feasibility an envelope has to reach | 0.95 (190 of 200) | 0.90, 0.98 |
+| Unsafe if the share reaching it is below | 0.5 | 0.25, 0.75 |
+| Directions | both together | import only, export only |
+| Envelopes | all positive balanced-model envelopes | only those in intervals with a positive four-wire-verified envelope |
+| Judged by | the sweep on the 36 days | the sweep on the three OpenDSS days; OpenDSS on those days |
+
+- 162 combinations. In each, a network is unsafe if it has a positive envelope among those of the combination and the share is below the threshold; one engine at a time, so the rule that the engines classify alike does not enter. The count is also given without network 18.
+- Reported: the combination of Amendment 11, which must reproduce the 21 of the E4 report or the table is not written; the nine counts with one rule changed; the smallest and the largest count over the 162, and how many give at least 12.
+- **Already known:** the shares per direction (E4 tables; imports alone make network 25 unsafe), that restricting to intervals with a positive four-wire-verified envelope leaves 21 (nineteenth audit), and that the engines classify all networks alike on the three days.
+- It describes how much the count depends on the rules. It is not a test, and nothing in it changes the outcome of E4.
+
+**7. Reported with E5, and the check against E4.**
+- Per cell and network: the figures of Amendment 11, item 5, computed by the E4 code. The records hold the three levels and the fresh-draw counts of every interval.
+- **Base mix against the E4 records.** The four-wire and balanced-load levels of the 24 networks (82,944 levels) and their counts on the fresh draws are expected to equal the committed E4 records, which must be the files that the E4 report names by hash. The report is not written if more than 0.5% of the levels differ by more than 1e-3 × cap, and it lists every difference.
+
+**8. Execution.**
+- `scripts/fourwire_scale_balanced_envelopes_e5.py` (`run` per network and mix, then `report`) and `scripts/hydra_fourwire_scale_e5.slurm`, from a worktree of the commit that holds them, on CPU nodes: 72 runs.
+- A final run requires what Amendment 11, item 7 and its corrections require, and in addition this script as committed and the E4 script being the one that wrote the E4 records (SHA-256 `e817d926…14fed25`). The same is checked at the end.
+- One record per network and mix, `results/fourwire_scale_e5/<mix>/network_N.json`, published whole and never replaced; an attempt file for every start, in `results/fourwire_scale_e5/<mix>/attempts/`; 16 cores; the recovery cases of Amendment 11 (second set of corrections, item 5), per network and mix.
+- A record stores its intervals by column, with the fresh-draw results as counts over 200.
+- The report requires all 72 records, valid, from one commit and the two scripts, with all days, hours, OpenDSS days and the positive-sequence check.
+
+**9. What may be claimed.**
+- **For a cell that meets its criterion:** "Under the [base, half, pv] mix, on K of 23 fresh networks fewer than half of the positive envelopes designed with the [balanced-load, positive-sequence] model reached 0.95 four-wire feasibility on fresh draws", with the share of the four-wire-verified envelopes next to it, the networks on which it does not hold, and their sizes.
+- **If the primary cell holds:** the ENWL1 result replicates on a majority of the fresh networks under the positive-sequence reduction of this study's network model.
+- **For a cell that does not:** reported as not met, with the same figures.
+- **Never claimed:** what Amendment 11, item 8 excludes (unsafe on every network; operational safety; a result judged by OpenDSS beyond the three days; another operator's networks or another year); a result for a mix other than these three, or that a mix stands for a year or a region; that E5 was designed without knowledge of results (it follows the outcome of E4); anything about GENCO or a learned model.
+
+**Note on the duration.** The E4 runs took 7 to 43 minutes per network. E5 searches a third model and checks its envelopes, so a run is expected to take up to about an hour; the job script allows 4 hours.
