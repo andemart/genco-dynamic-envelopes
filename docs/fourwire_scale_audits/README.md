@@ -21,5 +21,6 @@ The files are copied as written, with three mechanical replacements: absolute pa
 | 013 | 2026-11-17 08:03 | `9aadb1d` (output of the PG-pre diagnostic) | Every figure reproduced; wording to qualify and job evidence to add, done in the commit that follows |
 | 014 | 2026-11-17 08:36 | `11bcf1f` (final outputs and the outcome section) | E3 and E2 numbers recomputed and confirmed; reporting corrections required, first of all two unsafe fallback decisions on network 18, done in the commit that follows |
 | 015 | 2026-11-17 08:42 | `4d71551` (the corrections of round 14) | Resolved and the new figures confirmed; three wording corrections, done in the commit that follows. No record, report or criterion changed |
+| 016 | 2026-11-17 12:44 | `9d2af25` (Amendment 11: E4, balanced-model envelopes on the 24 networks) | Not ready to submit: the models and checks are what the amendment states; blockers in the isolation of dry runs, the publishing of records, the report's record checks and open edge rules, corrected in `8bb4061` |
 
 How each finding was answered is recorded in the protocol's amendments and notes and in the commits that follow each round.
