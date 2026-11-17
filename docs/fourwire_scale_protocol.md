@@ -856,3 +856,14 @@ This is the diagnostic of the note of 2026-11-16 on the weak PG-pre seeds. It is
 **Use.** Nothing here selects, changes or excludes a run, a seed or a network. It is reported next to the E3 results as context for the 12 PG-ft fits that start from these two checkpoints. It does not show why these two seeds went wrong; Amendment 10 asks whether a stabilised recipe avoids it.
 
 **Amendment 10, submitted.** After the twelfth audit and the author's confirmation, the equivalence check and the twelve stabilised fits were submitted on 2026-11-17 from a worktree at `cdb4e83`: jobs 13600689 (equivalence) and 13600690 (fits, tasks 0 to 11, starting only if the equivalence check ends successfully).
+
+### Corrections to the diagnostic output section (2026-11-17, after the thirteenth audit)
+
+The audit of `9aadb1d` recomputed every figure of the section above from the two files and found none wrong. It asked for the wording below and for evidence of the job times. The evaluation records were opened after `9aadb1d` and before these corrections were written; the corrections change wording and add evidence, and change no figure.
+
+1. **Item 1, "always".** The largest losses are generally, not always, on the networks with the largest corrections. Fold 1, seed 1: network 17 has a higher loss than network 12 (0.065 against 0.044) with a smaller true correction (0.0046 against 0.0080 pu).
+2. **Item 2, "close to the others on the smallest ones"** holds in absolute terms only. On network 25 the loss of seeds 1 and 2 is 20 and 16 times that of seed 0.
+3. **Item 3, "has learned little beyond the prior"** is replaced by the measurement: on networks 5, 8, 7, 1 and 2 the root-mean-square error of the seed-2 checkpoint is 11.7% to 21.0% below that of the U1 prior alone.
+4. **Item 4.** The weakness is not isolated to one loss term; the voltage term stays the largest. The shares are rounded: 69.4% to 79.9%, 16.8% to 29.9%, 0.7% to 3.4%, and 0.0006% to 0.0013% for the current term.
+5. **Epoch 8, "a shift of whole networks".** Meant is that most steps of networks 8, 5 and 7 got worse, as their medians show, not that every state did. The ten largest steps of epoch 8 carry 4.3% of its training loss.
+6. **Evidence for the job account.** The accounting lines of the 96 tasks of the final runs are appended to `results/fourwire_scale_hydra_job_evidence.txt`: all `COMPLETED` with exit code 0; the timing stage ran from 14:20:41 to 17:19:58. That the output of the first-version jobs was not read or copied, and that the login node could not be reached between 11:45 and 15:55, are statements of the author without a record. The absence of a halt file is supported only indirectly: the commands that gather the fits and write the two reports refuse to run during a halt, and they ran.
