@@ -1414,3 +1414,9 @@ Exploratory, from the committed E4 records only. It changes no result or criteri
 ### Note on the source of the networks (2026-11-17)
 
 §2.1 names four authors of the CSIRO "Four-wire low voltage power network dataset" (DOI 10.25919/jaae-vc35). The dataset record lists three: Heidarihaei, Geth and Claeys. Urquhart is acknowledged there as the source of the cable impedance data, as §2.1 also states, and is not an author of the dataset. Nothing else of §2.1 changes.
+
+### Correction to the output of the specification table (2026-11-17, after the twenty-third audit)
+
+The audit of `07738d3` recomputed the whole table from the 23 E4 records and found every number of the output section and the result file right. One sentence of its reading is corrected.
+
+- "The count of E4 does not depend on the rules that Amendment 11 chose" overstates it: the count changes between 20 and 23. What the table shows is that **the majority conclusion stays unchanged across the listed alternatives.**
