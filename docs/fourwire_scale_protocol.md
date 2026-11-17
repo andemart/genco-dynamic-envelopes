@@ -1070,3 +1070,27 @@ The audit of `9d2af25` found the four-wire reference, the balanced mapping, the 
     - A balanced-model envelope issued where the four-wire rule admits none fails the check because the states are already infeasible in the four-wire model without it. It shows that the balanced model issued an envelope there, not that the envelope caused the violation.
     - E4 is a result about phase modelling in the design of envelopes. It is not evidence for GENCO or for any learned model.
 13. **Execution (item 7), completed.** The check at the start of a final run also covers the job script of the final runs, as the check at its end did. The report job depends on every task of the run array; if a task fails, Slurm removes the report job. The failed network is then submitted again alone, and the report after it; both are listed with the output.
+
+## Output of the stabilised-recipe analysis of Amendment 10 (2026-11-17)
+
+Exploratory, train and val states only. It changes no result, record or criterion of the study.
+
+**Runs.** The equivalence job (13600689) passed on the A100: the frozen routine and the script's loop with the four changes off gave the same curve, the same 1,512 step losses, the same weight hashes and the same checkpoint file. The twelve fits (job 13600690, tasks 0 to 11, worktree of `cdb4e83`, script SHA-256 `1a064e21…464ad0`) all completed on their first attempt, without a numerical failure: ten ran the 60 epochs (3 h 14 min to 3 h 23 min each) and two were stopped by the patience rule (1 h 5 min and 1 h 27 min); 35 h 43 min of job time for the twelve. Each record carries the job id of its own array task. `collect` was then run in that worktree. Files: `results/fourwire_scale_pgpre_stabilised.json` (SHA-256 `f62fed06…fa2cc79`), `results/fourwire_scale_pgpre_stabilised_equivalence.json` (`9267d2b1…ec7fe48`); the accounting lines of the two jobs are appended to `results/fourwire_scale_hydra_job_evidence.txt`.
+
+**Selected validation loss, frozen → stabilised** (selected epoch of the number of epochs run):
+
+| Fold | Seed 0 | Seed 1 | Seed 2 |
+|---|---|---|---|
+| 0 | 0.0308 → 0.0148 (58 of 60) | 0.0232 → 0.0146 (60 of 60) | 0.0273 → 0.0514 (11 of 19) |
+| 1 | 0.0175 → 0.0107 (59 of 60) | 0.0223 → 0.0328 (18 of 26) | 0.0186 → 0.0107 (59 of 60) |
+| 2 | 0.0201 → 0.0126 (60 of 60) | 0.4985 → 0.0118 (60 of 60) | 1.5353 → 0.0123 (60 of 60) |
+| 3 | 0.0148 → 0.0112 (58 of 60) | 0.0168 → 0.0109 (60 of 60) | 0.0179 → 0.0118 (58 of 60) |
+
+**Reading, as Amendment 10 fixed it.**
+- **No stabilised fit is weak** (threshold 0.106): the twelve losses lie between 0.0107 and 0.0514. The two weak seeds did not recur under the stabilised recipe: fold 2, seed 1 went from 0.4985 to 0.0118 and fold 2, seed 2 from 1.5353 to 0.0123. This is consistent with a sensitivity of the frozen optimisation. It does not show which of the four changes matters, and three seeds per fold do not bound how often a weak fit occurs.
+- **Level.** The stabilised loss is below the frozen one in ten of the twelve fits (median ratio 0.63 over the twelve; 0.64 over the ten fits that were not weak under the frozen recipe, eight of which are lower).
+- **Two stabilised fits are worse than their frozen counterparts,** and both were stopped early by the patience rule: fold 0, seed 2 (0.0514 against 0.0273; selected epoch 11, stopped after 19) and fold 1, seed 1 (0.0328 against 0.0223; selected epoch 18, stopped after 26). Both are far below the weak threshold. The stabilised recipe is therefore not uniformly better: with a peak learning rate of 3e-4 the patience of 8 epochs ended two fits while the loss was still high on the networks with large corrections (0.26 and 0.23 on networks 5 and 8 in the first; 0.17 and 0.16 on networks 8 and 7 in the second).
+- **Per network.** In every stabilised fit the highest validation loss at the selected epoch is on network 5 or 8, and the next two are among networks 2, 8, 7, 1, 17 and 12. Networks 5, 2, 8, 7, 1 and 17 are those on which the weak frozen checkpoints failed.
+- **Clipping.** The gradient norm exceeded 1.0, so that clipping was active, on 27% to 34% of the steps of the ten 60-epoch fits and on 47% and 53% of the steps of the two that stopped early. Its median before clipping is 0.28 to 0.48 in the former (0.90 and 1.10 in the latter); per network, in the 60-epoch fits, the median ranges from 0.01 to 0.03 (networks 25 and 10) to between 6 and 9 (networks 5 and 8).
+
+**What it does not show.** Nothing about calib or test states, about fine-tuning from these checkpoints, or about E3: no stabilised checkpoint was fine-tuned, calibrated or evaluated, and the primary criterion of E3 stays not met. Whether fine-tuning from stably pretrained weights would meet it is not known; testing that would need its own amendment and states that have not been used.
